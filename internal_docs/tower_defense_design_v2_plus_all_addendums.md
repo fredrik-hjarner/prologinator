@@ -24,6 +24,14 @@ for free since actions ARE data (terms).
 **What:** `parallel([A1, A2, A3])` executes each 
 action in sequence, threading state through.
 
+<pre style="background-color: rgb(90, 0, 0)">
+💭 **Reader's Note**  
+Hm not the best description. parallel is supposed to in
+practise execute all actions in parallel (meaning same
+frame). Not true concurrency, so yea in a way kinda 
+sequential, but yeah.
+</pre>
+
 **Why NOT deltas?** Each action modifies different 
 attributes (shoot changes ammo, rotate changes 
 angle, move changes pos). Sequential execution 
@@ -50,8 +58,19 @@ actions([
 % Result: Both happened "same frame"
 ```
 
+<pre style="background-color: rgb(90, 0, 0)">
+💭 **Reader's Note**  
+The example is not that great since the parallel in that
+case is unnecessary.
+
+loop([shoot, rotate(5), wait_frames(10)])
+
+would be the same really.
+</pre>
+
 **Implementation:**
 ```prolog
+% action(Action, In, Out, Hints)
 execute_action(
   parallel(Actions),
   game_object(ID, AttrsIn, [_|Rest], Colls),
@@ -80,6 +99,8 @@ execute_one_parallel(ID, Colls, Action,
 
 **Motivation:** Simple, no special cases, 
 leverages Prolog's natural state threading.
+
+**⚠️ Overridden:** This approach is corrected in [Addendum 1](#tower-defense-design-v2---addendum-1) and [Addendum 2](#tower-defense-design-v2---addendum-2).
 
 ---
 
@@ -444,6 +465,8 @@ create_from_spawn(
 execution contexts. Needs coordination at tick 
 level.
 
+**⚠️ Changed:** Spawn signature and ID generation changed in [Addendum 3](#tower-defense-design-v2---addendum-3) - now uses `spawn(Type, Pos, Actions)` with automatic ID assignment.
+
 ---
 
 ### Decision 7: Sequential as Default Queue
@@ -477,6 +500,8 @@ tick_object(
 
 **Motivation:** Simplicity. Most actions are 
 sequential. Don't add wrapper for common case.
+
+**⚠️ Corrected:** This execution model is corrected in [Addendum 1](#tower-defense-design-v2---addendum-1) - actions execute continuously until yield, not one per frame.
 
 ---
 
@@ -515,6 +540,8 @@ game_state(
 - `score` - Example mutable game state
 - `last_keyframe` - For fast seeking
 - `reverse_hints` - ONLY for non-invertible ops
+
+**⚠️ Extended:** `next_id` counter is added to state in [Addendum 3](#tower-defense-design-v2---addendum-3) for deterministic ID generation.
 
 **Why collisions on GameObject?** So actions can 
 check "did I collide?" via pattern matching:
@@ -1076,6 +1103,8 @@ yields(move_to(_,_,Frames)) :- Frames #> 0.
 % - trigger_state_change
 % - parallel (expands, doesn't yield)
 % - loop (expands, doesn't yield)
+
+**⚠️ Corrected:** Parallel is NOT an expansion - see [Addendum 2](#tower-defense-design-v2---addendum-2) for the correct composite action approach.
 ```
 
 **Why this matters:**
@@ -1142,6 +1171,8 @@ execute_action(
 
 **That's it!** Because `execute_until_yield` will 
 run them all until one yields anyway!
+
+**⚠️ Overridden:** This append approach is corrected in [Addendum 2](#tower-defense-design-v2---addendum-2) - it doesn't work for yielding actions that need to tick every frame.
 
 **Example:**
 ```prolog
@@ -2471,6 +2502,8 @@ yields(parallel(_)).
 of parallel execution". After ticking all 
 children, it's done for this frame.
 
+**⚠️ Refined:** This is refined in [Addendum 3](#tower-defense-design-v2---addendum-3) - only `parallel_running` yields, not initial `parallel`, to avoid wasting frames on instant parallels.
+
 ---
 
 ## Corrected yields Clause
@@ -2777,6 +2810,8 @@ all_children_done([caused_despawn|_]) :-
 ```
 
 **Recommended:** Keep despawn top-level. Cleaner.
+
+**⚠️ Changed:** This restriction is removed in [Addendum 4](#tower-defense-design-v2---addendum-4) - despawn can be used in parallel via bubbling mechanism.
 
 ---
 
