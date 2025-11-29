@@ -1,65 +1,33 @@
-start:
-	cd prolog && swipl -q main.pl
+# ============================================================================
+# Ciao Prolog commands
+# ============================================================================
+# NOTE: In Ciao Prolog, load files with:
+#   - use_module('filename.pl') for modules
+#   - ensure_loaded('filename.pl') for non-modules
+#   NOT [filename] like in SWI-Prolog!
+#
+# Check if a Prolog file compiles (reports errors/warnings, exits on error)
+# Usage: just check <filename>
+# Example: just check game
+check file:
+	cd prolog && rm -f {{file}}.po {{file}}.itf && ciaoc -c {{file}}.pl
 
-# WASM related commands
-start-wasm:
-	bun run index.ts
-build:
-	bun build index.ts --compile --outfile dist/duels-of-destiny
-build-win:
-	bun build index.ts --compile --target=bun-windows-x64 --outfile dist/duels-of-destiny.exe
-build-mac:
-	bun build index.ts --compile --target=bun-darwin-x64 --outfile dist/duels-of-destiny-mac
-build-linux:
-	bun build index.ts --compile --target=bun-linux-x64 --outfile dist/duels-of-destiny-linux
+# Test if a Prolog file is compatible with Ciao Prolog (interactive)
+# Usage: just consult <filename>
+# Example: just consult game
+consult file:
+	cd prolog && rlwrap ciaosh -e "use_module('{{file}}')"
 
-lint:
-	cd prolog && swipl --on-warning=status --on-error=status -g check -t halt -l game.pl
+# Test if the operators actually work in Ciao Prolog
+# This loads the operators module and tests parsing of operator expressions
+# ciao-test-operators:
+# 	cd prolog && ciaosh -e "use_module('operators'), X = atk:hi, Y = (atk:hi & atk:lo), Z = ((atk:hi & atk:hi) vs (atk:lo & atk:lo)), write('Operators work!'), nl, write('X = '), write(X), nl, write('Y = '), write(Y), nl, write('Z = '), write(Z), nl" -t halt
 
-multilint:
-	cd prolog && LINT_FILES=game.pl swipl multilint.pl
+# Start Ciao Prolog interactive shell (with readline support via rlwrap)
+ciao:
+	rlwrap ciaosh
 
-outcomes:
-	cd prolog && swipl -q outcomes.pl
+# Clean Ciao Prolog compilation artifacts (.itf, .po, .asr, .ast files)
+clean:
+	find prolog -name "*.itf" -o -name "*.po" -o -name "*.asr" -o -name "*.ast" | xargs rm -f
 
-test:
-	cd prolog && TYPEWRITER=false swipl -q -t halt run_tests.pl
-
-test-watch:
-	bun scripts/watch-tests.ts
-
-test-narration:
-	cd prolog && swipl -q combat_narration.test.pl > ../logs/combat_narration.test.pl.log
-
-build-swipl:
-	cd prolog && swipl -q build_executable.pl
-
-stats:
-	bun scripts/file-stats.ts combat_narration.pl game.pl outcomes.pl typewriter.pl config.pl
-
-consult-battle:
-	cd prolog && swipl -g '[operators]' -g '[game]'
-
-lint-all:
-    just lint
-    just test
-    MAX_LENGTH=60 bun scripts/check-line-length.ts build_executable.pl
-    MAX_LENGTH=60 bun scripts/check-line-length.ts combat_narration.pl
-    MAX_LENGTH=60 bun scripts/check-line-length.ts combat_narration.test.pl
-    MAX_LENGTH=60 bun scripts/check-line-length.ts config.pl
-    MAX_LENGTH=70 bun scripts/check-line-length.ts game.pl
-    MAX_LENGTH=80 bun scripts/check-line-length.ts lint.pl
-    MAX_LENGTH=60 bun scripts/check-line-length.ts main.pl
-    MAX_LENGTH=60 bun scripts/check-line-length.ts main_wasm.pl
-    MAX_LENGTH=60 bun scripts/check-line-length.ts multilint.pl
-    MAX_LENGTH=132 bun scripts/check-line-length.ts outcomes.pl
-    MAX_LENGTH=60 bun scripts/check-line-length.ts run_tests.pl
-    MAX_LENGTH=60 bun scripts/check-line-length.ts test5.pl
-    MAX_LENGTH=80 bun scripts/check-line-length.ts typewriter.pl
-    MAX_LENGTH=60 bun scripts/check-line-length.ts __tests__/battle.plt
-    MAX_LENGTH=60 bun scripts/check-line-length.ts __tests__/combat_narration.plt
-    MAX_LENGTH=60 bun scripts/check-line-length.ts __tests__/determines_action.plt
-    MAX_LENGTH=60 bun scripts/check-line-length.ts __tests__/do_round.plt
-    MAX_LENGTH=60 bun scripts/check-line-length.ts __tests__/exchange_damage.plt
-    MAX_LENGTH=60 bun scripts/check-line-length.ts __tests__/narrate_outcome.plt
-    MAX_LENGTH=60 bun scripts/check-line-length.ts __tests__/outcome.plt
