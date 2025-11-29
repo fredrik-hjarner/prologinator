@@ -1,0 +1,21 @@
+{
+  "name": "prolog",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/lodash": "^4.17.21",
+    "husky": "^9.1.7"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "scripts": {
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "swipl-wasm": "^5.2.6"
+  }
+}

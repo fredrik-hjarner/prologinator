@@ -1,0 +1,23 @@
+# ============================================================================
+# Ciao Prolog commands
+# ============================================================================
+# NOTE: In Ciao Prolog, load files with:
+#   - use_module('filename.pl') for modules
+#   - ensure_loaded('filename.pl') for non-modules
+#   NOT [filename] like in SWI-Prolog!
+#
+# Test if a Prolog file is compatible with Ciao Prolog
+# Usage: just --justfile justfile.ciao ciao-consult <filename>
+# Example: just --justfile justfile.ciao ciao-consult operators.pl
+ciao-consult file:
+	cd prolog && ciaosh -e "use_module('{{file}}')" -t halt
+
+# Test if the operators actually work in Ciao Prolog
+# This loads the operators module and tests parsing of operator expressions
+ciao-test-operators:
+	cd prolog && ciaosh -e "use_module('operators'), X = atk:hi, Y = (atk:hi & atk:lo), Z = ((atk:hi & atk:hi) vs (atk:lo & atk:lo)), write('Operators work!'), nl, write('X = '), write(X), nl, write('Y = '), write(Y), nl, write('Z = '), write(Z), nl" -t halt
+
+# Start Ciao Prolog interactive shell (with readline support via rlwrap)
+ciao:
+	rlwrap ciaosh
+

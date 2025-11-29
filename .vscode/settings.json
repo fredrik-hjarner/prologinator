@@ -1,0 +1,16 @@
+{
+    // "editor.rulers": [31, 48, 59, 70, 81, 92],
+    "editor.rulers": [60, 80],
+    "editor.guides.indentation": false,
+    
+    // Prolog Extension Configuration
+    "prolog.dialect": "swi",
+    "prolog.executablePath": "/usr/bin/swipl",
+    // "prolog.linter.run": "onSave",
+    "prolog.linter.run": "never",
+    "prolog.linter.delay": 500,
+    "prolog.terminal.runtimeArgs": [],
+    "prolog.format.addSpace": true,
+    // "prolog.linter.enableMsgInOutput": true,
+    "prolog.linter.enableMsgInOutput": false,
+}
