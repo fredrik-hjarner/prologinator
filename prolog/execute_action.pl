@@ -3,7 +3,7 @@
 
 :- module(execute_action, [
     execute_action/4
-], [clpfd, assertions, unittestdecls, modes, regtypes]).
+], [clpfd, assertions, unittestdecls, modes, regtypes, nativeprops]).
 
 :- use_module(library(lists), [append/3, select/3, member/2]).
 :- use_module(library(llists), [append/2]).
@@ -21,10 +21,11 @@
 % Forward execution (normal game)
 :- pred execute_action(+Action, +ObjIn, -ObjOut, -Hints) 
     :: (action(Action), game_object(ObjIn)) 
-    => (action(Action), game_object(ObjOut), list(hint, Hints)).
+    => (action(Action), game_object(ObjOut), list(hint, Hints))
+    + is_det.
 
 % Reverse execution (undo/replay)
-:- pred execute_action(-Action, -ObjIn, +ObjOut, +Hints).
+:- pred execute_action(-Action, -ObjIn, +ObjOut, +Hints) + is_det.
 
 % Action inference - which must the action have been?
 :- pred execute_action(-Action, +ObjIn, +ObjOut, +Hints).
@@ -278,6 +279,7 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
         NewY = 6,
         Hints = []
     )
+    + is_det
     # "move_to: positive direction, multiple frames remaining".
 
 :- test execute_action(Action, ObjIn, ObjOut, Hints) :
