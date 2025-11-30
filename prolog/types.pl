@@ -37,8 +37,9 @@ game_state(game_state(Frame, Objects, Status, Score, NextID, Keyframe, Hints)) :
 
 :- regtype game_object/1 # "Game object structure".
 
-game_object(game_object(ID, attrs(Attrs), Actions, Colls)) :-
+game_object(game_object(ID, Type, attrs(Attrs), Actions, Colls)) :-
     atm(ID),
+    atm(Type),
     list(attr, Attrs),
     list(action, Actions),
     list(collision, Colls).

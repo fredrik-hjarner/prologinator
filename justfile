@@ -12,14 +12,14 @@ default:
 
 # Check if a Prolog file compiles (reports errors/warnings, exits on error)
 # Usage: just check <filename>
-# Example: just check game
+# Example: just check engine
 check file:
 	cd prolog && rm -f {{file}}.po {{file}}.itf && ciaoc -c {{file}}.pl
 	just clean
 
 # Test if a Prolog file is compatible with Ciao Prolog (interactive)
 # Usage: just consult <filename>
-# Example: just consult game
+# Example: just consult engine
 consult file:
 	cd prolog && rlwrap ciaosh -e "use_module('{{file}}')"
 
@@ -32,10 +32,15 @@ consult file:
 ciao:
 	rlwrap ciaosh
 
+# Run the game
+# Usage: just run game
+run game:
+	cd prolog && ciaosh -l game.pl -e "main" -t halt
+
 # Run unit tests
 # Usage: just test [module]
 # Examples:
-#   just test game        # runs game.pl tests
+#   just test engine      # runs engine.pl tests
 #   just test execute_action  # runs execute_action.pl tests
 # Note: Tests are defined using :- test assertions in the source file
 test module:
@@ -95,7 +100,7 @@ clean:
 # Analyze a Prolog file with CiaoPP (uses pd domain - faster than default shfr)
 # NOTE: Default shfr domain TIMEOUTS (>120s), so we use pd instead
 # Usage: just analyze <filename>
-# Example: just analyze game
+# Example: just analyze engine
 analyze file:
 	ciaopp -A prolog/{{file}}.pl -fmodes=pd
 	just clean
@@ -103,7 +108,7 @@ analyze file:
 # Analyze with specific mode domain (e.g., pd, shfr, eterms)
 # WARNING: shfr domain TIMEOUTS (>120s) on this codebase
 # Usage: just analyze-mode <filename> <domain>
-# Example: just analyze-mode game pd
+# Example: just analyze-mode engine pd
 analyze-mode file domain:
 	ciaopp -A prolog/{{file}}.pl -fmodes={{domain}}
 	just clean
@@ -112,7 +117,7 @@ analyze-mode file domain:
 # Uses: pd for modes + eterms for types (CiaoPP runs both by default)
 # Shows a readable summary of verification issues
 # Usage: just verify <filename>
-# Example: just verify game
+# Example: just verify engine
 verify file:
 	timeout 60 bash -c 'ciaopp -V prolog/{{file}}.pl -fmodes=pd -ftypes=eterms 2>&1' | tee /tmp/verify_strict_output.txt > /dev/null
 	@VERIFY_OUTPUT_FILE=/tmp/verify_strict_output.txt bun run scripts/parse_verify_output.ts || EXIT_CODE=$$?; \
@@ -127,15 +132,15 @@ verify file:
 # WARNING: Default shfr domain may timeout on complex files - use -pmodes=pd
 # Available mode domains: pd, pdb, gr, def, share, son, shfr, etc. (see top comment)
 # Usage: just optimize <filename>
-# Example: just optimize game
-# Example with pd domain: ciaopp -O prolog/game.pl -pmodes=pd
+# Example: just optimize engine
+# Example with pd domain: ciaopp -O prolog/engine.pl -pmodes=pd
 optimize file:
 	ciaopp -O prolog/{{file}}.pl -pmodes=pd
 	just clean
 
 # Interactive CiaoPP menu (for advanced configuration)
 # Usage: just ciaopp-interactive <filename>
-# Example: just ciaopp-interactive game
+# Example: just ciaopp-interactive engine
 ciaopp-interactive file:
 	ciaopp -Q prolog/{{file}}.pl
 

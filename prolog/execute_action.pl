@@ -38,8 +38,8 @@
 
 execute_action(
     wait_frames(N),
-    game_object(ID, attrs(Attrs), [_|Rest], Colls),
-    game_object(ID, attrs(Attrs), NewActions, Colls),
+    game_object(ID, Type, attrs(Attrs), [_|Rest], Colls),
+    game_object(ID, Type, attrs(Attrs), NewActions, Colls),
     []
 ) :-
     ( N #> 1 ->
@@ -56,8 +56,8 @@ execute_action(
 
 execute_action(
     move_to(TargetX, TargetY, Frames),
-    game_object(ID, attrs(Attrs), [_|Rest], Colls),
-    game_object(ID, attrs(NewAttrs), NewActions, Colls),
+    game_object(ID, Type, attrs(Attrs), [_|Rest], Colls),
+    game_object(ID, Type, attrs(NewAttrs), NewActions, Colls),
     []
 ) :-
     select(pos(CurrentX, CurrentY), Attrs, RestAttrs),
@@ -82,7 +82,7 @@ execute_action(
 
 execute_action(
     despawn,
-    game_object(ID, attrs(Attrs), _, _Colls),
+    game_object(ID, _Type, attrs(Attrs), _, _Colls),
     despawned,
     [despawned(ID, Attrs)]
 ) :- !.
@@ -93,8 +93,8 @@ execute_action(
 
 execute_action(
     spawn(Type, Pos, Actions),
-    game_object(ID, attrs(Attrs), [_|Rest], Colls),
-    game_object(ID, attrs(Attrs), Rest, Colls),
+    game_object(ID, ObjType, attrs(Attrs), [_|Rest], Colls),
+    game_object(ID, ObjType, attrs(Attrs), Rest, Colls),
     [spawn_request(Type, Pos, Actions)]
 ).
 
@@ -104,8 +104,8 @@ execute_action(
 
 execute_action(
     loop(Actions),
-    game_object(ID, attrs(Attrs), [_|Rest], Colls),
-    game_object(ID, attrs(Attrs), NewActions, Colls),
+    game_object(ID, Type, attrs(Attrs), [_|Rest], Colls),
+    game_object(ID, Type, attrs(Attrs), NewActions, Colls),
     []
 ) :-
     append(Actions, [loop(Actions)], Expanded),
@@ -117,8 +117,8 @@ execute_action(
 
 execute_action(
     trigger_state_change(Change),
-    game_object(ID, attrs(Attrs), [_|Rest], Colls),
-    game_object(ID, attrs(Attrs), Rest, Colls),
+    game_object(ID, Type, attrs(Attrs), [_|Rest], Colls),
+    game_object(ID, Type, attrs(Attrs), Rest, Colls),
     [state_change(Change)]
 ).
 
@@ -128,21 +128,21 @@ execute_action(
 
 execute_action(
     parallel(ChildActions),
-    game_object(ID, attrs(AttrsIn), [_|Rest], Colls),
+    game_object(ID, Type, attrs(AttrsIn), [_|Rest], Colls),
     Result,
     AllHints
 ) :-
     tick_parallel_children(
-        ChildActions, ID, AttrsIn, Colls,
+        ChildActions, ID, Type, AttrsIn, Colls,
         AttrsOut, UpdatedChildren, AllHints
     ),
     ( member(caused_despawn, UpdatedChildren) ->
         Result = despawned
     ; all_children_done(UpdatedChildren) ->
-        Result = game_object(ID, attrs(AttrsOut), Rest, Colls)
+        Result = game_object(ID, Type, attrs(AttrsOut), Rest, Colls)
     ;
         NewActions = [parallel_running(UpdatedChildren)|Rest],
-        Result = game_object(ID, attrs(AttrsOut), NewActions, Colls)
+        Result = game_object(ID, Type, attrs(AttrsOut), NewActions, Colls)
     ).
 
 % ----------------------------------------------------------------------------
@@ -159,25 +159,25 @@ execute_action(
 % tick_parallel_children/7
 % ============================================================================
 
-:- pred tick_parallel_children(?Children, ?ID, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChildren, ?AllHints).
+:- pred tick_parallel_children(?Children, ?ID, ?Type, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChildren, ?AllHints).
 
 tick_parallel_children(
-    [], _ID, Attrs, _Colls,
+    [], _ID, _Type, Attrs, _Colls,
     Attrs, [], []
 ).
 
 tick_parallel_children(
     [Child|RestChildren],
-    ID, AttrsIn, Colls,
+    ID, Type, AttrsIn, Colls,
     AttrsOut, [UpdatedChild|RestUpdated],
     AllHints
 ) :-
     tick_one_child(
-        Child, ID, AttrsIn, Colls,
+        Child, ID, Type, AttrsIn, Colls,
         Attrs1, UpdatedChild, Hints1
     ),
     tick_parallel_children(
-        RestChildren, ID, Attrs1, Colls,
+        RestChildren, ID, Type, Attrs1, Colls,
         AttrsOut, RestUpdated, Hints2
     ),
     append(Hints1, Hints2, AllHints).
@@ -186,19 +186,19 @@ tick_parallel_children(
 % tick_one_child/7
 % ============================================================================
 
-:- pred tick_one_child(?Child, ?ID, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChild, ?Hints).
+:- pred tick_one_child(?Child, ?ID, ?Type, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChild, ?Hints).
 
-tick_one_child(done, _, A, _, A, done, []) :- !.
+tick_one_child(done, _, _, A, _, A, done, []) :- !.
 
 tick_one_child(
     caused_despawn,
-    _, A, _, A, caused_despawn, []
+    _, _, A, _, A, caused_despawn, []
 ) :- !.
 
-tick_one_child(Child, ID, AIn, C, AOut, U, H) :-
+tick_one_child(Child, ID, Type, AIn, C, AOut, U, H) :-
     execute_action(
         Child,
-        game_object(ID, attrs(AIn), [Child], C),
+        game_object(ID, Type, attrs(AIn), [Child], C),
         Result,
         H
     ),
@@ -206,7 +206,7 @@ tick_one_child(Child, ID, AIn, C, AOut, U, H) :-
         U = caused_despawn,
         AOut = AIn
     ;
-        Result = game_object(_, attrs(AOut), NewActs, _),
+        Result = game_object(_, _, attrs(AOut), NewActs, _),
         ( NewActs = [] -> U = done ; [U|_] = NewActs )
     ).
 
@@ -257,6 +257,7 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
         Action = move_to(10, 20, 3),
         ObjIn = game_object(
             id1,
+            static,
             attrs([pos(0, 0)]),
             [move_to(10, 20, 3)],
             []
@@ -264,6 +265,7 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
     ) => (
         ObjOut = game_object(
             id1,
+            static,
             attrs([pos(NewX, NewY)|_]),
             [move_to(10, 20, 2)|_],
             []
@@ -276,33 +278,33 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
 
 :- test execute_action(Action, ObjIn, ObjOut, Hints) :
     (Action = move_to(0, 0, 3),
-     ObjIn = game_object(id1, attrs([pos(10, 20)]), [move_to(0, 0, 3)], []))
-    => (ObjOut = game_object(id1, attrs([pos(NewX, NewY)|_]), [move_to(0, 0, 2)|_], []),
+     ObjIn = game_object(id1, static, attrs([pos(10, 20)]), [move_to(0, 0, 3)], []))
+    => (ObjOut = game_object(id1, static, attrs([pos(NewX, NewY)|_]), [move_to(0, 0, 2)|_], []),
         NewX = 7, NewY = 14,
         Hints = [])
     # "move_to: negative direction, multiple frames remaining".
 
 :- test execute_action(Action, ObjIn, ObjOut, Hints) :
     (Action = move_to(5, 5, 1),
-     ObjIn = game_object(id1, attrs([pos(0, 0)]), [move_to(5, 5, 1)], []))
-    => (ObjOut = game_object(id1, attrs([pos(5, 5)|_]), [], []),
+     ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(5, 5, 1)], []))
+    => (ObjOut = game_object(id1, static, attrs([pos(5, 5)|_]), [], []),
         Hints = [])
     # "move_to: single frame, arrives at target".
 
 :- test execute_action(Action, ObjIn, ObjOut, Hints) : (
         Action = move_to(10, 20, 3),
-        ObjIn = game_object(id1, attrs([pos(10, 20)]), [move_to(10, 20, 3)], [])
+        ObjIn = game_object(id1, static, attrs([pos(10, 20)]), [move_to(10, 20, 3)], [])
     ) => (
-        ObjOut = game_object(id1, attrs([pos(10, 20)|_]), [move_to(10, 20, 2)|_], []),
+        ObjOut = game_object(id1, static, attrs([pos(10, 20)|_]), [move_to(10, 20, 2)|_], []),
         Hints = []
     )
     # "move_to: already at target, stays at position and continues with remaining frames".
 
 :- test execute_action(Action, ObjIn, ObjOut, Hints) : (
         Action = move_to(-5, -10, 2),
-        ObjIn = game_object(id1, attrs([pos(0, 0)]), [move_to(-5, -10, 2)], [])
+        ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(-5, -10, 2)], [])
     ) => (
-        ObjOut = game_object(id1, attrs([pos(NewX, NewY)|_]), [move_to(-5, -10, 1)|_], []),
+        ObjOut = game_object(id1, static, attrs([pos(NewX, NewY)|_]), [move_to(-5, -10, 1)|_], []),
         NewX = -2, NewY = -5,
         Hints = []
     )
@@ -310,8 +312,8 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
 
 :- test execute_action(Action, ObjIn, ObjOut, Hints) :
     (Action = move_to(TargetX, TargetY, 1),
-     ObjIn = game_object(id1, attrs([pos(0, 0)]), [move_to(TargetX, TargetY, 1)], []),
-     ObjOut = game_object(id1, attrs([pos(5, 5)|_]), [], []),
+     ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(TargetX, TargetY, 1)], []),
+     ObjOut = game_object(id1, static, attrs([pos(5, 5)|_]), [], []),
      Hints = [])
     => (TargetX = 5, TargetY = 5)
     + try_sols(1)
