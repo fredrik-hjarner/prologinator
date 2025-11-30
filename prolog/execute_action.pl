@@ -375,3 +375,35 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
     + try_sols(1)
     # "loop: backward test - can infer looped actions from final action list".
 
+% ----------------------------------------------------------------------------
+% Tests: despawn
+% ----------------------------------------------------------------------------
+
+:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+    (Action = despawn,
+     ObjIn = game_object(ID, static, attrs(Attrs), [], []),
+     ObjOut = despawned,
+     Hints = [despawned(id1, [pos(10, 20)])])
+    => (ID = id1, Attrs = [pos(10, 20)])
+    + try_sols(1)
+    # "despawn: backward test - can infer ID and attributes from despawned hint".
+
+% ----------------------------------------------------------------------------
+% Tests: parallel
+% ----------------------------------------------------------------------------
+
+:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+    (Action = parallel([wait_frames(N1), wait_frames(N2)]),
+     ObjIn = game_object(id1, static, attrs([]), [parallel([wait_frames(N1), wait_frames(N2)])], []),
+     ObjOut = game_object(
+        id1,
+        static,
+        attrs([]),
+        [parallel_running([wait_frames(2), wait_frames(3)])],
+        []
+    ),
+     Hints = [])
+    => (N1 = 3, N2 = 4)
+    + try_sols(1)
+    # "parallel: backward test - can infer original wait_frames values from parallel_running state".
+
