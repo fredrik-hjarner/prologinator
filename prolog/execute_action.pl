@@ -253,6 +253,10 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
 % Tests
 % ============================================================================
 
+% ----------------------------------------------------------------------------
+% Tests: move_to
+% ----------------------------------------------------------------------------
+
 :- test execute_action(Action, ObjIn, ObjOut, Hints) : (
         Action = move_to(10, 20, 3),
         ObjIn = game_object(
@@ -318,4 +322,56 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
     => (TargetX = 5, TargetY = 5)
     + try_sols(1)
     # "move_to: backward test - can infer target coordinates from final position".
+
+% ----------------------------------------------------------------------------
+% Tests: wait_frames
+% ----------------------------------------------------------------------------
+
+:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+    (Action = wait_frames(N),
+     ObjIn = game_object(id1, static, attrs([]), [wait_frames(N)], []),
+     ObjOut = game_object(id1, static, attrs([]), [wait_frames(2)], []),
+     Hints = [])
+    => (N = 3)
+    + try_sols(1)
+    # "wait_frames: backward test - can infer initial frame count from remaining frames".
+
+% ----------------------------------------------------------------------------
+% Tests: spawn
+% ----------------------------------------------------------------------------
+
+:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+    (Action = spawn(Type, Pos, Actions),
+     ObjIn = game_object(id1, static, attrs([]), [spawn(Type, Pos, Actions)], []),
+     ObjOut = game_object(id1, static, attrs([]), [], []),
+     Hints = [spawn_request(enemy, pos(10, 5), [move_to(0, 0, 10)])])
+    => (Type = enemy, Pos = pos(10, 5), Actions = [move_to(0, 0, 10)])
+    + try_sols(1)
+    # "spawn: backward test - can infer spawn parameters from spawn_request hint".
+
+% ----------------------------------------------------------------------------
+% Tests: trigger_state_change
+% ----------------------------------------------------------------------------
+
+:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+    (Action = trigger_state_change(Change),
+     ObjIn = game_object(id1, static, attrs([]), [trigger_state_change(Change)], []),
+     ObjOut = game_object(id1, static, attrs([]), [], []),
+     Hints = [state_change(score(10))])
+    => (Change = score(10))
+    + try_sols(1)
+    # "trigger_state_change: backward test - can infer change from state_change hint".
+
+% ----------------------------------------------------------------------------
+% Tests: loop
+% ----------------------------------------------------------------------------
+
+:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+    (Action = loop(Actions),
+     ObjIn = game_object(id1, static, attrs([]), [loop(Actions)], []),
+     ObjOut = game_object(id1, static, attrs([]), [move_to(5, 5, 1), loop([move_to(5, 5, 1)])], []),
+     Hints = [])
+    => (Actions = [move_to(5, 5, 1)])
+    + try_sols(1)
+    # "loop: backward test - can infer looped actions from final action list".
 
