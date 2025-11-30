@@ -1,1 +1,5 @@
-just lint-all
+set -e
+
+just check game
+just test
+just verify game

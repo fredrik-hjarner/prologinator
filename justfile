@@ -6,11 +6,16 @@
 #   - ensure_loaded('filename.pl') for non-modules
 #   NOT [filename] like in SWI-Prolog!
 #
+# Default: List all available commands
+default:
+	@just --list
+
 # Check if a Prolog file compiles (reports errors/warnings, exits on error)
 # Usage: just check <filename>
 # Example: just check game
 check file:
 	cd prolog && rm -f {{file}}.po {{file}}.itf && ciaoc -c {{file}}.pl
+	just clean
 
 # Test if a Prolog file is compatible with Ciao Prolog (interactive)
 # Usage: just consult <filename>
@@ -28,33 +33,63 @@ ciao:
 	rlwrap ciaosh
 
 # Run unit tests
-# Usage: just test
-# Example: just test
+# Usage: just test [module]
+# Examples:
+#   just test game        # runs game.pl tests
+#   just test execute_action  # runs execute_action.pl tests
 # Note: Tests are defined using :- test assertions in the source file
-test:
+test module:
 	cd prolog && \
 		rm -f run_tests.po run_tests.itf && \
-		ciaosh -u run_tests.pl -t halt 2>&1 | tee /tmp/test_output.txt && \
-		(grep -q "Passed:.*100.00%" /tmp/test_output.txt && echo "✅ All tests passed" && exit 0) || \
-		(echo "❌ Tests failed" && exit 1)
+		timeout 10 bash -c 'TEST_MODULE="{{module}}" ciaosh -u run_tests.pl -t halt 2>&1 | tee /tmp/test_output.txt' && \
+		(grep -q "Passed:.*100.00%" /tmp/test_output.txt && echo "✅ All tests passed" && just clean && exit 0) || \
+		(echo "❌ Tests failed" && just clean && exit 1)
 
-# Clean Ciao Prolog compilation artifacts (.itf, .po, .asr, .ast files)
+# Clean Ciao Prolog compilation artifacts and CiaoPP generated files
+# Removes: .itf, .po, .asr, .ast, *_co.pl, *_pd_*.pl, *_eterms_*.pl, *_codegen_*.pl, .testin, .testout, run_tests
+# Usage: just clean
 clean:
-	find prolog -name "*.itf" -o -name "*.po" -o -name "*.asr" -o -name "*.ast" | xargs rm -f
+	@find prolog -name "*.itf" -o -name "*.po" -o -name "*.asr" -o -name "*.ast" | xargs rm -f 2>/dev/null || true
+	@find prolog -name "*_co.pl" -o -name "*_pd_*.pl" -o -name "*_eterms_*.pl" -o -name "*_codegen_*.pl" | xargs rm -f 2>/dev/null || true
+	@find prolog -name "*.testin" -o -name "*.testout" -o -name "*.testout-saved" -o -name "*.testin-saved" | xargs rm -f 2>/dev/null || true
+	@find prolog -name "run_tests" -type f | xargs rm -f 2>/dev/null || true
+	@find prolog -name "*_co.pl" -type l | xargs rm -f 2>/dev/null || true
 
 # ============================================================================
 # CiaoPP static analysis commands
 # ============================================================================
-# Available mode domains (for -fmodes flag):
-#   Fast domains: pd, pdb, gr, def, eterms, ptypes
-#   Medium domains: share, son, shareson, sharefree
-#   Slow/TIMEOUT domains: shfr (default - TIMEOUTS >120s), shfrson, shfrnv,
-#                         sharing_amgu, sharing_clique, sharefree_amgu, etc.
-# NOTE: Some analysis domains can be very slow or timeout:
-#   - shfr (default): TIMEOUTS on complex files (>120s) - DO NOT USE
-#   - pd: Fast, recommended for most cases (~7ms)
-#   - eterms: Fast for type analysis (~56ms)
-#   - gr, share, etc.: May be slow on complex code
+# 
+# MODE DOMAINS (for -fmodes flag):
+#   Mode analysis checks variable instantiation (bound/unbound, ground, etc.)
+#   
+#   Fast domains:
+#     - pd: Pair sharing (fast, ~7ms) - RECOMMENDED for most cases
+#     - pdb: Pair sharing with backward analysis
+#     - gr: Groundness analysis
+#     - def: Definiteness analysis
+#   
+#   Medium domains:
+#     - share: Sharing analysis
+#     - son: Sharing or not analysis
+#     - shareson: Sharing or not combined
+#     - sharefree: Sharing and freeness
+#   
+#   Slow/TIMEOUT domains:
+#     - shfr: Sharing + freeness (default, TIMEOUTS >120s) - DO NOT USE
+#     - shfrson, shfrnv, sharing_amgu, sharing_clique, sharefree_amgu, etc.
+#
+# TYPE DOMAINS (for -ftypes flag):
+#   Type analysis checks term types (list, integer, etc.)
+#
+#   Available domains:
+#     - eterms: Regular types with widening (DEFAULT, fast ~56ms) - RECOMMENDED
+#     - ptypes: Predefined types only
+#     - deftypes: Defined types
+#     - none: No type analysis
+#
+# NOTE: CiaoPP automatically runs type analysis (eterms) by default when you
+#       specify -fmodes. You don't need to explicitly add -ftypes=eterms unless
+#       you want to use a different type domain.
 
 # Analyze a Prolog file with CiaoPP (uses pd domain - faster than default shfr)
 # NOTE: Default shfr domain TIMEOUTS (>120s), so we use pd instead
@@ -62,6 +97,7 @@ clean:
 # Example: just analyze game
 analyze file:
 	ciaopp -A prolog/{{file}}.pl -fmodes=pd
+	just clean
 
 # Analyze with specific mode domain (e.g., pd, shfr, eterms)
 # WARNING: shfr domain TIMEOUTS (>120s) on this codebase
@@ -69,13 +105,21 @@ analyze file:
 # Example: just analyze-mode game pd
 analyze-mode file domain:
 	ciaopp -A prolog/{{file}}.pl -fmodes={{domain}}
+	just clean
 
-# Verify assertions in a Prolog file (uses pd domain - faster than default shfr)
-# NOTE: Default shfr domain TIMEOUTS (>120s), so we use pd instead
+# Verify assertions in a Prolog file
+# Uses: pd for modes + eterms for types (CiaoPP runs both by default)
+# Shows a readable summary of verification issues
 # Usage: just verify <filename>
 # Example: just verify game
 verify file:
-	ciaopp -V prolog/{{file}}.pl -fmodes=pd
+	timeout 60 bash -c 'ciaopp -V prolog/{{file}}.pl -fmodes=pd -ftypes=eterms 2>&1' | tee /tmp/verify_strict_output.txt > /dev/null
+	@VERIFY_OUTPUT_FILE=/tmp/verify_strict_output.txt bun run scripts/parse_verify_output.ts || EXIT_CODE=$$?; \
+	if [ "$$EXIT_CODE" = "1" ]; then \
+		just clean; \
+		exit 1; \
+	fi
+	@just clean
 
 # Optimize a Prolog file (specialization, etc.)
 # NOTE: Use -pmodes=pd (internal flag) to change domain, NOT -fmodes
@@ -86,6 +130,7 @@ verify file:
 # Example with pd domain: ciaopp -O prolog/game.pl -pmodes=pd
 optimize file:
 	ciaopp -O prolog/{{file}}.pl -pmodes=pd
+	just clean
 
 # Interactive CiaoPP menu (for advanced configuration)
 # Usage: just ciaopp-interactive <filename>

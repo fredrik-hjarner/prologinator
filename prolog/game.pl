@@ -3,10 +3,9 @@
 
 :- module(game, [
     tick/2,
-    execute_action/4,
     tick_object/3,
     yields/1
-], [clpfd, assertions, unittestdecls, isomodes]).
+], [clpfd, assertions, unittestdecls, modes]).
 
 :- use_module(library(lists), [append/3, select/3, member/2]).
 :- use_module(library(llists), [append/2]).
@@ -16,6 +15,7 @@
 :- use_module(engine(atomic_basic), [atom_number/2]).
 :- use_module('./third_party/exclude', [exclude/3]).
 :- use_module('./third_party/list_to_set', [list_to_set/2]).
+:- use_module('./execute_action', [execute_action/4]).
 
 % ============================================================================
 % State Structure (from Addendum 3 - FINAL version)
@@ -39,168 +39,6 @@
 %   actions([...]),
 %   collisions([...])
 % )
-
-% ============================================================================
-% Basic Actions: wait_frames
-% ============================================================================
-execute_action(
-    wait_frames(N),
-    game_object(ID, Attrs, [_|Rest], Colls),
-    game_object(ID, Attrs, NewActions, Colls),
-    []
-) :-
-    ( N #> 1 ->
-        N1 #= N - 1,
-        NewActions = [wait_frames(N1)|Rest]
-    ;
-        % N = 1, wait is done
-        NewActions = Rest
-    ).
-
-% ============================================================================
-% Basic Actions: move_to
-% ============================================================================
-execute_action(
-    move_to(TargetX, TargetY, Frames),
-    game_object(ID, Attrs, [_|Rest], Colls),
-    game_object(ID, NewAttrs, NewActions, Colls),
-    []
-) :-
-    select(pos(CurrentX, CurrentY), Attrs, RestAttrs),
-    
-    % Compute step
-    DX #= (TargetX - CurrentX) // Frames,
-    DY #= (TargetY - CurrentY) // Frames,
-    
-    NewX #= CurrentX + DX,
-    NewY #= CurrentY + DY,
-    
-    NewAttrs = [pos(NewX, NewY)|RestAttrs],
-    
-    ( Frames #> 1 ->
-        Frames1 #= Frames - 1,
-        NewActions = [move_to(TargetX, TargetY, Frames1)|Rest]
-    ;
-        NewActions = Rest  % Arrived
-    ).
-
-% ============================================================================
-% Basic Actions: despawn
-% ============================================================================
-execute_action(
-    despawn,
-    game_object(ID, Attrs, _, Colls),
-    despawned,
-    [despawned(ID, Attrs)]
-) :- !.
-
-% ============================================================================
-% Compound Actions: spawn (from Addendum 3 - FINAL version)
-% ============================================================================
-execute_action(
-    spawn(Type, Pos, Actions),
-    game_object(ID, Attrs, [_|Rest], Colls),
-    game_object(ID, Attrs, Rest, Colls),
-    [spawn_request(Type, Pos, Actions)]
-).
-
-% ============================================================================
-% Compound Actions: loop
-% ============================================================================
-execute_action(
-    loop(Actions),
-    game_object(ID, Attrs, [_|Rest], Colls),
-    game_object(ID, Attrs, NewActions, Colls),
-    []
-) :-
-    append(Actions, [loop(Actions)], Expanded),
-    append(Expanded, Rest, NewActions).
-
-% ============================================================================
-% Compound Actions: trigger_state_change
-% ============================================================================
-execute_action(
-    trigger_state_change(Change),
-    game_object(ID, Attrs, [_|Rest], Colls),
-    game_object(ID, Attrs, Rest, Colls),
-    [state_change(Change)]
-).
-
-% ============================================================================
-% Compound Actions: parallel (from Addendum 2 + 3 - FINAL version)
-% ============================================================================
-execute_action(
-    parallel(ChildActions),
-    game_object(ID, AttrsIn, [_|Rest], Colls),
-    Result,
-    AllHints
-) :-
-    tick_parallel_children(
-        ChildActions, ID, AttrsIn, Colls,
-        AttrsOut, UpdatedChildren, AllHints
-    ),
-    ( member(caused_despawn, UpdatedChildren) ->
-        Result = despawned
-    ; all_children_done(UpdatedChildren) ->
-        Result = game_object(ID, AttrsOut, Rest, Colls)
-    ;
-        NewActions = [parallel_running(UpdatedChildren)|Rest],
-        Result = game_object(ID, AttrsOut, NewActions, Colls)
-    ).
-
-execute_action(
-    parallel_running(Children),
-    Obj, NewObj, Hints
-) :-
-    execute_action(parallel(Children), Obj, NewObj, Hints).
-
-tick_parallel_children(
-    [], _ID, Attrs, _Colls,
-    Attrs, [], []
-).
-tick_parallel_children(
-    [Child|RestChildren],
-    ID, AttrsIn, Colls,
-    AttrsOut, [UpdatedChild|RestUpdated],
-    AllHints
-) :-
-    tick_one_child(
-        Child, ID, AttrsIn, Colls,
-        Attrs1, UpdatedChild, Hints1
-    ),
-    tick_parallel_children(
-        RestChildren, ID, Attrs1, Colls,
-        AttrsOut, RestUpdated, Hints2
-    ),
-    append(Hints1, Hints2, AllHints).
-
-tick_one_child(done, _, A, _, A, done, []) :- !.
-
-tick_one_child(
-    caused_despawn,
-    _, A, _, A, caused_despawn, []
-) :- !.
-
-tick_one_child(Child, ID, AIn, C, AOut, U, H) :-
-    execute_action(
-        Child,
-        game_object(ID, AIn, [Child], C),
-        Result,
-        H
-    ),
-    ( Result = despawned ->
-        U = caused_despawn,
-        AOut = AIn
-    ;
-        Result = game_object(_, AOut, NewActs, _),
-        ( NewActs = [] -> U = done ; [U|_] = NewActs )
-    ).
-
-all_children_done([]).
-all_children_done([done|R]) :-
-    all_children_done(R).
-all_children_done([caused_despawn|_]) :-
-    !, fail.
 
 % ============================================================================
 % Yielding Actions (from Addendum 1 + 3)
