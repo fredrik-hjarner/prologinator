@@ -14,13 +14,50 @@
 % Main Game Loop
 % ============================================================================
 main :-
-    % Initial game state: one tower at position (5, 5)
+    % Initial game state:
+    % - Multiple towers at the bottom row that shoot projectiles periodically
+    % - A spawner that creates enemies every 5 frames
     InitialState = game_state(
         0,
-        [game_object(tower_0, tower, attrs([pos(5, 5)]), [], [])],
+        [
+            % Towers at bottom row (y=19)
+            game_object(tower_0, tower, attrs([pos(5, 19)]), [
+                loop([
+                    wait_frames(3),
+                    spawn(proj, pos(5, 19), [
+                        move_to(5, 0, 20)
+                    ])
+                ])
+            ], []),
+            game_object(tower_1, tower, attrs([pos(10, 19)]), [
+                loop([
+                    wait_frames(3),
+                    spawn(proj, pos(10, 19), [
+                        move_to(10, 0, 20)
+                    ])
+                ])
+            ], []),
+            game_object(tower_2, tower, attrs([pos(15, 19)]), [
+                loop([
+                    wait_frames(3),
+                    spawn(proj, pos(15, 19), [
+                        move_to(15, 0, 20)
+                    ])
+                ])
+            ], []),
+            % Enemy spawner
+            game_object(spawner_0, static, attrs([]), [
+                loop([
+                    wait_frames(5),
+                    spawn(enemy, pos(0, 10), [
+                        move_to(19, 10, 30)
+                    ])
+                ])
+            ], [])
+        ],
         playing,
         0,
-        1,
+        4,
         keyframe(0, []),
         []
     ),
@@ -31,7 +68,7 @@ game_loop(State) :-
     ( Status = playing ->
         render(State),
         tick(State, NewState),
-        pause(2),
+        pause(1),
         game_loop(NewState)
     ;
         render(State),
@@ -57,9 +94,9 @@ render(State) :-
     nl.
 
 render_grid(Objects) :-
-    % Grid is 10x10, positions 0-9
-    between(0, 9, Y),
-    between(0, 9, X),
+    % Grid is 20x20, positions 0-19
+    between(0, 19, Y),
+    between(0, 19, X),
     ( member(game_object(_, _, attrs(Attrs), _, _), Objects),
       member(pos(X, Y), Attrs) ->
         get_symbol(Objects, X, Y, Symbol)
@@ -67,7 +104,7 @@ render_grid(Objects) :-
         Symbol = '.'
     ),
     write(Symbol),
-    ( X = 9 -> nl ; write(' ') ),
+    ( X = 19 -> nl ; write(' ') ),
     fail.
 render_grid(_).
 
