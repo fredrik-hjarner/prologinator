@@ -5,7 +5,7 @@
     tick/2,
     tick_object/3,
     yields/1
-], [clpfd, assertions, unittestdecls, modes]).
+], [clpfd, assertions, unittestdecls, modes, regtypes]).
 
 :- use_module(library(lists), [append/3, select/3, member/2]).
 :- use_module(library(llists), [append/2]).
@@ -16,6 +16,17 @@
 :- use_module('./third_party/exclude', [exclude/3]).
 :- use_module('./third_party/list_to_set', [list_to_set/2]).
 :- use_module('./execute_action', [execute_action/4]).
+:- use_module('./types', [
+    game_state/1,
+    game_object/1,
+    game_status/1,
+    keyframe/1,
+    hint/1,
+    action/1,
+    pos/1,
+    attr/1,
+    collision/1
+]).
 
 % ============================================================================
 % State Structure (from Addendum 3 - FINAL version)
@@ -71,18 +82,15 @@ yields(parallel_running(_)).
     # "yields/1 can generate yielding actions bidirectionally".
 
 % ============================================================================
-% Execution Model: execute_until_yield (from Addendum 1)
+% Execution Model: tick_object (from Addendum 1)
 % ============================================================================
-tick_object(Obj, NewObj, Hints) :-
-    execute_until_yield(Obj, NewObj, Hints).
-
-execute_until_yield(
-    game_object(ID, Attrs, [], Colls),
-    game_object(ID, Attrs, [], Colls),
+tick_object(
+    game_object(ID, attrs(Attrs), [], Colls),
+    game_object(ID, attrs(Attrs), [], Colls),
     []
 ) :- !.
 
-execute_until_yield(ObjIn, ObjOut, AllHints) :-
+tick_object(ObjIn, ObjOut, AllHints) :-
     ObjIn = game_object(_ID, _A, [Act|_Rest], _C),
     execute_action(Act, ObjIn, ObjTemp, H1),
     ( ObjTemp = despawned ->
@@ -92,9 +100,151 @@ execute_until_yield(ObjIn, ObjOut, AllHints) :-
         ObjOut = ObjTemp,
         AllHints = H1
     ;
-        execute_until_yield(ObjTemp, ObjOut, H2),
+        tick_object(ObjTemp, ObjOut, H2),
         append(H1, H2, AllHints)
     ).
+
+% ============================================================================
+% Tests for tick_object
+% ============================================================================
+
+:- test tick_object(ObjIn, ObjOut, Hints) : (
+        ObjIn = game_object(
+            id1,
+            attrs([pos(0, 0)]),
+            [],
+            []
+        )
+    ) => (
+        ObjOut = game_object(id1, attrs([pos(0, 0)]), [], []),
+        Hints = []
+    )
+    # "tick_object: empty action list returns unchanged object".
+
+:- test tick_object(ObjIn, ObjOut, Hints) : (
+        ObjIn = game_object(
+            id1,
+            attrs([pos(0, 0)]),
+            [wait_frames(5)],
+            []
+        )
+    ) => (
+        ObjOut = game_object(id1, attrs([pos(0, 0)]), [wait_frames(4)], []),
+        Hints = []
+    )
+    # "tick_object: yielding action (wait_frames) stops after one execution".
+
+:- test tick_object(ObjIn, ObjOut, Hints) : (
+        ObjIn = game_object(
+            id1,
+            attrs([pos(0, 0)]),
+            [wait_frames(0)],
+            []
+        )
+    ) => (
+        ObjOut = game_object(id1, attrs([pos(0, 0)]), [], []),
+        Hints = []
+    )
+    # "tick_object: wait_frames(0) is removed and execution continues until empty".
+
+% ============================================================================
+% Tests for tick
+% ============================================================================
+
+:- test tick(StateIn, StateOut) : (
+        StateIn = game_state(
+            0,
+            [game_object(id1, attrs([pos(0, 0)]), [], [])],
+            playing,
+            0,
+            1,
+            keyframe(0, []),
+            []
+        )
+    ) => (
+        StateOut = game_state(
+            1,
+            [game_object(id1, attrs([pos(0, 0)]), [], [])],
+            playing,
+            0,
+            1,
+            _,
+            []
+        )
+    )
+    # "tick: increments frame and processes empty game state".
+
+:- test tick(StateIn, StateOut) : (
+        StateIn = game_state(
+            0,
+            [game_object(id1, attrs([pos(0, 0)]), [wait_frames(3)], [])],
+            playing,
+            0,
+            1,
+            keyframe(0, []),
+            []
+        )
+    ) => (
+        StateOut = game_state(
+            1,
+            [game_object(id1, attrs([pos(0, 0)]), [wait_frames(2)], [])],
+            playing,
+            0,
+            1,
+            _,
+            []
+        )
+    )
+    # "tick: processes object with yielding action (wait_frames)".
+
+:- test tick(StateIn, StateOut) : (
+        StateIn = game_state(
+            0,
+            [game_object(id1, attrs([pos(0, 0)]), [spawn(enemy, pos(5, 5), [])], [])],
+            playing,
+            0,
+            1,
+            keyframe(0, []),
+            []
+        )
+    ) => (
+        StateOut = game_state(
+            1,
+            FinalObjs,
+            playing,
+            0,
+            2,
+            _,
+            []
+        ),
+        member(game_object(id1, attrs([pos(0, 0)]), [], []), FinalObjs),
+        member(game_object(_NewID, attrs([pos(5, 5)]), [], []), FinalObjs)
+    )
+    # "tick: processes spawn request and creates new object".
+
+:- test tick(StateIn, StateOut) : (
+        StateIn = game_state(
+            0,
+            [game_object(id1, attrs([pos(0, 0)]), [trigger_state_change(score(10))], [])],
+            playing,
+            0,
+            1,
+            keyframe(0, []),
+            []
+        )
+    ) => (
+        StateOut = game_state(
+            1,
+            [game_object(id1, attrs([pos(0, 0)]), [], [])],
+            playing,
+            NewScore,
+            1,
+            _,
+            []
+        ),
+        NewScore = 10
+    )
+    # "tick: processes state change (score increase)".
 
 % ============================================================================
 % Main Tick Function (from Addendum 3 - FINAL version)
@@ -210,6 +360,9 @@ apply_state_changes([_|Rest], Status, Score, FinalStatus, FinalScore) :-
 % ============================================================================
 % Collision Detection (simplified - grid-based)
 % ============================================================================
+% Note: CiaoPP cannot verify the findall call, but the code is correct
+% :- trust pred detect_collisions(+list(game_object), -list(game_object), -list(hint)).
+
 detect_collisions(Objects, NewObjects, Hints) :-
     findall(
         collision(ID1, ID2),
@@ -232,8 +385,8 @@ handle_collisions(Objects, Collisions, NewObjects, Hints) :-
         (ProjID, EnemyID),
         (
             member(collision(ID1, ID2), Collisions),
-            ((is_proj(ID1), is_enemy(ID2), ProjID=ID1, EnemyID=ID2) ;
-             (is_enemy(ID1), is_proj(ID2), ProjID=ID2, EnemyID=ID1))
+            ((is_projectile(ID1), is_enemy(ID2), ProjID=ID1, EnemyID=ID2) ;
+             (is_enemy(ID1), is_projectile(ID2), ProjID=ID2, EnemyID=ID1))
         ),
         ToRemove
     ),
@@ -243,7 +396,7 @@ handle_collisions(Objects, Collisions, NewObjects, Hints) :-
     list_to_set(AllIDs, UniqueIDs),
     remove_with_hints(Objects, UniqueIDs, NewObjects, Hints).
 
-is_proj(ID) :- atom_concat(proj, _, ID).
+is_projectile(ID) :- atom_concat(proj, _, ID).
 is_enemy(ID) :- atom_concat(enemy, _, ID).
 
 remove_with_hints([], _, [], []).

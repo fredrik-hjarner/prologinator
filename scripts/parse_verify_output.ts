@@ -17,17 +17,27 @@ interface Warning {
 
 const warnings: Warning[] = [];
 const errors: string[] = [];
+const textLines = text.split('\n');
 
-// Extract errors
-const errorRegex = /ERROR[^:]*:.*/g;
-const errorMatches = text.match(errorRegex);
-if (errorMatches) {
-  errors.push(...errorMatches);
+// Check if there are any errors - if so, just show everything
+const hasErrors = text.includes('ERROR') && (
+  text.includes('false assertion') || 
+  text.includes('INTERNAL ERROR') ||
+  text.match(/ERROR[^:]*:/)
+);
+
+if (hasErrors) {
+  // Just dump everything - no filtering
+  for (const line of textLines) {
+    if (line.trim()) {
+      errors.push(line);
+    }
+  }
 }
 
-// Extract warnings with context - track current file as we parse
+// Extract warnings with context - track current file as we parse (always do this)
 let currentFile = 'unknown';
-const lines = text.split('\n');
+const lines = textLines;
 
 for (let i = 0; i < lines.length; i++) {
   const line = lines[i];
@@ -91,9 +101,36 @@ for (const w of warnings) {
 console.log('=== Verification Summary ===\n');
 
 if (errors.length > 0) {
-  console.log('❌ ERRORS found:');
-  errors.slice(0, 10).forEach(e => console.log(`  ${e}`));
+  console.log('❌ ERRORS found:\n');
+  errors.forEach(e => console.log(e));
   console.log('\n❌ Verification found ERRORS');
+  console.log('   (Full details in ' + outputFile + ')');
+  
+  // Still show formatted warnings if they exist
+  if (uniqueWarnings.size > 0) {
+    console.log('\n⚠️  WARNINGS - Unverifiable assertions:\n');
+    const sortedWarnings = Array.from(uniqueWarnings.values())
+      .sort((a, b) => {
+        if (a.file !== b.file) return a.file.localeCompare(b.file);
+        return a.lines.localeCompare(b.lines);
+      });
+    
+    for (const w of sortedWarnings.slice(0, 20)) {
+      const [startLine, endLine] = w.lines.split('-');
+      const cwd = process.cwd() + '/';
+      const relativePath = w.file.startsWith(cwd) 
+        ? w.file.substring(cwd.length)
+        : w.file;
+      const clickableLine = endLine ? endLine : startLine;
+      const lineDisplay = endLine ? `${startLine}-${endLine}` : startLine;
+      console.log(`  ${relativePath}:${clickableLine}:1: ${w.assertion} (range ${lineDisplay})`);
+    }
+    
+    if (uniqueWarnings.size > 20) {
+      console.log(`  ... and ${uniqueWarnings.size - 20} more`);
+    }
+  }
+  
   process.exit(1);
 }
 
@@ -106,15 +143,11 @@ if (uniqueWarnings.size > 0) {
     });
   
   for (const w of sortedWarnings.slice(0, 20)) {
-    // Format as clickable path:line:column (most IDEs support this)
     const [startLine, endLine] = w.lines.split('-');
-    // Make path relative to current directory
     const cwd = process.cwd() + '/';
     const relativePath = w.file.startsWith(cwd) 
       ? w.file.substring(cwd.length)
       : w.file;
-    // Use end line if it's a range (more accurate - points to actual code, not predicate head)
-    // Otherwise use the single line number
     const clickableLine = endLine ? endLine : startLine;
     const lineDisplay = endLine ? `${startLine}-${endLine}` : startLine;
     console.log(`  ${relativePath}:${clickableLine}:1: ${w.assertion} (range ${lineDisplay})`);

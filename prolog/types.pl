@@ -1,0 +1,98 @@
+% Type Declarations Module
+% Defines all regular types for the game engine
+
+:- module(types, [
+    game_state/1,
+    game_object/1,
+    game_status/1,
+    keyframe/1,
+    hint/1,
+    action/1,
+    pos/1,
+    attr/1,
+    collision/1
+], [regtypes, assertions]).
+
+:- use_module(engine(basic_props), [
+    int/1,
+    atm/1,
+    term/1,
+    list/2
+]).
+
+% ============================================================================
+% Type Declarations
+% ============================================================================
+
+:- regtype game_state/1 # "Game state structure".
+
+game_state(game_state(Frame, Objects, Status, Score, NextID, Keyframe, Hints)) :-
+    int(Frame),
+    list(game_object, Objects),
+    game_status(Status),
+    int(Score),
+    int(NextID),
+    keyframe(Keyframe),
+    list(hint, Hints).
+
+:- regtype game_object/1 # "Game object structure".
+
+game_object(game_object(ID, attrs(Attrs), Actions, Colls)) :-
+    atm(ID),
+    list(attr, Attrs),
+    list(action, Actions),
+    list(collision, Colls).
+
+:- regtype game_status/1 # "Game status: playing, won, or lost".
+
+game_status(playing).
+game_status(won).
+game_status(lost).
+
+:- regtype keyframe/1 # "Keyframe structure".
+
+keyframe(keyframe(Frame, Objects)) :-
+    int(Frame),
+    list(game_object, Objects).
+
+:- regtype hint/1 # "Hint types: spawn_request, state_change, despawned".
+
+hint(spawn_request(Type, Pos, Actions)) :-
+    atm(Type),
+    pos(Pos),
+    list(action, Actions).
+hint(state_change(Change)) :-
+    term(Change).
+hint(despawned(ID, Attrs)) :-
+    atm(ID),
+    list(attr, Attrs).
+
+:- regtype action/1 # "Action types".
+
+action(wait_frames(N)) :- int(N).
+action(move_to(X, Y, Frames)) :- int(X), int(Y), int(Frames).
+action(despawn).
+action(spawn(Type, Pos, Actions)) :-
+    atm(Type),
+    pos(Pos),
+    list(action, Actions).
+action(loop(Actions)) :- list(action, Actions).
+action(trigger_state_change(Change)) :- term(Change).
+action(parallel(Children)) :- list(action, Children).
+action(parallel_running(Children)) :- list(action, Children).
+
+:- regtype pos/1 # "Position: pos(X, Y)".
+
+pos(pos(X, Y)) :-
+    int(X),
+    int(Y).
+
+:- regtype attr/1 # "Attribute types".
+
+attr(pos(X, Y)) :- int(X), int(Y).
+attr(A) :- atm(A). % Other attributes as atoms
+
+:- regtype collision/1 # "Collision types (to be defined)".
+
+collision(C) :- term(C). % Placeholder - define specific collision types
+
