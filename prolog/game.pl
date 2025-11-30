@@ -83,7 +83,7 @@ execute_until_yield(
 ) :- !.
 
 execute_until_yield(ObjIn, ObjOut, AllHints) :-
-    ObjIn = game_object(ID, A, [Act|Rest], C),
+    ObjIn = game_object(_ID, _A, [Act|_Rest], _C),
     execute_action(Act, ObjIn, ObjTemp, H1),
     ( ObjTemp = despawned ->
         ObjOut = despawned,
@@ -102,7 +102,7 @@ execute_until_yield(ObjIn, ObjOut, AllHints) :-
 tick(StateIn, StateOut) :-
     StateIn = game_state(
         F, Objs, Status, Score, NextID,
-        LastKF, OldHints
+        LastKF, _OldHints
     ),
     
     % 1. Tick all objects

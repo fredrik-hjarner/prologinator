@@ -51,3 +51,7 @@ prolog/run_tests
 *_pd_*.pl
 *_eterms_*.pl
 *_codegen_*.pl
+
+# Ciao Prolog checker temporary files (VS Code extension)
+*.po-tmpciao*
+*_flycheck_tmp_co.*

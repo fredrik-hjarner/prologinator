@@ -3,14 +3,29 @@
     "editor.rulers": [60, 80],
     "editor.guides.indentation": false,
     
-    // Prolog Extension Configuration
-    "prolog.dialect": "swi",
-    "prolog.executablePath": "/usr/bin/swipl",
-    // "prolog.linter.run": "onSave",
-    "prolog.linter.run": "never",
-    "prolog.linter.delay": 500,
-    "prolog.terminal.runtimeArgs": [],
-    "prolog.format.addSpace": true,
-    // "prolog.linter.enableMsgInOutput": true,
-    "prolog.linter.enableMsgInOutput": false,
+    // // Prolog Extension Configuration
+    // "prolog.dialect": "swi",
+    // "prolog.executablePath": "/usr/bin/swipl",
+    // // "prolog.linter.run": "onSave",
+    // "prolog.linter.run": "never",
+    // "prolog.linter.delay": 500,
+    // "prolog.terminal.runtimeArgs": [],
+    // "prolog.format.addSpace": true,
+    // // "prolog.linter.enableMsgInOutput": true,
+    // "prolog.linter.enableMsgInOutput": false,
+    
+    // Ciao Prolog Language Support Configuration
+    // File associations for Ciao Prolog
+    "files.associations": {
+        "*.pl": "ciao",
+        "**/prolog/*.pl": "ciao"
+    },
+    
+    // Ciao checker setting (on-the-fly checking/verification)
+    // Options: "off", "ciaoc" (syntax checking - faster, updates quickly), 
+    //          "ciaopp" (verification - slower but more thorough), 
+    //          "lpdoc" (documentation checking)
+    // Note: "ciaoc" updates faster than "ciaopp" for real-time feedback
+    // "ciao.checker": "ciaopp"
+    "ciao.checker": "ciaoc"
 }

@@ -75,7 +75,7 @@ execute_action(
 
 execute_action(
     despawn,
-    game_object(ID, Attrs, _, Colls),
+    game_object(ID, Attrs, _, _Colls),
     despawned,
     [despawned(ID, Attrs)]
 ) :- !.

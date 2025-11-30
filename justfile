@@ -46,7 +46,7 @@ test module:
 		(echo "❌ Tests failed" && just clean && exit 1)
 
 # Clean Ciao Prolog compilation artifacts and CiaoPP generated files
-# Removes: .itf, .po, .asr, .ast, *_co.pl, *_pd_*.pl, *_eterms_*.pl, *_codegen_*.pl, .testin, .testout, run_tests
+# Removes: .itf, .po, .asr, .ast, *_co.pl, *_pd_*.pl, *_eterms_*.pl, *_codegen_*.pl, .testin, .testout, run_tests, temporary checker files
 # Usage: just clean
 clean:
 	@find prolog -name "*.itf" -o -name "*.po" -o -name "*.asr" -o -name "*.ast" | xargs rm -f 2>/dev/null || true
@@ -54,6 +54,7 @@ clean:
 	@find prolog -name "*.testin" -o -name "*.testout" -o -name "*.testout-saved" -o -name "*.testin-saved" | xargs rm -f 2>/dev/null || true
 	@find prolog -name "run_tests" -type f | xargs rm -f 2>/dev/null || true
 	@find prolog -name "*_co.pl" -type l | xargs rm -f 2>/dev/null || true
+	@find prolog -name "*.po-tmpciao*" -o -name "*_flycheck_tmp_co.*" | xargs rm -f 2>/dev/null || true
 
 # ============================================================================
 # CiaoPP static analysis commands
