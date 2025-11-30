@@ -5,7 +5,8 @@
 
 :- use_module(library(write), [write/1]).
 :- use_module(engine(io_basic), [nl/0]).
-:- use_module(library(system), [pause/1]).
+:- use_module(engine(stream_basic), [flush_output/0]).
+:- use_module(library(stream_utils), [get_line/1]).
 :- use_module(library(lists), [member/2]).
 :- use_module('./engine', [tick/2]).
 :- use_module('./types', [game_state/1, game_object/1]).
@@ -61,19 +62,53 @@ main :-
         keyframe(0, []),
         []
     ),
-    game_loop(InitialState).
+    game_loop(InitialState, []).
 
-game_loop(State) :-
+game_loop(State, History) :-
     State = game_state(_, _, Status, _, _, _, _),
     ( Status = playing ->
         render(State),
-        tick(State, NewState),
-        pause(1),
-        game_loop(NewState)
+        write('Press: f=forward, r=reverse, q=quit'), nl,
+        flush_output,
+        get_line(Line),
+        ( Line = end_of_file ->
+            % EOF, quit
+            State = game_state(F, Objs, _, Score, NextID, KF, Hints),
+            NewState = game_state(F, Objs, lost, Score, NextID, KF, Hints),
+            NewHistory = History
+        ; Line = [Code|_] ->
+            handle_input(Code, State, History, NewState, NewHistory)
+        ;
+            % Empty line, just continue
+            NewState = State,
+            NewHistory = History
+        ),
+        game_loop(NewState, NewHistory)
     ;
         render(State),
         write('Game Over!'), nl
     ).
+
+handle_input(0'f, State, History, NewState, NewHistory) :-
+    % Forward: tick and add to history
+    tick(State, NewState),
+    NewHistory = [State|History].
+handle_input(0'r, State, History, NewState, NewHistory) :-
+    % Reverse: go back to previous state
+    ( History = [PrevState|RestHistory] ->
+        NewState = PrevState,
+        NewHistory = RestHistory
+    ;
+        % No history, stay at current state
+        NewState = State,
+        NewHistory = History
+    ).
+handle_input(0'q, State, History, NewState, NewHistory) :-
+    % Quit: set status to lost to exit loop
+    State = game_state(F, Objs, _, Score, NextID, KF, Hints),
+    NewState = game_state(F, Objs, lost, Score, NextID, KF, Hints),
+    NewHistory = History.
+handle_input(_, State, History, State, History).
 
 % ============================================================================
 % ASCII Rendering
