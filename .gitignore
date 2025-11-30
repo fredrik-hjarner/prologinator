@@ -38,3 +38,16 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 *.po
 *.asr
 *.ast
+
+# Ciao Prolog test output files
+*.testout
+*.testout-saved
+*.testin
+*.testin-saved
+prolog/run_tests
+
+# CiaoPP generated output files
+*_co.pl
+*_pd_*.pl
+*_eterms_*.pl
+*_codegen_*.pl

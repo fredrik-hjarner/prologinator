@@ -6,7 +6,7 @@
     execute_action/4,
     tick_object/3,
     yields/1
-], [clpfd]).
+], [clpfd, assertions, unittestdecls]).
 
 :- use_module(library(lists), [append/3, select/3, member/2]).
 :- use_module(library(llists), [append/2]).
@@ -208,6 +208,21 @@ all_children_done([caused_despawn|_]) :-
 yields(wait_frames(N)) :- N #> 0.
 yields(move_to(_, _, Frames)) :- Frames #> 0.
 yields(parallel_running(_)).
+
+% ============================================================================
+% Tests
+% ============================================================================
+:- test yields(A) : (A = wait_frames(5))
+    => true
+    # "wait_frames with positive number should yield".
+
+:- test yields(A) : (A = wait_frames(0))
+    + fails
+    # "wait_frames with zero should not yield".
+
+:- test yields(A) : (A = move_to(10, 20, 3))
+    => true
+    # "move_to with positive frames should yield".
 
 % ============================================================================
 % Execution Model: execute_until_yield (from Addendum 1)

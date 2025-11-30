@@ -7,3 +7,6 @@
 [submodule "submodules/scryer-prolog"]
 	path = submodules/scryer-prolog
 	url = https://github.com/mthom/scryer-prolog.git
+[submodule "submodules/ciaopp"]
+	path = submodules/ciaopp
+	url = https://github.com/ciao-lang/ciaopp.git
