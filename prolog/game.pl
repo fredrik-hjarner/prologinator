@@ -6,7 +6,7 @@
     execute_action/4,
     tick_object/3,
     yields/1
-], [clpfd, assertions, unittestdecls]).
+], [clpfd, assertions, unittestdecls, isomodes]).
 
 :- use_module(library(lists), [append/3, select/3, member/2]).
 :- use_module(library(llists), [append/2]).
@@ -205,6 +205,10 @@ all_children_done([caused_despawn|_]) :-
 % ============================================================================
 % Yielding Actions (from Addendum 1 + 3)
 % ============================================================================
+% Bidirectional: works forward (check if action yields) and backward (generate yielding actions)
+% Modes: yields(?Action) - can be called with Action bound or unbound
+:- pred yields(?Action) # "Checks if an action yields control, or generates yielding actions.".
+
 yields(wait_frames(N)) :- N #> 0.
 yields(move_to(_, _, Frames)) :- Frames #> 0.
 yields(parallel_running(_)).
@@ -223,6 +227,10 @@ yields(parallel_running(_)).
 :- test yields(A) : (A = move_to(10, 20, 3))
     => true
     # "move_to with positive frames should yield".
+
+:- test yields(A) : (true)
+    => (A = wait_frames(_) ; A = move_to(_, _, _) ; A = parallel_running(_))
+    # "yields/1 can generate yielding actions bidirectionally".
 
 % ============================================================================
 % Execution Model: execute_until_yield (from Addendum 1)
