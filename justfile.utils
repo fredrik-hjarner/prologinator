@@ -1,0 +1,9 @@
+# create two files: all_files.txt and not_ignored.txt
+# if you diff then you get the ignored files
+[working-directory: 'submodules']
+cursorignored:
+    # Get all files
+    rg --files | sort > ../all_files.txt
+
+    # Get non-ignored files  
+    rg --files --ignore-file .cursorignore | sort > ../not_ignored.txt

@@ -1,0 +1,100 @@
+# # Ignore C/C++ implementation files
+**/*.c
+**/*.h
+**/*.cpp
+**/*.hpp
+
+# # Ignore Rust files (scryer-prolog implementation)
+**/*.rs
+**/Cargo.toml
+**/Cargo.lock
+**/*.toml
+
+# # Ignore build artifacts and binaries
+# **/build/
+**/dist/
+# **/target/
+# **/*.o
+# **/*.so
+# **/*.dylib
+# **/*.dll
+# **/*.exe
+
+# # Ignore test files
+# **/tests/
+# **/tests-pl/
+# **/*.testout
+# **/*.testin
+# **/*.stdout
+# **/*.stderr
+
+# # Ignore example files
+# **/examples/
+# **/benches/
+
+# # Ignore documentation that's not directly relevant
+# **/doc/
+# **/docs/
+# **/*.lpdoc
+# **/*.md
+# **/*.txt
+# **/README.md
+# **/CHANGELOG.md
+# **/INSTALLATION.md
+**/CONTRIBUTING.md
+
+# # Ignore binary assets
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.svg
+**/*.pdf
+**/*.eps
+**/*.ps
+**/*.ico
+
+# # Ignore build system files
+# **/Makefile
+**/*.mk
+# **/*.sh
+# **/*.bash
+# **/*.bat
+**/Dockerfile
+**/*.nix
+**/*.lock
+**/*.wxs
+
+# # Ignore configuration files
+# **/*.json
+**/*.toml
+**/*.dj
+**/*.rsc
+**/*.bib
+# **/doclog.config.pl
+
+# # Ignore specific directories that are definitely not needed
+ciao/builder/
+ciao/core/bootstrap/
+# ciao/core/engine/
+# ciao/core/examples/
+ciao/core/Win32/
+# ciao-alldocs/
+# ciaopp/doc/
+# ciaopp/examples/
+# scryer-prolog/benches/
+# scryer-prolog/build/
+# scryer-prolog/learn/
+# scryer-prolog/logo/
+# scryer-prolog/tests/
+# scryer-prolog/tests-pl/
+# scryer-prolog/tools/
+# scryer-prolog/wambook/
+
+# # Ignore manifest files
+# **/Manifest/
+
+
+**/*.el
+
+scryer-prolog/tests/scryer/
