@@ -3,25 +3,26 @@
 
 :- module(engine, [
     tick/2,
-    tick_object/3,
+    tick_object/4,
     yields/1
 ], [clpfd, assertions, unittestdecls, modes, regtypes]).
 
 :- use_module(library(lists), [append/3, select/3, member/2]).
 :- use_module(library(llists), [append/2]).
-:- use_module(library(hiordlib), [maplist/4]).
+:- use_module(library(hiordlib), [maplist/5]).
 :- use_module(library(aggregates), [findall/3]).
 :- use_module(engine(hiord_rt), [call/2]).
 :- use_module(engine(atomic_basic), [atom_number/2]).
 :- use_module('./third_party/exclude', [exclude/3]).
 :- use_module('./third_party/list_to_set', [list_to_set/2]).
-:- use_module('./execute_action', [execute_action/4]).
+:- use_module('./execute_action', [execute_action/5]).
 :- use_module('./types', [
     game_state/1,
     game_object/1,
     game_status/1,
     keyframe/1,
-    hint/1,
+    command/1,
+    rev_hint/1,
     action/1,
     pos/1,
     attr/1,
@@ -84,31 +85,39 @@ yields(parallel_running(_)).
 % ============================================================================
 % Execution Model: tick_object (from Addendum 1)
 % ============================================================================
+
+% forward execution
+:- pred tick_object(+ObjIn, -ObjOut, -AllCommands, -AllRevHints).
+
 tick_object(
     game_object(ID, Type, attrs(Attrs), [], Colls),
     game_object(ID, Type, attrs(Attrs), [], Colls),
+    [],
     []
-) :- !.
+) :- !. % TODO: Can this cut hurt bidirectionality?
 
-tick_object(ObjIn, ObjOut, AllHints) :-
+tick_object(ObjIn, ObjOut, AllCommands, AllRevHints) :-
     ObjIn = game_object(_ID, _Type, _A, [Act|_Rest], _C),
-    execute_action(Act, ObjIn, ObjTemp, H1),
+    execute_action(Act, ObjIn, ObjTemp, C1, R1),
     ( ObjTemp = despawned ->
         ObjOut = despawned,
-        AllHints = H1
+        AllCommands = C1,
+        AllRevHints = R1
     ; yields(Act) ->
         ObjOut = ObjTemp,
-        AllHints = H1
+        AllCommands = C1,
+        AllRevHints = R1
     ;
-        tick_object(ObjTemp, ObjOut, H2),
-        append(H1, H2, AllHints)
+        tick_object(ObjTemp, ObjOut, C2, R2),
+        append(C1, C2, AllCommands),
+        append(R1, R2, AllRevHints)
     ).
 
 % ============================================================================
 % Tests for tick_object
 % ============================================================================
 
-:- test tick_object(ObjIn, ObjOut, Hints) : (
+:- test tick_object(ObjIn, ObjOut, Commands, RevHints) : (
         ObjIn = game_object(
             id1,
             static,
@@ -118,11 +127,12 @@ tick_object(ObjIn, ObjOut, AllHints) :-
         )
     ) => (
         ObjOut = game_object(id1, static, attrs([pos(0, 0)]), [], []),
-        Hints = []
+        Commands = [],
+        RevHints = []
     )
     # "tick_object: empty action list returns unchanged object".
 
-:- test tick_object(ObjIn, ObjOut, Hints) : (
+:- test tick_object(ObjIn, ObjOut, Commands, RevHints) : (
         ObjIn = game_object(
             id1,
             static,
@@ -132,11 +142,12 @@ tick_object(ObjIn, ObjOut, AllHints) :-
         )
     ) => (
         ObjOut = game_object(id1, static, attrs([pos(0, 0)]), [wait_frames(4)], []),
-        Hints = []
+        Commands = [],
+        RevHints = []
     )
     # "tick_object: yielding action (wait_frames) stops after one execution".
 
-:- test tick_object(ObjIn, ObjOut, Hints) : (
+:- test tick_object(ObjIn, ObjOut, Commands, RevHints) : (
         ObjIn = game_object(
             id1,
             static,
@@ -146,7 +157,8 @@ tick_object(ObjIn, ObjOut, AllHints) :-
         )
     ) => (
         ObjOut = game_object(id1, static, attrs([pos(0, 0)]), [], []),
-        Hints = []
+        Commands = [],
+        RevHints = []
     )
     # "tick_object: wait_frames(0) is removed and execution continues until empty".
 
@@ -162,6 +174,7 @@ tick_object(ObjIn, ObjOut, AllHints) :-
             0,
             1,
             keyframe(0, []),
+            [],
             []
         )
     ) => (
@@ -172,6 +185,7 @@ tick_object(ObjIn, ObjOut, AllHints) :-
             0,
             1,
             _,
+            [],
             []
         )
     )
@@ -185,6 +199,7 @@ tick_object(ObjIn, ObjOut, AllHints) :-
             0,
             1,
             keyframe(0, []),
+            [],
             []
         )
     ) => (
@@ -195,6 +210,7 @@ tick_object(ObjIn, ObjOut, AllHints) :-
             0,
             1,
             _,
+            [],
             []
         )
     )
@@ -208,6 +224,7 @@ tick_object(ObjIn, ObjOut, AllHints) :-
             0,
             1,
             keyframe(0, []),
+            [],
             []
         )
     ) => (
@@ -218,6 +235,7 @@ tick_object(ObjIn, ObjOut, AllHints) :-
             0,
             2,
             _,
+            [],
             []
         ),
         member(game_object(id1, static, attrs([pos(0, 0)]), [], []), FinalObjs),
@@ -233,6 +251,7 @@ tick_object(ObjIn, ObjOut, AllHints) :-
             0,
             1,
             keyframe(0, []),
+            [],
             []
         )
     ) => (
@@ -243,6 +262,7 @@ tick_object(ObjIn, ObjOut, AllHints) :-
             NewScore,
             1,
             _,
+            [],
             []
         ),
         NewScore = 10
@@ -255,21 +275,22 @@ tick_object(ObjIn, ObjOut, AllHints) :-
 tick(StateIn, StateOut) :-
     StateIn = game_state(
         F, Objs, Status, Score, NextID,
-        LastKF, _OldHints
+        LastKF, _OldCommands, _OldRevHints
     ),
     
     % 1. Tick all objects
-    tick_all_objects(Objs, TempObjs, Hints1),
+    tick_all_objects(Objs, TempObjs, Commands1, RevHints1),
     
-    % 2. Detect collisions
-    detect_collisions(TempObjs, NewObjs, Hints2),
+    % 2. Detect collisions (collisions only produce rev_hints, no commands)
+    detect_collisions(TempObjs, NewObjs, RevHints2),
     
-    % 3. Combine hints
-    append(Hints1, Hints2, AllHints),
+    % 3. Combine commands and rev_hints
+    AllCommands = Commands1,
+    append(RevHints1, RevHints2, AllRevHints),
     
-    % 4. Partition hints
-    partition(is_spawn_request, AllHints, SpawnReqs, OtherHints),
-    partition(is_state_change, OtherHints, StateChanges, ReverseHints),
+    % 4. Partition commands
+    partition(is_spawn_request, AllCommands, SpawnReqs, OtherCommands),
+    partition(is_state_change, OtherCommands, StateChanges, _),
     
     % 5. Process spawns with ID assignment
     process_spawn_requests(
@@ -298,15 +319,22 @@ tick(StateIn, StateOut) :-
     % 9. Build new state
     StateOut = game_state(
         F1, FinalObjs, NewStatus, NewScore,
-        NewNextID, NewKF, ReverseHints
+        NewNextID, NewKF, [], AllRevHints
     ).
 
 % ============================================================================
 % Tick Helpers
 % ============================================================================
-tick_all_objects(Objects, FinalObjects, AllHints) :-
-    maplist(tick_object, Objects, TempObjects, HintLists),
-    append(HintLists, AllHints),
+tick_all_objects(Objects, FinalObjects, AllCommands, AllRevHints) :-
+    maplist(
+        tick_object, % predicate
+        Objects, % "input"
+        TempObjects, % collected "output"
+        CommandLists, % collected "output"
+        RevHintLists % collected "output"
+    ),
+    append(CommandLists, AllCommands), % append/2 flattens the list of lists
+    append(RevHintLists, AllRevHints), % append/2 flattens the list of lists
     exclude(is_despawned, TempObjects, FinalObjects).
 
 is_despawned(despawned).
@@ -366,7 +394,7 @@ apply_state_changes([_|Rest], Status, Score, FinalStatus, FinalScore) :-
 % Note: CiaoPP cannot verify the findall call, but the code is correct
 % :- trust pred detect_collisions(+list(game_object), -list(game_object), -list(hint)).
 
-detect_collisions(Objects, NewObjects, Hints) :-
+detect_collisions(Objects, NewObjects, RevHints) :-
     findall(
         collision(ID1, ID2),
         (
@@ -379,11 +407,11 @@ detect_collisions(Objects, NewObjects, Hints) :-
         ),
         Collisions
     ),
-    handle_collisions(Objects, Collisions, NewObjects, Hints).
+    handle_collisions(Objects, Collisions, NewObjects, RevHints).
 
 collides_at(X, Y, X, Y).
 
-handle_collisions(Objects, Collisions, NewObjects, Hints) :-
+handle_collisions(Objects, Collisions, NewObjects, RevHints) :-
     findall(
         (ProjID, EnemyID),
         (
@@ -403,20 +431,24 @@ handle_collisions(Objects, Collisions, NewObjects, Hints) :-
     findall(ID, member((_, ID), ToRemove), P2),
     append(P1, P2, AllIDs),
     list_to_set(AllIDs, UniqueIDs),
-    remove_with_hints(Objects, UniqueIDs, NewObjects, Hints).
+    % TODO: I dont like that what happens at collision is hard-coded like this.
+    %       should be dynamic.
+    remove_with_rev_hints(Objects, UniqueIDs, NewObjects, RevHints).
 
-remove_with_hints([], _, [], []).
-remove_with_hints(
+:- pred remove_with_rev_hints(+Objects, +IDsOfObjectsToRemove, -NewObjects, -RevHints).
+
+remove_with_rev_hints([], _, [], []).
+remove_with_rev_hints(
     [game_object(ID, _, Attrs, _, _)|Rest],
     ToRemove,
     NewObjs,
-    [despawned(ID, Attrs)|RestHints]
+    [despawned(ID, Attrs)|RestRevHints]
 ) :-
     member(ID, ToRemove),
     !,
-    remove_with_hints(Rest, ToRemove, NewObjs, RestHints).
-remove_with_hints([Obj|Rest], ToRemove, [Obj|NewObjs], Hints) :-
-    remove_with_hints(Rest, ToRemove, NewObjs, Hints).
+    remove_with_rev_hints(Rest, ToRemove, NewObjs, RestRevHints).
+remove_with_rev_hints([Obj|Rest], ToRemove, [Obj|NewObjs], RevHints) :-
+    remove_with_rev_hints(Rest, ToRemove, NewObjs, RevHints).
 
 % ============================================================================
 % Keyframes

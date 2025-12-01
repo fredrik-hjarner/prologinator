@@ -6,7 +6,8 @@
     game_object/1,
     game_status/1,
     keyframe/1,
-    hint/1,
+    rev_hint/1,
+    command/1,
     action/1,
     pos/1,
     attr/1,
@@ -26,14 +27,15 @@
 
 :- regtype game_state/1 # "Game state structure".
 
-game_state(game_state(Frame, Objects, Status, Score, NextID, Keyframe, Hints)) :-
+game_state(game_state(Frame, Objects, Status, Score, NextID, Keyframe, Commands, RevHints)) :-
     int(Frame),
     list(game_object, Objects),
     game_status(Status),
     int(Score),
     int(NextID),
     keyframe(Keyframe),
-    list(hint, Hints).
+    list(command, Commands),
+    list(rev_hint, RevHints).
 
 :- regtype game_object/1 # "Game object structure".
 
@@ -56,17 +58,20 @@ keyframe(keyframe(Frame, Objects)) :-
     int(Frame),
     list(game_object, Objects).
 
-:- regtype hint/1 # "Hint types: spawn_request, state_change, despawned".
+:- regtype rev_hint/1 # "Reverse hints: information completeness for reversal".
 
-hint(spawn_request(Type, Pos, Actions)) :-
+rev_hint(despawned(ID, Attrs)) :-
+    atm(ID),
+    list(attr, Attrs).
+
+:- regtype command/1 # "Commands: side-effect requests (spawn, state changes)".
+
+command(spawn_request(Type, Pos, Actions)) :-
     atm(Type),
     pos(Pos),
     list(action, Actions).
-hint(state_change(Change)) :-
+command(state_change(Change)) :-
     term(Change).
-hint(despawned(ID, Attrs)) :-
-    atm(ID),
-    list(attr, Attrs).
 
 :- regtype action/1 # "Action types".
 

@@ -1,5 +1,13 @@
 set -e
 
+just check types
+
 just check game
-just test
-just verify game
+
+just check engine
+just test engine
+
+just check execute_action
+just test execute_action
+
+# just verify game

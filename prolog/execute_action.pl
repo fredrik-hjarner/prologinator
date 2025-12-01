@@ -2,7 +2,7 @@
 % Handles execution of all game actions
 
 :- module(execute_action, [
-    execute_action/4
+    execute_action/5
 ], [clpfd, assertions, unittestdecls, modes, regtypes, nativeprops]).
 
 :- use_module(library(lists), [append/3, select/3, member/2]).
@@ -11,27 +11,28 @@
 :- use_module('./types', [
     game_object/1,
     action/1,
-    hint/1
+    command/1,
+    rev_hint/1
 ]).
 
 % ============================================================================
-% execute_action/4
+% execute_action/5
 % ============================================================================
 
 % Forward execution (normal game)
-:- pred execute_action(+Action, +ObjIn, -ObjOut, -Hints) 
+:- pred execute_action(+Action, +ObjIn, -ObjOut, -Commands, -RevHints) 
     :: (action(Action), game_object(ObjIn)) 
-    => (action(Action), game_object(ObjOut), list(hint, Hints))
+    => (action(Action), game_object(ObjOut), list(command, Commands), list(rev_hint, RevHints))
     + is_det.
 
 % Reverse execution (undo/replay)
-:- pred execute_action(-Action, -ObjIn, +ObjOut, +Hints) + is_det.
+:- pred execute_action(-Action, -ObjIn, +ObjOut, +Commands, +RevHints) + is_det.
 
 % Action inference - which must the action have been?
-:- pred execute_action(-Action, +ObjIn, +ObjOut, +Hints).
+:- pred execute_action(-Action, +ObjIn, +ObjOut, +Commands, +RevHints).
 
 % Validation (consistency check)
-:- pred execute_action(+Action, +ObjIn, +ObjOut, +Hints).
+:- pred execute_action(+Action, +ObjIn, +ObjOut, +Commands, +RevHints).
 
 % ----------------------------------------------------------------------------
 % Basic Actions: wait_frames
@@ -41,6 +42,7 @@ execute_action(
     wait_frames(N),
     game_object(ID, Type, attrs(Attrs), [_|Rest], Colls),
     game_object(ID, Type, attrs(Attrs), NewActions, Colls),
+    [],
     []
 ) :-
     ( N #> 1 ->
@@ -59,6 +61,7 @@ execute_action(
     move_to(TargetX, TargetY, Frames),
     game_object(ID, Type, attrs(Attrs), [_|Rest], Colls),
     game_object(ID, Type, attrs(NewAttrs), NewActions, Colls),
+    [],
     []
 ) :-
     select(pos(CurrentX, CurrentY), Attrs, RestAttrs),
@@ -85,6 +88,7 @@ execute_action(
     despawn,
     game_object(ID, _Type, attrs(Attrs), _, _Colls),
     despawned,
+    [],
     [despawned(ID, Attrs)]
 ) :- !.
 
@@ -96,7 +100,8 @@ execute_action(
     spawn(Type, Pos, Actions),
     game_object(ID, ObjType, attrs(Attrs), [_|Rest], Colls),
     game_object(ID, ObjType, attrs(Attrs), Rest, Colls),
-    [spawn_request(Type, Pos, Actions)]
+    [spawn_request(Type, Pos, Actions)],
+    []
 ).
 
 % ----------------------------------------------------------------------------
@@ -107,6 +112,7 @@ execute_action(
     loop(Actions),
     game_object(ID, Type, attrs(Attrs), [_|Rest], Colls),
     game_object(ID, Type, attrs(Attrs), NewActions, Colls),
+    [],
     []
 ) :-
     append(Actions, [loop(Actions)], Expanded),
@@ -120,7 +126,8 @@ execute_action(
     trigger_state_change(Change),
     game_object(ID, Type, attrs(Attrs), [_|Rest], Colls),
     game_object(ID, Type, attrs(Attrs), Rest, Colls),
-    [state_change(Change)]
+    [state_change(Change)],
+    []
 ).
 
 % ----------------------------------------------------------------------------
@@ -131,11 +138,12 @@ execute_action(
     parallel(ChildActions),
     game_object(ID, Type, attrs(AttrsIn), [_|Rest], Colls),
     Result,
-    AllHints
+    AllCommands,
+    AllRevHints
 ) :-
     tick_parallel_children(
         ChildActions, ID, Type, AttrsIn, Colls,
-        AttrsOut, UpdatedChildren, AllHints
+        AttrsOut, UpdatedChildren, AllCommands, AllRevHints
     ),
     ( member(caused_despawn, UpdatedChildren) ->
         Result = despawned
@@ -152,56 +160,60 @@ execute_action(
 
 execute_action(
     parallel_running(Children),
-    Obj, NewObj, Hints
+    Obj, NewObj, Commands, RevHints
 ) :-
-    execute_action(parallel(Children), Obj, NewObj, Hints).
+    execute_action(parallel(Children), Obj, NewObj, Commands, RevHints).
 
 % ============================================================================
-% tick_parallel_children/7
+% tick_parallel_children/9
 % ============================================================================
 
-:- pred tick_parallel_children(?Children, ?ID, ?Type, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChildren, ?AllHints).
+% TODO: Tighten type
+:- pred tick_parallel_children(?Children, ?ID, ?Type, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChildren, ?AllCommands, ?AllRevHints).
 
 tick_parallel_children(
     [], _ID, _Type, Attrs, _Colls,
-    Attrs, [], []
+    Attrs, [], [], []
 ).
 
 tick_parallel_children(
     [Child|RestChildren],
     ID, Type, AttrsIn, Colls,
     AttrsOut, [UpdatedChild|RestUpdated],
-    AllHints
+    AllCommands, AllRevHints
 ) :-
     tick_one_child(
         Child, ID, Type, AttrsIn, Colls,
-        Attrs1, UpdatedChild, Hints1
+        Attrs1, UpdatedChild, Commands1, RevHints1
     ),
     tick_parallel_children(
         RestChildren, ID, Type, Attrs1, Colls,
-        AttrsOut, RestUpdated, Hints2
+        AttrsOut, RestUpdated, Commands2, RevHints2
     ),
-    append(Hints1, Hints2, AllHints).
+    append(Commands1, Commands2, AllCommands),
+    append(RevHints1, RevHints2, AllRevHints).
 
 % ============================================================================
-% tick_one_child/7
+% tick_one_child/9
 % ============================================================================
 
-:- pred tick_one_child(?Child, ?ID, ?Type, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChild, ?Hints).
+% TOODO: Tighten type
+:- pred tick_one_child(?Child, ?ID, ?Type, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChild, ?Commands, ?RevHints).
 
-tick_one_child(done, _, _, A, _, A, done, []) :- !.
+tick_one_child(done, _, _, A, _, A, done, [], []) :- !.
 
 tick_one_child(
     caused_despawn,
-    _, _, A, _, A, caused_despawn, []
+    _, _, A, _, A, caused_despawn, [], []
 ) :- !.
 
-tick_one_child(Child, ID, Type, AIn, C, AOut, U, H) :-
+tick_one_child(Child, ID, Type, AIn, C, AOut, U, Commands, RevHints) :-
     execute_action(
         Child,
         game_object(ID, Type, attrs(AIn), [Child], C),
         Result,
-        H
+        Commands,
+        RevHints
     ),
     ( Result = despawned ->
         U = caused_despawn,
@@ -258,7 +270,7 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
 % Tests: move_to
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) : (
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) : (
         Action = move_to(10, 20, 3),
         ObjIn = game_object(
             id1,
@@ -277,50 +289,51 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
         ),
         NewX = 3,
         NewY = 6,
-        Hints = []
+        Commands = [],
+        RevHints = []
     )
     + is_det
     # "move_to: positive direction, multiple frames remaining".
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
     (Action = move_to(0, 0, 3),
      ObjIn = game_object(id1, static, attrs([pos(10, 20)]), [move_to(0, 0, 3)], []))
     => (ObjOut = game_object(id1, static, attrs([pos(NewX, NewY)|_]), [move_to(0, 0, 2)|_], []),
         NewX = 7, NewY = 14,
-        Hints = [])
+        Commands = [], RevHints = [])
     # "move_to: negative direction, multiple frames remaining".
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
     (Action = move_to(5, 5, 1),
      ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(5, 5, 1)], []))
     => (ObjOut = game_object(id1, static, attrs([pos(5, 5)|_]), [], []),
-        Hints = [])
+        Commands = [], RevHints = [])
     # "move_to: single frame, arrives at target".
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) : (
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) : (
         Action = move_to(10, 20, 3),
         ObjIn = game_object(id1, static, attrs([pos(10, 20)]), [move_to(10, 20, 3)], [])
     ) => (
         ObjOut = game_object(id1, static, attrs([pos(10, 20)|_]), [move_to(10, 20, 2)|_], []),
-        Hints = []
+        Commands = [], RevHints = []
     )
     # "move_to: already at target, stays at position and continues with remaining frames".
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) : (
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) : (
         Action = move_to(-5, -10, 2),
         ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(-5, -10, 2)], [])
     ) => (
         ObjOut = game_object(id1, static, attrs([pos(NewX, NewY)|_]), [move_to(-5, -10, 1)|_], []),
         NewX = -2, NewY = -5,
-        Hints = []
+        Commands = [], RevHints = []
     )
     # "move_to: negative target coordinates".
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
     (Action = move_to(TargetX, TargetY, 1),
      ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(TargetX, TargetY, 1)], []),
      ObjOut = game_object(id1, static, attrs([pos(5, 5)|_]), [], []),
-     Hints = [])
+     Commands = [], RevHints = [])
     => (TargetX = 5, TargetY = 5)
     + try_sols(1)
     # "move_to: backward test - can infer target coordinates from final position".
@@ -329,11 +342,11 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
 % Tests: wait_frames
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
     (Action = wait_frames(N),
      ObjIn = game_object(id1, static, attrs([]), [wait_frames(N)], []),
      ObjOut = game_object(id1, static, attrs([]), [wait_frames(2)], []),
-     Hints = [])
+     Commands = [], RevHints = [])
     => (N = 3)
     + try_sols(1)
     # "wait_frames: backward test - can infer initial frame count from remaining frames".
@@ -342,37 +355,39 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
 % Tests: spawn
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
     (Action = spawn(Type, Pos, Actions),
      ObjIn = game_object(id1, static, attrs([]), [spawn(Type, Pos, Actions)], []),
      ObjOut = game_object(id1, static, attrs([]), [], []),
-     Hints = [spawn_request(enemy, pos(10, 5), [move_to(0, 0, 10)])])
+     Commands = [spawn_request(enemy, pos(10, 5), [move_to(0, 0, 10)])],
+     RevHints = [])
     => (Type = enemy, Pos = pos(10, 5), Actions = [move_to(0, 0, 10)])
     + try_sols(1)
-    # "spawn: backward test - can infer spawn parameters from spawn_request hint".
+    # "spawn: backward test - can infer spawn parameters from spawn_request command".
 
 % ----------------------------------------------------------------------------
 % Tests: trigger_state_change
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
     (Action = trigger_state_change(Change),
      ObjIn = game_object(id1, static, attrs([]), [trigger_state_change(Change)], []),
      ObjOut = game_object(id1, static, attrs([]), [], []),
-     Hints = [state_change(score(10))])
+     Commands = [state_change(score(10))],
+     RevHints = [])
     => (Change = score(10))
     + try_sols(1)
-    # "trigger_state_change: backward test - can infer change from state_change hint".
+    # "trigger_state_change: backward test - can infer change from state_change command".
 
 % ----------------------------------------------------------------------------
 % Tests: loop
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
     (Action = loop(Actions),
      ObjIn = game_object(id1, static, attrs([]), [loop(Actions)], []),
      ObjOut = game_object(id1, static, attrs([]), [move_to(5, 5, 1), loop([move_to(5, 5, 1)])], []),
-     Hints = [])
+     Commands = [], RevHints = [])
     => (Actions = [move_to(5, 5, 1)])
     + try_sols(1)
     # "loop: backward test - can infer looped actions from final action list".
@@ -381,20 +396,21 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
 % Tests: despawn
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
     (Action = despawn,
      ObjIn = game_object(ID, static, attrs(Attrs), [], []),
      ObjOut = despawned,
-     Hints = [despawned(id1, [pos(10, 20)])])
+     Commands = [],
+     RevHints = [despawned(id1, [pos(10, 20)])])
     => (ID = id1, Attrs = [pos(10, 20)])
     + try_sols(1)
-    # "despawn: backward test - can infer ID and attributes from despawned hint".
+    # "despawn: backward test - can infer ID and attributes from despawned rev_hint".
 
 % ----------------------------------------------------------------------------
 % Tests: parallel
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Hints) :
+:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
     (Action = parallel([wait_frames(N1), wait_frames(N2)]),
      ObjIn = game_object(id1, static, attrs([]), [parallel([wait_frames(N1), wait_frames(N2)])], []),
      ObjOut = game_object(
@@ -404,7 +420,7 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
         [parallel_running([wait_frames(2), wait_frames(3)])],
         []
     ),
-     Hints = [])
+     Commands = [], RevHints = [])
     => (N1 = 3, N2 = 4)
     + try_sols(1)
     # "parallel: backward test - can infer original wait_frames values from parallel_running state".
