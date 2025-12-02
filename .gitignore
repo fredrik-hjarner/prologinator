@@ -34,24 +34,27 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .DS_Store
 
 # Ciao Prolog compilation artifacts
-*.itf
-*.po
-*.asr
-*.ast
+# *.itf
+# *.po
+# *.asr
+# *.ast
 
 # Ciao Prolog test output files
-*.testout
-*.testout-saved
-*.testin
-*.testin-saved
-prolog/run_tests
+# *.testout
+# *.testout-saved
+# *.testin
+# *.testin-saved
+# prolog/run_tests
 
 # CiaoPP generated output files
-*_co.pl
-*_pd_*.pl
-*_eterms_*.pl
-*_codegen_*.pl
+# *_co.pl
+# *_pd_*.pl
+# *_eterms_*.pl
+# *_codegen_*.pl
 
 # Ciao Prolog checker temporary files (VS Code extension)
-*.po-tmpciao*
-*_flycheck_tmp_co.*
+# *.po-tmpciao*
+# *_flycheck_tmp_co.*
+
+# CiaoPP compiled executables
+ciaopp/ciaopp

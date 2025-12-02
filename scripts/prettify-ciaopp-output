@@ -1,0 +1,52 @@
+#!/usr/bin/env bun
+
+export {}
+
+/**
+ * Reads the entire standard input as text.
+ * Bun.stdin.text() is the modern, optimal way to do this in Bun.
+ */
+const input = await Bun.stdin.text();
+
+const prettify = (text: string): string => {
+  let indent = 0;
+
+  // Split text by braces, keeping the delimiters in the array
+  return text.split(/({|})/).reduce((acc, part) => {
+    // Clean up surrounding whitespace/newlines from the token
+    const content = part.trim();
+
+    // Skip empty chunks (like whitespace between blocks)
+    if (!content) return acc;
+
+    if (content === '{') {
+      // --- Handle Opening Brace ---
+      // 1. If not the very start of file, add a newline before this block
+      const prefix = acc ? "\n" : "";
+      // 2. Add current indentation
+      const currentIndent = "   ".repeat(indent);
+      // 3. Increase indentation for subsequent content
+      indent++;
+      
+      return `${acc}${prefix}${currentIndent}{\n`;
+
+    } else if (content === '}') {
+      // --- Handle Closing Brace ---
+      // 1. Decrease indentation (prevent going below 0)
+      indent = Math.max(0, indent - 1);
+      // 2. Add indentation
+      const currentIndent = "   ".repeat(indent);
+
+      return `${acc}\n${currentIndent}}`;
+
+    } else {
+      // --- Handle Text Content ---
+      // Just print the content at the current indentation level
+      const currentIndent = "   ".repeat(indent);
+      return `${acc}${currentIndent}${content}`;
+    }
+  }, "");
+};
+
+// Print the result to stdout
+console.log(prettify(input));
