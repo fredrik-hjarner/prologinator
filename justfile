@@ -65,6 +65,6 @@ clean:
 # Usage: just ciaopp <filename>
 # Example: just ciaopp ciao_experiments/correct_types2.pl
 ciaopp file:
-	ciaoc -x ciaopp/ciaopp ciaopp/ciaopp.pl && ./ciaopp/ciaopp {{file}}
+	ciaoc -x ciaopp/ciaopp ciaopp/ciaopp.pl && ./ciaopp/ciaopp {{file}} 2>&1| scripts/prettify-ciaopp-output
 	just clean
 
