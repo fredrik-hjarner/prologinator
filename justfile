@@ -18,10 +18,13 @@ check file:
 	just clean
 
 # Test if a Prolog file is compatible with Ciao Prolog (interactive)
-# Usage: just consult <filename>
-# Example: just consult engine
+# Usage: just consult <path>
+# Example: just consult prolog/engine
 consult file:
-	cd prolog && rlwrap ciaosh -e "use_module('{{file}}')"
+    #!/usr/bin/env sh
+    dir=$(dirname "{{file}}")
+    base=$(basename "{{file}}")
+    cd "$dir" && rlwrap ciaosh -e "use_module('$base')"
 
 # Test if the operators actually work in Ciao Prolog
 # This loads the operators module and tests parsing of operator expressions
