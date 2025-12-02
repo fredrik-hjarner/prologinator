@@ -5,16 +5,11 @@
     tick/2,
     tick_object/4,
     yields/1
-], [clpfd, assertions, unittestdecls, modes, regtypes]).
+]).
 
-:- use_module(library(lists), [append/3, select/3, member/2]).
-:- use_module(library(llists), [append/2]).
-:- use_module(library(hiordlib), [maplist/5]).
-:- use_module(library(aggregates), [findall/3]).
-:- use_module(engine(hiord_rt), [call/2]).
-:- use_module(engine(atomic_basic), [atom_number/2]).
+:- use_module(library(clpz)).
+:- use_module(library(lists), [append/2, append/3, select/3, member/2, maplist/5, list_to_set/2]).
 :- use_module('./third_party/exclude', [exclude/3]).
-:- use_module('./third_party/list_to_set', [list_to_set/2]).
 :- use_module('./execute_action', [execute_action/5]).
 :- use_module('./types', [
     game_state/1,
@@ -27,7 +22,10 @@
     pos/1,
     attr/1,
     collision/1
-]).
+    ]).
+
+% test/2 clauses are intentionally separated by other code (tests are placed near the code they test)
+:- discontiguous(test/2).
 
 % ============================================================================
 % State Structure (from Addendum 3 - FINAL version)
@@ -57,7 +55,7 @@
 % ============================================================================
 % Bidirectional: works forward (check if action yields) and backward (generate yielding actions)
 % Modes: yields(?Action) - can be called with Action bound or unbound
-:- pred yields(?Action) # "Checks if an action yields control, or generates yielding actions.".
+% :- pred yields(?Action) # "Checks if an action yields control, or generates yielding actions.".
 
 yields(wait_frames(N)) :- N #> 0.
 yields(move_to(_, _, Frames)) :- Frames #> 0.
@@ -66,28 +64,32 @@ yields(parallel_running(_)).
 % ============================================================================
 % Tests
 % ============================================================================
-:- test yields(A) : (A = wait_frames(5))
-    => true
-    # "wait_frames with positive number should yield".
+test("yields: wait_frames with positive number should yield", (
+    A = wait_frames(5),
+    yields(A)
+)).
 
-:- test yields(A) : (A = wait_frames(0))
-    + fails
-    # "wait_frames with zero should not yield".
+test("yields: wait_frames with zero should not yield", (
+    A = wait_frames(0),
+    \+ yields(A)
+)).
 
-:- test yields(A) : (A = move_to(10, 20, 3))
-    => true
-    # "move_to with positive frames should yield".
+test("yields: move_to with positive frames should yield", (
+    A = move_to(10, 20, 3),
+    yields(A)
+)).
 
-:- test yields(A) : (true)
-    => (A = wait_frames(_) ; A = move_to(_, _, _) ; A = parallel_running(_))
-    # "yields/1 can generate yielding actions bidirectionally".
+test("yields: can generate yielding actions bidirectionally", (
+    yields(A),
+    ( A = wait_frames(_) ; A = move_to(_, _, _) ; A = parallel_running(_) )
+)).
 
 % ============================================================================
 % Execution Model: tick_object (from Addendum 1)
 % ============================================================================
 
-% forward execution
-:- pred tick_object(+ObjIn, -ObjOut, -AllCommands, -AllRevHints).
+% % forward execution
+% :- pred tick_object(+ObjIn, -ObjOut, -AllCommands, -AllRevHints).
 
 tick_object(
     game_object(ID, Type, attrs(Attrs), [], Colls),
@@ -117,157 +119,150 @@ tick_object(ObjIn, ObjOut, AllCommands, AllRevHints) :-
 % Tests for tick_object
 % ============================================================================
 
-:- test tick_object(ObjIn, ObjOut, Commands, RevHints) : (
-        ObjIn = game_object(
-            id1,
-            static,
-            attrs([pos(0, 0)]),
-            [],
-            []
-        )
-    ) => (
-        ObjOut = game_object(id1, static, attrs([pos(0, 0)]), [], []),
-        Commands = [],
-        RevHints = []
-    )
-    # "tick_object: empty action list returns unchanged object".
+test("tick_object: empty action list returns unchanged object", (
+    ObjIn = game_object(
+        id1,
+        static,
+        attrs([pos(0, 0)]),
+        [],
+        []
+    ),
+    tick_object(ObjIn, ObjOut, Commands, RevHints),
+    ObjOut = game_object(id1, static, attrs([pos(0, 0)]), [], []),
+    Commands = [],
+    RevHints = []
+)).
 
-:- test tick_object(ObjIn, ObjOut, Commands, RevHints) : (
-        ObjIn = game_object(
-            id1,
-            static,
-            attrs([pos(0, 0)]),
-            [wait_frames(5)],
-            []
-        )
-    ) => (
-        ObjOut = game_object(id1, static, attrs([pos(0, 0)]), [wait_frames(4)], []),
-        Commands = [],
-        RevHints = []
-    )
-    # "tick_object: yielding action (wait_frames) stops after one execution".
+test("tick_object: yielding action (wait_frames) stops after one execution", (
+    ObjIn = game_object(
+        id1,
+        static,
+        attrs([pos(0, 0)]),
+        [wait_frames(5)],
+        []
+    ),
+    tick_object(ObjIn, ObjOut, Commands, RevHints),
+    ObjOut = game_object(id1, static, attrs([pos(0, 0)]), [wait_frames(4)], []),
+    Commands = [],
+    RevHints = []
+)).
 
-:- test tick_object(ObjIn, ObjOut, Commands, RevHints) : (
-        ObjIn = game_object(
-            id1,
-            static,
-            attrs([pos(0, 0)]),
-            [wait_frames(0)],
-            []
-        )
-    ) => (
-        ObjOut = game_object(id1, static, attrs([pos(0, 0)]), [], []),
-        Commands = [],
-        RevHints = []
-    )
-    # "tick_object: wait_frames(0) is removed and execution continues until empty".
+test("tick_object: wait_frames(0) is removed and execution continues until empty", (
+    ObjIn = game_object(
+        id1,
+        static,
+        attrs([pos(0, 0)]),
+        [wait_frames(0)],
+        []
+    ),
+    tick_object(ObjIn, ObjOut, Commands, RevHints),
+    ObjOut = game_object(id1, static, attrs([pos(0, 0)]), [], []),
+    Commands = [],
+    RevHints = []
+)).
 
 % ============================================================================
 % Tests for tick
 % ============================================================================
 
-:- test tick(StateIn, StateOut) : (
-        StateIn = game_state(
-            0,
-            [game_object(id1, static, attrs([pos(0, 0)]), [], [])],
-            playing,
-            0,
-            1,
-            keyframe(0, []),
-            [],
-            []
-        )
-    ) => (
-        StateOut = game_state(
-            1,
-            [game_object(id1, static, attrs([pos(0, 0)]), [], [])],
-            playing,
-            0,
-            1,
-            _,
-            [],
-            []
-        )
+test("tick: increments frame and processes empty game state", (
+    StateIn = game_state(
+        0,
+        [game_object(id1, static, attrs([pos(0, 0)]), [], [])],
+        playing,
+        0,
+        1,
+        keyframe(0, []),
+        [],
+        []
+    ),
+    tick(StateIn, StateOut),
+    StateOut = game_state(
+        1,
+        [game_object(id1, static, attrs([pos(0, 0)]), [], [])],
+        playing,
+        0,
+        1,
+        _,
+        [],
+        []
     )
-    # "tick: increments frame and processes empty game state".
+)).
 
-:- test tick(StateIn, StateOut) : (
-        StateIn = game_state(
-            0,
-            [game_object(id1, static, attrs([pos(0, 0)]), [wait_frames(3)], [])],
-            playing,
-            0,
-            1,
-            keyframe(0, []),
-            [],
-            []
-        )
-    ) => (
-        StateOut = game_state(
-            1,
-            [game_object(id1, static, attrs([pos(0, 0)]), [wait_frames(2)], [])],
-            playing,
-            0,
-            1,
-            _,
-            [],
-            []
-        )
+test("tick: processes object with yielding action (wait_frames)", (
+    StateIn = game_state(
+        0,
+        [game_object(id1, static, attrs([pos(0, 0)]), [wait_frames(3)], [])],
+        playing,
+        0,
+        1,
+        keyframe(0, []),
+        [],
+        []
+    ),
+    tick(StateIn, StateOut),
+    StateOut = game_state(
+        1,
+        [game_object(id1, static, attrs([pos(0, 0)]), [wait_frames(2)], [])],
+        playing,
+        0,
+        1,
+        _,
+        [],
+        []
     )
-    # "tick: processes object with yielding action (wait_frames)".
+)).
 
-:- test tick(StateIn, StateOut) : (
-        StateIn = game_state(
-            0,
-            [game_object(id1, static, attrs([pos(0, 0)]), [spawn(enemy, pos(5, 5), [])], [])],
-            playing,
-            0,
-            1,
-            keyframe(0, []),
-            [],
-            []
-        )
-    ) => (
-        StateOut = game_state(
-            1,
-            FinalObjs,
-            playing,
-            0,
-            2,
-            _,
-            [],
-            []
-        ),
-        member(game_object(id1, static, attrs([pos(0, 0)]), [], []), FinalObjs),
-        member(game_object(_NewID, enemy, attrs([pos(5, 5)]), [], []), FinalObjs)
-    )
-    # "tick: processes spawn request and creates new object".
+test("tick: processes spawn request and creates new object", (
+    StateIn = game_state(
+        0,
+        [game_object(id1, static, attrs([pos(0, 0)]), [spawn(enemy, pos(5, 5), [])], [])],
+        playing,
+        0,
+        1,
+        keyframe(0, []),
+        [],
+        []
+    ),
+    tick(StateIn, StateOut),
+    StateOut = game_state(
+        1,
+        FinalObjs,
+        playing,
+        0,
+        2,
+        _,
+        [],
+        []
+    ),
+    member(game_object(id1, static, attrs([pos(0, 0)]), [], []), FinalObjs),
+    member(game_object(_NewID, enemy, attrs([pos(5, 5)]), [], []), FinalObjs)
+)).
 
-:- test tick(StateIn, StateOut) : (
-        StateIn = game_state(
-            0,
-            [game_object(id1, static, attrs([pos(0, 0)]), [trigger_state_change(score(10))], [])],
-            playing,
-            0,
-            1,
-            keyframe(0, []),
-            [],
-            []
-        )
-    ) => (
-        StateOut = game_state(
-            1,
-            [game_object(id1, static, attrs([pos(0, 0)]), [], [])],
-            playing,
-            NewScore,
-            1,
-            _,
-            [],
-            []
-        ),
-        NewScore = 10
-    )
-    # "tick: processes state change (score increase)".
+test("tick: processes state change (score increase)", (
+    StateIn = game_state(
+        0,
+        [game_object(id1, static, attrs([pos(0, 0)]), [trigger_state_change(score(10))], [])],
+        playing,
+        0,
+        1,
+        keyframe(0, []),
+        [],
+        []
+    ),
+    tick(StateIn, StateOut),
+    StateOut = game_state(
+        1,
+        [game_object(id1, static, attrs([pos(0, 0)]), [], [])],
+        playing,
+        NewScore,
+        1,
+        _,
+        [],
+        []
+    ),
+    NewScore = 10
+)).
 
 % ============================================================================
 % Main Tick Function (from Addendum 3 - FINAL version)
@@ -353,7 +348,8 @@ process_spawn_requests(
 ) :-
     % Generate ID: type_counter
     atom_concat(Type, '_', Prefix),
-    atom_number(IDInAtom, IDIn),
+    number_chars(IDIn, Chars),
+    atom_chars(IDInAtom, Chars),
     atom_concat(Prefix, IDInAtom, ObjID),
     
     IDIn1 #= IDIn + 1,
@@ -435,7 +431,7 @@ handle_collisions(Objects, Collisions, NewObjects, RevHints) :-
     %       should be dynamic.
     remove_with_rev_hints(Objects, UniqueIDs, NewObjects, RevHints).
 
-:- pred remove_with_rev_hints(+Objects, +IDsOfObjectsToRemove, -NewObjects, -RevHints).
+% :- pred remove_with_rev_hints(+Objects, +IDsOfObjectsToRemove, -NewObjects, -RevHints).
 
 remove_with_rev_hints([], _, [], []).
 remove_with_rev_hints(
@@ -454,7 +450,7 @@ remove_with_rev_hints([Obj|Rest], ToRemove, [Obj|NewObjs], RevHints) :-
 % Keyframes
 % ============================================================================
 should_create_keyframe(F) :-
-    F mod 10 #= 0.
+    (F mod 10) #= 0.
 
 % ============================================================================
 % Partition helper (if not available in Ciao)

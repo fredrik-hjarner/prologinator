@@ -1,13 +1,11 @@
 % Simple ASCII Tower Defense Game
 % Usage: just run game (or: ciaosh -l game.pl -e "main" -t halt)
 
-:- module(game, [main/0], []).
+:- module(game, [main/0]).
 
-:- use_module(library(write), [write/1]).
-:- use_module(engine(io_basic), [nl/0]).
-:- use_module(engine(stream_basic), [flush_output/0]).
-:- use_module(library(stream_utils), [get_line/1]).
 :- use_module(library(lists), [member/2]).
+:- use_module(library(between), [between/3]).
+:- use_module(library(charsio), [get_single_char/1]).
 :- use_module('./engine', [tick/2]).
 :- use_module('./types', [game_state/1, game_object/1]).
 
@@ -71,18 +69,14 @@ game_loop(State, History) :-
         render(State),
         write('Press: f=forward, r=reverse, q=quit'), nl,
         flush_output,
-        get_line(Line),
-        ( Line = end_of_file ->
+        get_single_char(Char),
+        ( Char = end_of_file ->
             % EOF, quit
             State = game_state(F, Objs, _, Score, NextID, KF, Commands, RevHints),
             NewState = game_state(F, Objs, lost, Score, NextID, KF, Commands, RevHints),
             NewHistory = History
-        ; Line = [Code|_] ->
-            handle_input(Code, State, History, NewState, NewHistory)
         ;
-            % Empty line, just continue
-            NewState = State,
-            NewHistory = History
+            handle_input(Char, State, History, NewState, NewHistory)
         ),
         game_loop(NewState, NewHistory)
     ;
@@ -90,33 +84,39 @@ game_loop(State, History) :-
         write('Game Over!'), nl
     ).
 
-handle_input(0'f, State, History, NewState, NewHistory) :-
-    % Forward: tick and add to history
-    tick(State, NewState),
-    NewHistory = [State|History].
-handle_input(0'r, State, History, NewState, NewHistory) :-
-    % Reverse: go back to previous state
-    ( History = [PrevState|RestHistory] ->
-        NewState = PrevState,
-        NewHistory = RestHistory
+handle_input(Char, State, History, NewState, NewHistory) :-
+    (   char_code(Char, 102) ->  % 'f'
+        % Forward: tick and add to history
+        tick(State, NewState),
+        NewHistory = [State|History]
+    ;   char_code(Char, 114) ->  % 'r'
+        % Reverse: go back to previous state
+        ( History = [PrevState|RestHistory] ->
+            NewState = PrevState,
+            NewHistory = RestHistory
+        ;
+            % No history, stay at current state
+            NewState = State,
+            NewHistory = History
+        )
+    ;   char_code(Char, 113) ->  % 'q'
+        % Quit: set status to lost to exit loop
+        State = game_state(F, Objs, _, Score, NextID, KF, Commands, RevHints),
+        NewState = game_state(F, Objs, lost, Score, NextID, KF, Commands, RevHints),
+        NewHistory = History
     ;
-        % No history, stay at current state
+        % Unknown input, stay at current state
         NewState = State,
         NewHistory = History
     ).
-handle_input(0'q, State, History, NewState, NewHistory) :-
-    % Quit: set status to lost to exit loop
-    State = game_state(F, Objs, _, Score, NextID, KF, Commands, RevHints),
-    NewState = game_state(F, Objs, lost, Score, NextID, KF, Commands, RevHints),
-    NewHistory = History.
-handle_input(_, State, History, State, History).
 
 % ============================================================================
 % ASCII Rendering
 % ============================================================================
 render(State) :-
     % Clear screen (ANSI escape code)
-    write('\033[2J\033[H'),
+    char_code(Esc, 27),  % ESC character
+    write(Esc), write('[2J'), write(Esc), write('[H'),
     
     State = game_state(Frame, Objects, Status, Score, _, _, _, _),
     
@@ -131,40 +131,39 @@ render(State) :-
 
 render_grid(Objects) :-
     % Grid is 20x20, positions 0-19
-    between(0, 19, Y),
-    between(0, 19, X),
+    render_grid_rows(Objects, 0).
+
+render_grid_rows(Objects, Y) :-
+    Y =< 19,
+    render_grid_row(Objects, Y, 0),
+    Y1 is Y + 1,
+    render_grid_rows(Objects, Y1).
+render_grid_rows(_, Y) :-
+    Y > 19.
+
+render_grid_row(Objects, Y, X) :-
+    X =< 19,
     ( member(game_object(_, _, attrs(Attrs), _, _), Objects),
       member(pos(X, Y), Attrs) ->
         get_symbol(Objects, X, Y, Symbol)
     ;
-        Symbol = '.'
+        char_code(Symbol, 46)  % '.'
     ),
     write(Symbol),
     ( X = 19 -> nl ; write(' ') ),
-    fail.
-render_grid(_).
+    X1 is X + 1,
+    render_grid_row(Objects, Y, X1).
+render_grid_row(_, _, X) :-
+    X > 19.
 
 get_symbol(Objects, X, Y, Symbol) :-
     member(game_object(_, Type, attrs(Attrs), _, _), Objects),
     member(pos(X, Y), Attrs),
-    ( Type = tower ->
-        Symbol = 'T'
-    ; Type = enemy ->
-        Symbol = 'E'
-    ; Type = proj ->
-        Symbol = '*'
-    ;
-        Symbol = '?'
-    ),
-    !.
-get_symbol(_, _, _, '.').
-
-% ============================================================================
-% Helper: between/3 (if not available)
-% ============================================================================
-between(Low, High, Low) :- Low =< High.
-between(Low, High, X) :-
-    Low < High,
-    Low1 is Low + 1,
-    between(Low1, High, X).
+    (   Type = tower -> char_code(Symbol, 84)  % 'T'
+    ;   Type = enemy -> char_code(Symbol, 69)  % 'E'
+    ;   Type = proj -> char_code(Symbol, 42)   % '*'
+    ;   char_code(Symbol, 63)                 % '?'
+    ).
+get_symbol(_, _, _, Dot) :-
+    char_code(Dot, 46).  % '.'
 

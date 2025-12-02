@@ -3,11 +3,10 @@
 
 :- module(execute_action, [
     execute_action/5
-], [clpfd, assertions, unittestdecls, modes, regtypes, nativeprops]).
+]).
 
-:- use_module(library(lists), [append/3, select/3, member/2]).
-:- use_module(library(llists), [append/2]).
-:- use_module(library(unittest/unittest_props), [try_sols/2]).
+:- use_module(library(clpz)).
+:- use_module(library(lists), [append/2, append/3, select/3, member/2]).
 :- use_module('./types', [
     game_object/1,
     action/1,
@@ -20,19 +19,19 @@
 % ============================================================================
 
 % Forward execution (normal game)
-:- pred execute_action(+Action, +ObjIn, -ObjOut, -Commands, -RevHints) 
-    :: (action(Action), game_object(ObjIn)) 
-    => (action(Action), game_object(ObjOut), list(command, Commands), list(rev_hint, RevHints))
-    + is_det.
+% :- pred execute_action(+Action, +ObjIn, -ObjOut, -Commands, -RevHints) 
+%     :: (action(Action), game_object(ObjIn)) 
+%     => (action(Action), game_object(ObjOut), list(command, Commands), list(rev_hint, RevHints))
+%     + is_det.
 
 % Reverse execution (undo/replay)
-:- pred execute_action(-Action, -ObjIn, +ObjOut, +Commands, +RevHints) + is_det.
+% :- pred execute_action(-Action, -ObjIn, +ObjOut, +Commands, +RevHints) + is_det.
 
 % Action inference - which must the action have been?
-:- pred execute_action(-Action, +ObjIn, +ObjOut, +Commands, +RevHints).
+% :- pred execute_action(-Action, +ObjIn, +ObjOut, +Commands, +RevHints).
 
 % Validation (consistency check)
-:- pred execute_action(+Action, +ObjIn, +ObjOut, +Commands, +RevHints).
+% :- pred execute_action(+Action, +ObjIn, +ObjOut, +Commands, +RevHints).
 
 % ----------------------------------------------------------------------------
 % Basic Actions: wait_frames
@@ -65,7 +64,11 @@ execute_action(
     []
 ) :-
     select(pos(CurrentX, CurrentY), Attrs, RestAttrs),
-    compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY),
+    % Compute step using integer division
+    DX #= (TargetX - CurrentX) // Frames,
+    DY #= (TargetY - CurrentY) // Frames,
+    NewX #= CurrentX + DX,
+    NewY #= CurrentY + DY,
     % Label at the boundary where we need ground values for game objects
     (ground(TargetX), ground(TargetY), ground(CurrentX), ground(CurrentY), ground(Frames) ->
         labeling([], [NewX, NewY])
@@ -169,7 +172,7 @@ execute_action(
 % ============================================================================
 
 % TODO: Tighten type
-:- pred tick_parallel_children(?Children, ?ID, ?Type, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChildren, ?AllCommands, ?AllRevHints).
+% :- pred tick_parallel_children(?Children, ?ID, ?Type, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChildren, ?AllCommands, ?AllRevHints).
 
 tick_parallel_children(
     [], _ID, _Type, Attrs, _Colls,
@@ -198,7 +201,7 @@ tick_parallel_children(
 % ============================================================================
 
 % TOODO: Tighten type
-:- pred tick_one_child(?Child, ?ID, ?Type, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChild, ?Commands, ?RevHints).
+% :- pred tick_one_child(?Child, ?ID, ?Type, ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChild, ?Commands, ?RevHints).
 
 tick_one_child(done, _, _, A, _, A, done, [], []) :- !.
 
@@ -227,7 +230,7 @@ tick_one_child(Child, ID, Type, AIn, C, AOut, U, Commands, RevHints) :-
 % all_children_done/1
 % ============================================================================
 
-:- pred all_children_done(?Children).
+% :- pred all_children_done(?Children).
 
 all_children_done([]).
 
@@ -238,31 +241,6 @@ all_children_done([caused_despawn|_]) :-
     !, fail.
 
 % ============================================================================
-% Helper: Integer division using CLPFD constraints (truncated division)
-% Shifts to positive space, solves, then shifts back
-% ============================================================================
-
-solve_shifted(Diff, Frames, Step) :-
-    Offset = 200, % A constant large enough to make the math positive
-    domain([PosStep], 0, 1000),
-    OffsetTerm #= Offset * Frames,
-    ShiftedDiff #= Diff + OffsetTerm,
-    PosStepNext #= PosStep + 1,
-    PosStep * Frames      #=< ShiftedDiff,
-    PosStepNext * Frames  #>  ShiftedDiff,
-    Step #= PosStep - Offset.
-
-% Helper: Compute new position after moving towards target
-% Pure constraint logic - no labeling (labeling done at boundary in execute_action)
-compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) :-
-    DiffX #= TargetX - CurrentX,
-    DiffY #= TargetY - CurrentY,
-    solve_shifted(DiffX, Frames, DX),
-    solve_shifted(DiffY, Frames, DY),
-    NewX #= CurrentX + DX,
-    NewY #= CurrentY + DY.
-
-% ============================================================================
 % Tests
 % ============================================================================
 
@@ -270,158 +248,172 @@ compute_move_position(TargetX, TargetY, CurrentX, CurrentY, Frames, NewX, NewY) 
 % Tests: move_to
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) : (
-        Action = move_to(10, 20, 3),
-        ObjIn = game_object(
-            id1,
-            static,
-            attrs([pos(0, 0)]),
-            [move_to(10, 20, 3)],
-            []
-        )
-    ) => (
-        ObjOut = game_object(
-            id1,
-            static,
-            attrs([pos(NewX, NewY)|_]),
-            [move_to(10, 20, 2)|_],
-            []
-        ),
-        NewX = 3,
-        NewY = 6,
-        Commands = [],
-        RevHints = []
-    )
-    + is_det
-    # "move_to: positive direction, multiple frames remaining".
+test("move_to: positive direction, multiple frames remaining", (
+    Action = move_to(10, 20, 3),
+    ObjIn = game_object(
+        id1,
+        static,
+        attrs([pos(0, 0)]),
+        [move_to(10, 20, 3)],
+        []
+    ),
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    ObjOut = game_object(
+        id1,
+        static,
+        attrs([pos(NewX, NewY)|_]),
+        [move_to(10, 20, 2)|_],
+        []
+    ),
+    NewX = 3,
+    NewY = 6,
+    Commands = [],
+    RevHints = []
+)).
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
-    (Action = move_to(0, 0, 3),
-     ObjIn = game_object(id1, static, attrs([pos(10, 20)]), [move_to(0, 0, 3)], []))
-    => (ObjOut = game_object(id1, static, attrs([pos(NewX, NewY)|_]), [move_to(0, 0, 2)|_], []),
-        NewX = 7, NewY = 14,
-        Commands = [], RevHints = [])
-    # "move_to: negative direction, multiple frames remaining".
+test("move_to: negative direction, multiple frames remaining", (
+    Action = move_to(0, 0, 3),
+    ObjIn = game_object(id1, static, attrs([pos(10, 20)]), [move_to(0, 0, 3)], []),
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    ObjOut = game_object(id1, static, attrs([pos(NewX, NewY)|_]), [move_to(0, 0, 2)|_], []),
+    NewX = 7,
+    NewY = 14,
+    Commands = [],
+    RevHints = []
+)).
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
-    (Action = move_to(5, 5, 1),
-     ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(5, 5, 1)], []))
-    => (ObjOut = game_object(id1, static, attrs([pos(5, 5)|_]), [], []),
-        Commands = [], RevHints = [])
-    # "move_to: single frame, arrives at target".
+test("move_to: single frame, arrives at target", (
+    Action = move_to(5, 5, 1),
+    ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(5, 5, 1)], []),
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    ObjOut = game_object(id1, static, attrs([pos(5, 5)|_]), [], []),
+    Commands = [],
+    RevHints = []
+)).
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) : (
-        Action = move_to(10, 20, 3),
-        ObjIn = game_object(id1, static, attrs([pos(10, 20)]), [move_to(10, 20, 3)], [])
-    ) => (
-        ObjOut = game_object(id1, static, attrs([pos(10, 20)|_]), [move_to(10, 20, 2)|_], []),
-        Commands = [], RevHints = []
-    )
-    # "move_to: already at target, stays at position and continues with remaining frames".
+test("move_to: already at target, stays at position and continues with remaining frames", (
+    Action = move_to(10, 20, 3),
+    ObjIn = game_object(id1, static, attrs([pos(10, 20)]), [move_to(10, 20, 3)], []),
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    ObjOut = game_object(id1, static, attrs([pos(10, 20)|_]), [move_to(10, 20, 2)|_], []),
+    Commands = [],
+    RevHints = []
+)).
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) : (
-        Action = move_to(-5, -10, 2),
-        ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(-5, -10, 2)], [])
-    ) => (
-        ObjOut = game_object(id1, static, attrs([pos(NewX, NewY)|_]), [move_to(-5, -10, 1)|_], []),
-        NewX = -2, NewY = -5,
-        Commands = [], RevHints = []
-    )
-    # "move_to: negative target coordinates".
+test("move_to: negative target coordinates", (
+    Action = move_to(-5, -10, 2),
+    ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(-5, -10, 2)], []),
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    ObjOut = game_object(id1, static, attrs([pos(NewX, NewY)|_]), [move_to(-5, -10, 1)|_], []),
+    NewX = -2,
+    NewY = -5,
+    Commands = [],
+    RevHints = []
+)).
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
-    (Action = move_to(TargetX, TargetY, 1),
-     ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(TargetX, TargetY, 1)], []),
-     ObjOut = game_object(id1, static, attrs([pos(5, 5)|_]), [], []),
-     Commands = [], RevHints = [])
-    => (TargetX = 5, TargetY = 5)
-    + try_sols(1)
-    # "move_to: backward test - can infer target coordinates from final position".
+test("move_to: backward test - can infer target coordinates from final position", (
+    Action = move_to(TargetX, TargetY, 1),  % TargetX and TargetY are unknown - should be inferred
+    ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(TargetX, TargetY, 1)], []),
+    ObjOut = game_object(id1, static, attrs([pos(5, 5)|_]), [], []),
+    Commands = [],
+    RevHints = [],
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    TargetX = 5,  % Verify that TargetX was correctly inferred
+    TargetY = 5   % Verify that TargetY was correctly inferred
+)).
 
 % ----------------------------------------------------------------------------
 % Tests: wait_frames
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
-    (Action = wait_frames(N),
-     ObjIn = game_object(id1, static, attrs([]), [wait_frames(N)], []),
-     ObjOut = game_object(id1, static, attrs([]), [wait_frames(2)], []),
-     Commands = [], RevHints = [])
-    => (N = 3)
-    + try_sols(1)
-    # "wait_frames: backward test - can infer initial frame count from remaining frames".
+% Scryer Prolog test format - backward test: infer N from output
+test("wait_frames: backward test - can infer initial frame count from remaining frames", (
+    Action = wait_frames(N),  % N is unknown - should be inferred
+    ObjIn = game_object(id1, static, attrs([]), [wait_frames(N)], []),
+    ObjOut = game_object(id1, static, attrs([]), [wait_frames(2)], []),
+    Commands = [],
+    RevHints = [],
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    N = 3  % Verify that N was correctly inferred
+)).
 
 % ----------------------------------------------------------------------------
 % Tests: spawn
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
-    (Action = spawn(Type, Pos, Actions),
-     ObjIn = game_object(id1, static, attrs([]), [spawn(Type, Pos, Actions)], []),
-     ObjOut = game_object(id1, static, attrs([]), [], []),
-     Commands = [spawn_request(enemy, pos(10, 5), [move_to(0, 0, 10)])],
-     RevHints = [])
-    => (Type = enemy, Pos = pos(10, 5), Actions = [move_to(0, 0, 10)])
-    + try_sols(1)
-    # "spawn: backward test - can infer spawn parameters from spawn_request command".
+test("spawn: backward test - can infer spawn parameters from spawn_request command", (
+    Action = spawn(Type, Pos, Actions),  % Type, Pos, and Actions are unknown - should be inferred
+    ObjIn = game_object(id1, static, attrs([]), [spawn(Type, Pos, Actions)], []),
+    ObjOut = game_object(id1, static, attrs([]), [], []),
+    Commands = [spawn_request(enemy, pos(10, 5), [move_to(0, 0, 10)])],
+    RevHints = [],
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    Type = enemy,  % Verify that Type was correctly inferred
+    Pos = pos(10, 5),  % Verify that Pos was correctly inferred
+    Actions = [move_to(0, 0, 10)]  % Verify that Actions were correctly inferred
+)).
 
 % ----------------------------------------------------------------------------
 % Tests: trigger_state_change
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
-    (Action = trigger_state_change(Change),
-     ObjIn = game_object(id1, static, attrs([]), [trigger_state_change(Change)], []),
-     ObjOut = game_object(id1, static, attrs([]), [], []),
-     Commands = [state_change(score(10))],
-     RevHints = [])
-    => (Change = score(10))
-    + try_sols(1)
-    # "trigger_state_change: backward test - can infer change from state_change command".
+test("trigger_state_change: backward test - can infer change from state_change command", (
+    Action = trigger_state_change(Change),  % Change is unknown - should be inferred
+    ObjIn = game_object(id1, static, attrs([]), [trigger_state_change(Change)], []),
+    ObjOut = game_object(id1, static, attrs([]), [], []),
+    Commands = [state_change(score(10))],
+    RevHints = [],
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    Change = score(10)  % Verify that Change was correctly inferred
+)).
 
 % ----------------------------------------------------------------------------
 % Tests: loop
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
-    (Action = loop(Actions),
-     ObjIn = game_object(id1, static, attrs([]), [loop(Actions)], []),
-     ObjOut = game_object(id1, static, attrs([]), [move_to(5, 5, 1), loop([move_to(5, 5, 1)])], []),
-     Commands = [], RevHints = [])
-    => (Actions = [move_to(5, 5, 1)])
-    + try_sols(1)
-    # "loop: backward test - can infer looped actions from final action list".
+test("loop: backward test - can infer looped actions from final action list", (
+    Action = loop(Actions),  % Actions is unknown - should be inferred
+    ObjIn = game_object(id1, static, attrs([]), [loop(Actions)], []),
+    ObjOut = game_object(id1, static, attrs([]), [move_to(5, 5, 1), loop([move_to(5, 5, 1)])], []),
+    Commands = [],
+    RevHints = [],
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    Actions = [move_to(5, 5, 1)]  % Verify that Actions were correctly inferred
+)).
 
 % ----------------------------------------------------------------------------
 % Tests: despawn
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
-    (Action = despawn,
-     ObjIn = game_object(ID, static, attrs(Attrs), [], []),
-     ObjOut = despawned,
-     Commands = [],
-     RevHints = [despawned(id1, [pos(10, 20)])])
-    => (ID = id1, Attrs = [pos(10, 20)])
-    + try_sols(1)
-    # "despawn: backward test - can infer ID and attributes from despawned rev_hint".
+test("despawn: backward test - can infer ID and attributes from despawned rev_hint", (
+    Action = despawn,
+    ObjIn = game_object(ID, static, attrs(Attrs), [], []),  % ID and Attrs are unknown - should be inferred
+    ObjOut = despawned,
+    Commands = [],
+    RevHints = [despawned(id1, [pos(10, 20)])],
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    ID = id1,  % Verify that ID was correctly inferred
+    Attrs = [pos(10, 20)]  % Verify that Attrs were correctly inferred
+)).
 
 % ----------------------------------------------------------------------------
 % Tests: parallel
 % ----------------------------------------------------------------------------
 
-:- test execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :
-    (Action = parallel([wait_frames(N1), wait_frames(N2)]),
-     ObjIn = game_object(id1, static, attrs([]), [parallel([wait_frames(N1), wait_frames(N2)])], []),
-     ObjOut = game_object(
+test("parallel: backward test - can infer original wait_frames values from parallel_running state", (
+    Action = parallel([wait_frames(N1), wait_frames(N2)]),  % N1 and N2 are unknown - should be inferred
+    ObjIn = game_object(id1, static, attrs([]), [parallel([wait_frames(N1), wait_frames(N2)])], []),
+    ObjOut = game_object(
         id1,
         static,
         attrs([]),
         [parallel_running([wait_frames(2), wait_frames(3)])],
         []
     ),
-     Commands = [], RevHints = [])
-    => (N1 = 3, N2 = 4)
-    + try_sols(1)
-    # "parallel: backward test - can infer original wait_frames values from parallel_running state".
+    Commands = [],
+    RevHints = [],
+    execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
+    N1 = 3,  % Verify that N1 was correctly inferred
+    N2 = 4   % Verify that N2 was correctly inferred
+)).
 
