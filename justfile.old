@@ -1,44 +1,11 @@
-start:
-	cd prolog && swipl -q main.pl
-
-# WASM related commands
-start-wasm:
-	bun run index.ts
-build:
-	bun build index.ts --compile --outfile dist/duels-of-destiny
-build-win:
-	bun build index.ts --compile --target=bun-windows-x64 --outfile dist/duels-of-destiny.exe
-build-mac:
-	bun build index.ts --compile --target=bun-darwin-x64 --outfile dist/duels-of-destiny-mac
-build-linux:
-	bun build index.ts --compile --target=bun-linux-x64 --outfile dist/duels-of-destiny-linux
-
 lint:
 	cd prolog && swipl --on-warning=status --on-error=status -g check -t halt -l game.pl
 
 multilint:
 	cd prolog && LINT_FILES=game.pl swipl multilint.pl
 
-outcomes:
-	cd prolog && swipl -q outcomes.pl
-
-test:
-	cd prolog && TYPEWRITER=false swipl -q -t halt run_tests.pl
-
-test-watch:
-	bun scripts/watch-tests.ts
-
-test-narration:
-	cd prolog && swipl -q combat_narration.test.pl > ../logs/combat_narration.test.pl.log
-
-build-swipl:
-	cd prolog && swipl -q build_executable.pl
-
 stats:
 	bun scripts/file-stats.ts combat_narration.pl game.pl outcomes.pl typewriter.pl config.pl
-
-consult-battle:
-	cd prolog && swipl -g '[operators]' -g '[game]'
 
 lint-all:
     just lint
