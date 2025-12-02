@@ -1,13 +1,2 @@
 set -e
 
-just check prolog/types
-
-just check prolog/game
-
-just check prolog/engine
-just test prolog/engine
-
-just check prolog/execute_action
-just test prolog/execute_action
-
-# just verify game

@@ -74,14 +74,6 @@
 # **/doclog.config.pl
 
 # # Ignore specific directories that are definitely not needed
-ciao/builder/
-ciao/core/bootstrap/
-# ciao/core/engine/
-# ciao/core/examples/
-ciao/core/Win32/
-# ciao-alldocs/
-# ciaopp/doc/
-# ciaopp/examples/
 # scryer-prolog/benches/
 # scryer-prolog/build/
 # scryer-prolog/learn/
