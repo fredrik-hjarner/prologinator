@@ -11,10 +11,10 @@ default:
 	@just --list
 
 # Check if a Prolog file compiles (reports errors/warnings, exits on error)
-# Usage: just check <filename>
-# Example: just check engine
+# Usage: just check <path>
+# Example: just check prolog/engine
 check file:
-	cd prolog && rm -f {{file}}.po {{file}}.itf && ciaoc -c {{file}}.pl
+	rm -f {{file}}.po {{file}}.itf && ciaoc -c {{file}}.pl
 	just clean
 
 # Test if a Prolog file is compatible with Ciao Prolog (interactive)
@@ -38,15 +38,14 @@ run game:
 	cd prolog && ciaosh -l game.pl -e "main" -t halt
 
 # Run unit tests
-# Usage: just test [module]
+# Usage: just test <path>
 # Examples:
-#   just test engine      # runs engine.pl tests
-#   just test execute_action  # runs execute_action.pl tests
+#   just test prolog/engine      # runs engine.pl tests
+#   just test prolog/execute_action  # runs execute_action.pl tests
 # Note: Tests are defined using :- test assertions in the source file
 test module:
-	cd prolog && \
-		rm -f run_tests.po run_tests.itf && \
-		timeout 10 bash -c 'TEST_MODULE="{{module}}" ciaosh -u run_tests.pl -t halt 2>&1 | tee /tmp/test_output.txt' && \
+	rm -f scripts/run_tests.po scripts/run_tests.itf && \
+		timeout 10 bash -c 'TEST_MODULE="{{module}}" ciaosh -u scripts/run_tests.pl -t halt 2>&1 | tee /tmp/test_output.txt' && \
 		(grep -q "Passed:.*100.00%" /tmp/test_output.txt && echo "✅ All tests passed" && just clean && exit 0) || \
 		(echo "❌ Tests failed" && just clean && exit 1)
 
@@ -54,12 +53,12 @@ test module:
 # Removes: .itf, .po, .asr, .ast, *_co.pl, *_pd_*.pl, *_eterms_*.pl, *_codegen_*.pl, .testin, .testout, run_tests, temporary checker files
 # Usage: just clean
 clean:
-	@find prolog ciao_experiments ciaopp \( -name "*.itf" -o -name "*.po" -o -name "*.asr" -o -name "*.ast" \) -type f -delete 2>/dev/null || true
-	@find prolog ciao_experiments ciaopp \( -name "*_co.pl" -o -name "*_pd_*.pl" -o -name "*_eterms_*.pl" -o -name "*_codegen_*.pl" \) -type f -delete 2>/dev/null || true
-	@find prolog ciao_experiments ciaopp \( -name "*.testin" -o -name "*.testout" -o -name "*.testout-saved" -o -name "*.testin-saved" \) -type f -delete 2>/dev/null || true
-	@find prolog ciao_experiments ciaopp -name "run_tests" -type f -delete 2>/dev/null || true
-	@find prolog ciao_experiments ciaopp -name "*_co.pl" -type l -delete 2>/dev/null || true
-	@find prolog ciao_experiments ciaopp \( -name "*.po-tmpciao*" -o -name "*_flycheck_tmp_co.*" \) -type f -delete 2>/dev/null || true
+	@find prolog ciao_experiments ciaopp scripts \( -name "*.itf" -o -name "*.po" -o -name "*.asr" -o -name "*.ast" \) -type f -delete 2>/dev/null || true
+	@find prolog ciao_experiments ciaopp scripts \( -name "*_co.pl" -o -name "*_pd_*.pl" -o -name "*_eterms_*.pl" -o -name "*_codegen_*.pl" \) -type f -delete 2>/dev/null || true
+	@find prolog ciao_experiments ciaopp scripts \( -name "*.testin" -o -name "*.testout" -o -name "*.testout-saved" -o -name "*.testin-saved" \) -type f -delete 2>/dev/null || true
+	@find prolog ciao_experiments ciaopp scripts -name "run_tests" -type f -delete 2>/dev/null || true
+	@find prolog ciao_experiments ciaopp scripts -name "*_co.pl" -type l -delete 2>/dev/null || true
+	@find prolog ciao_experiments ciaopp scripts \( -name "*.po-tmpciao*" -o -name "*_flycheck_tmp_co.*" \) -type f -delete 2>/dev/null || true
 
 # Run CiaoPP analysis script on a file
 # Usage: just ciaopp <filename>
