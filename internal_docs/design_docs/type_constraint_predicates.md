@@ -65,8 +65,8 @@
 %   An ID could be: tower_1, enemy_9999, player_abc, etc.
 %   Impossible to constrain atom/1 without testing.
 %   SOLUTION: Use integers instead!
-%   ID becomes an integer: 1, 2, 3, ...
-%   Now we can use CLP(FD): ID #> 0
+%   ID becomes an integer: 0, 1, 2, 3, ...
+%   Now we can use CLP(FD): ID #>= 0
 %   ✓ Works with unbound ID
 %   ✓ Can generate/query IDs
 
@@ -104,8 +104,8 @@ game_state(
     game_status(Status),
     % Score: non-negative integer
     Score #>= 0,
-    % NextID: positive integer (next ID to assign)
-    NextID #> 0,
+    % NextID: non-negative integer (next ID to assign)
+    NextID #>= 0,
     % Keyframe: valid keyframe structure
     keyframe(Keyframe), % NOTE: maybe it should be a list?
     % Commands: list of command structures
@@ -135,10 +135,10 @@ game_status(lost).
 game_object(
   game_object(ID, Type, attrs(Attrs), Actions, Colls)
 ) :-
-    % ID: positive integer (no atom testing!)
+    % ID: non-negative integer (no atom testing!)
     % Comment: If you need UUIDs, generate them before
     %          calling game_object/1, then they're ground
-    ID #> 0,
+    ID #>= 0,
     % Type: one of {static, enemy, proj, player}
     object_type(Type),
     % Attrs: list of attribute structures
@@ -274,7 +274,7 @@ command(state_change(Change)) :-
 
 collision(C) :-
     % Comment: Currently accepts any term
-    % Could add: collision(ID1, ID2) :- ID1 #> 0, ID2 #> 0.
+    % Could add: collision(ID1, ID2) :- ID1 #>= 0, ID2 #>= 0.
     var(C) ; compound(C) ; atom(C) ; number(C).
 
 % ================================================================
@@ -292,8 +292,8 @@ keyframe(keyframe(Frame, Objects)) :-
 % ================================================================
 
 rev_hint(despawned(ID, Attrs)) :-
-    % Object ID: positive integer
-    ID #> 0,
+    % Object ID: non-negative integer
+    ID #>= 0,
     % Saved attributes at despawn time
     (Attrs = [] ; 
      Attrs = [_|_]),
@@ -374,7 +374,7 @@ game_state(
     bounded_list_of(game_object, Objects, 1000),
     game_status(Status),
     Score #>= 0,
-    NextID #> 0,
+    NextID #>= 0,
     keyframe(Keyframe),
     bounded_list_of(command, Commands, 100),
     bounded_list_of(rev_hint, RevHints, 1000).
@@ -386,7 +386,7 @@ game_state(
 game_object(
   game_object(ID, Type, attrs(Attrs), Actions, Colls)
 ) :-
-    ID #> 0,
+    ID #>= 0,
     object_type(Type),
     bounded_list_of(attribute, Attrs, 50),
     bounded_list_of(action, Actions, 100),
@@ -566,7 +566,7 @@ bounded_list_of_depth(Goal, List, MaxLen, DepthLeft) :-
 % PROBLEM: Duplicate IDs Are Type-Valid But Semantically Invalid
 % ================================================================
 
-% The current game_object/1 checks ID #> 0 in isolation.
+% The current game_object/1 checks ID #>= 0 in isolation.
 % This allows multiple objects to share the same ID:
 %
 % ?- game_state(GS),
@@ -595,12 +595,12 @@ game_state(
     all_distinct(IDs),
     
     % NextID must exceed all existing IDs
-    (IDs = [] -> MaxID = 0 ; max_list(IDs, MaxID)),
+    (IDs = [] -> MaxID = -1 ; max_list(IDs, MaxID)),
     NextID #> MaxID,
     
     game_status(Status),
     Score #>= 0,
-    % Remove standalone: NextID #> 0  (replaced by above)
+    % Remove standalone: NextID #>= 0  (replaced by above)
     keyframe(Keyframe),
     bounded_list_of(command, Commands, 100),
     bounded_list_of(rev_hint, RevHints, 1000).
@@ -636,7 +636,7 @@ get_object_id(game_object(ID, _, _, _, _), ID).
 ```prolog
 % ================================================================
 % Bidirectional Game State Constraints (v2) - ADDENDUM 5
-% Optimizing ID Constraints Using Descending Order
+% Optimizing ID Constraints Using Ascending Order
 % ================================================================
 
 % READ THIS AFTER v2 + ADDENDUM 1 + ADDENDUM 2 + ADDENDUM 3 
@@ -644,18 +644,20 @@ get_object_id(game_object(ID, _, _, _, _), ID).
 % This optimizes ID uniqueness from O(N²) to O(N).
 
 % ================================================================
-% OBSERVATION: Objects Are Always Reverse-Sorted by ID
+% OBSERVATION: Objects Are Always Sorted by ID in Ascending Order
 % ================================================================
 
-% When objects spawn, they are consed to the head of the list
+% When objects spawn, they are appended to the end of the list
 % with monotonically increasing IDs:
 %
-% Frame 1: Objects = [obj(1)]
-% Frame 2: Objects = [obj(2), obj(1)]
-% Frame 3: Objects = [obj(3), obj(2), obj(1)]
+% Frame 1: Objects = [obj(0)]
+% Frame 2: Objects = [obj(0), obj(1)]
+% Frame 3: Objects = [obj(0), obj(1), obj(2)]
 %
-% IDs are in DESCENDING order: highest at head, lowest at tail.
-% Despawning preserves this order (removes from middle/end).
+% IDs are in ASCENDING order: lowest at head, highest at tail.
+% New objects with higher IDs are always added to the tail.
+% Despawning removes objects from anywhere in the list, but new
+% spawns always append to the end.
 
 % ================================================================
 % OPTIMIZATION: Use chain/2 Instead of all_distinct/1
@@ -673,11 +675,11 @@ game_state(
     % Extract IDs
     maplist(get_object_id, Objects, IDs),
     
-    % Enforce descending order (implicitly ensures uniqueness)
-    chain(IDs, #>),
+    % Enforce ascending order (implicitly ensures uniqueness)
+    chain(IDs, #<),
     
-    % Head of list is the maximum ID (if list non-empty)
-    (IDs = [] -> MaxID = 0 ; IDs = [MaxID|_]),
+    % Tail of list is the maximum ID (if list non-empty)
+    (IDs = [] -> MaxID = -1 ; last(IDs, MaxID)),
     NextID #> MaxID,
     
     game_status(Status),
@@ -691,7 +693,7 @@ game_state(
 % ================================================================
 
 % all_distinct(IDs):  O(N²) constraint propagation
-% chain(IDs, #>):     O(N) constraint propagation
+% chain(IDs, #<):     O(N) constraint propagation
 %
 % For 1000 objects, this is ~1000x faster during generation.
 % Validation of ground terms remains fast in both cases.

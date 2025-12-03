@@ -251,7 +251,7 @@ all_children_done([caused_despawn|_]) :-
 test("move_to: positive direction, multiple frames remaining", (
     Action = move_to(10, 20, 3),
     ObjIn = game_object(
-        id1,
+        1,
         static,
         attrs([pos(0, 0)]),
         [move_to(10, 20, 3)],
@@ -259,7 +259,7 @@ test("move_to: positive direction, multiple frames remaining", (
     ),
     execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
     ObjOut = game_object(
-        id1,
+        1,
         static,
         attrs([pos(NewX, NewY)|_]),
         [move_to(10, 20, 2)|_],
@@ -273,9 +273,9 @@ test("move_to: positive direction, multiple frames remaining", (
 
 test("move_to: negative direction, multiple frames remaining", (
     Action = move_to(0, 0, 3),
-    ObjIn = game_object(id1, static, attrs([pos(10, 20)]), [move_to(0, 0, 3)], []),
+    ObjIn = game_object(1, static, attrs([pos(10, 20)]), [move_to(0, 0, 3)], []),
     execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = game_object(id1, static, attrs([pos(NewX, NewY)|_]), [move_to(0, 0, 2)|_], []),
+    ObjOut = game_object(1, static, attrs([pos(NewX, NewY)|_]), [move_to(0, 0, 2)|_], []),
     NewX = 7,
     NewY = 14,
     Commands = [],
@@ -284,27 +284,27 @@ test("move_to: negative direction, multiple frames remaining", (
 
 test("move_to: single frame, arrives at target", (
     Action = move_to(5, 5, 1),
-    ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(5, 5, 1)], []),
+    ObjIn = game_object(1, static, attrs([pos(0, 0)]), [move_to(5, 5, 1)], []),
     execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = game_object(id1, static, attrs([pos(5, 5)|_]), [], []),
+    ObjOut = game_object(1, static, attrs([pos(5, 5)|_]), [], []),
     Commands = [],
     RevHints = []
 )).
 
 test("move_to: already at target, stays at position and continues with remaining frames", (
     Action = move_to(10, 20, 3),
-    ObjIn = game_object(id1, static, attrs([pos(10, 20)]), [move_to(10, 20, 3)], []),
+    ObjIn = game_object(1, static, attrs([pos(10, 20)]), [move_to(10, 20, 3)], []),
     execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = game_object(id1, static, attrs([pos(10, 20)|_]), [move_to(10, 20, 2)|_], []),
+    ObjOut = game_object(1, static, attrs([pos(10, 20)|_]), [move_to(10, 20, 2)|_], []),
     Commands = [],
     RevHints = []
 )).
 
 test("move_to: negative target coordinates", (
     Action = move_to(-5, -10, 2),
-    ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(-5, -10, 2)], []),
+    ObjIn = game_object(1, static, attrs([pos(0, 0)]), [move_to(-5, -10, 2)], []),
     execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = game_object(id1, static, attrs([pos(NewX, NewY)|_]), [move_to(-5, -10, 1)|_], []),
+    ObjOut = game_object(1, static, attrs([pos(NewX, NewY)|_]), [move_to(-5, -10, 1)|_], []),
     NewX = -2,
     NewY = -5,
     Commands = [],
@@ -313,8 +313,8 @@ test("move_to: negative target coordinates", (
 
 test("move_to: backward test - can infer target coordinates from final position", (
     Action = move_to(TargetX, TargetY, 1),  % TargetX and TargetY are unknown - should be inferred
-    ObjIn = game_object(id1, static, attrs([pos(0, 0)]), [move_to(TargetX, TargetY, 1)], []),
-    ObjOut = game_object(id1, static, attrs([pos(5, 5)|_]), [], []),
+    ObjIn = game_object(1, static, attrs([pos(0, 0)]), [move_to(TargetX, TargetY, 1)], []),
+    ObjOut = game_object(1, static, attrs([pos(5, 5)|_]), [], []),
     Commands = [],
     RevHints = [],
     execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
@@ -329,8 +329,8 @@ test("move_to: backward test - can infer target coordinates from final position"
 % Scryer Prolog test format - backward test: infer N from output
 test("wait_frames: backward test - can infer initial frame count from remaining frames", (
     Action = wait_frames(N),  % N is unknown - should be inferred
-    ObjIn = game_object(id1, static, attrs([]), [wait_frames(N)], []),
-    ObjOut = game_object(id1, static, attrs([]), [wait_frames(2)], []),
+    ObjIn = game_object(1, static, attrs([]), [wait_frames(N)], []),
+    ObjOut = game_object(1, static, attrs([]), [wait_frames(2)], []),
     Commands = [],
     RevHints = [],
     execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
@@ -343,8 +343,8 @@ test("wait_frames: backward test - can infer initial frame count from remaining 
 
 test("spawn: backward test - can infer spawn parameters from spawn_request command", (
     Action = spawn(Type, Pos, Actions),  % Type, Pos, and Actions are unknown - should be inferred
-    ObjIn = game_object(id1, static, attrs([]), [spawn(Type, Pos, Actions)], []),
-    ObjOut = game_object(id1, static, attrs([]), [], []),
+    ObjIn = game_object(1, static, attrs([]), [spawn(Type, Pos, Actions)], []),
+    ObjOut = game_object(1, static, attrs([]), [], []),
     Commands = [spawn_request(enemy, pos(10, 5), [move_to(0, 0, 10)])],
     RevHints = [],
     execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
@@ -359,8 +359,8 @@ test("spawn: backward test - can infer spawn parameters from spawn_request comma
 
 test("trigger_state_change: backward test - can infer change from state_change command", (
     Action = trigger_state_change(Change),  % Change is unknown - should be inferred
-    ObjIn = game_object(id1, static, attrs([]), [trigger_state_change(Change)], []),
-    ObjOut = game_object(id1, static, attrs([]), [], []),
+    ObjIn = game_object(1, static, attrs([]), [trigger_state_change(Change)], []),
+    ObjOut = game_object(1, static, attrs([]), [], []),
     Commands = [state_change(score(10))],
     RevHints = [],
     execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
@@ -373,8 +373,8 @@ test("trigger_state_change: backward test - can infer change from state_change c
 
 test("loop: backward test - can infer looped actions from final action list", (
     Action = loop(Actions),  % Actions is unknown - should be inferred
-    ObjIn = game_object(id1, static, attrs([]), [loop(Actions)], []),
-    ObjOut = game_object(id1, static, attrs([]), [move_to(5, 5, 1), loop([move_to(5, 5, 1)])], []),
+    ObjIn = game_object(1, static, attrs([]), [loop(Actions)], []),
+    ObjOut = game_object(1, static, attrs([]), [move_to(5, 5, 1), loop([move_to(5, 5, 1)])], []),
     Commands = [],
     RevHints = [],
     execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
@@ -390,9 +390,9 @@ test("despawn: backward test - can infer ID and attributes from despawned rev_hi
     ObjIn = game_object(ID, static, attrs(Attrs), [], []),  % ID and Attrs are unknown - should be inferred
     ObjOut = despawned,
     Commands = [],
-    RevHints = [despawned(id1, [pos(10, 20)])],
+    RevHints = [despawned(1, [pos(10, 20)])],
     execute_action(Action, ObjIn, ObjOut, Commands, RevHints),
-    ID = id1,  % Verify that ID was correctly inferred
+    ID = 1,  % Verify that ID was correctly inferred
     Attrs = [pos(10, 20)]  % Verify that Attrs were correctly inferred
 )).
 
@@ -402,9 +402,9 @@ test("despawn: backward test - can infer ID and attributes from despawned rev_hi
 
 test("parallel: backward test - can infer original wait_frames values from parallel_running state", (
     Action = parallel([wait_frames(N1), wait_frames(N2)]),  % N1 and N2 are unknown - should be inferred
-    ObjIn = game_object(id1, static, attrs([]), [parallel([wait_frames(N1), wait_frames(N2)])], []),
+    ObjIn = game_object(1, static, attrs([]), [parallel([wait_frames(N1), wait_frames(N2)])], []),
     ObjOut = game_object(
-        id1,
+        1,
         static,
         attrs([]),
         [parallel_running([wait_frames(2), wait_frames(3)])],

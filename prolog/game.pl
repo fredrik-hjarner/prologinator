@@ -20,7 +20,7 @@ main :-
         0,
         [
             % Towers at bottom row (y=19)
-            game_object(tower_0, tower, attrs([pos(5, 19)]), [
+            game_object(0, tower, attrs([pos(5, 19)]), [
                 loop([
                     wait_frames(3),
                     spawn(proj, pos(5, 19), [
@@ -28,7 +28,7 @@ main :-
                     ])
                 ])
             ], []),
-            game_object(tower_1, tower, attrs([pos(10, 19)]), [
+            game_object(1, tower, attrs([pos(10, 19)]), [
                 loop([
                     wait_frames(3),
                     spawn(proj, pos(10, 19), [
@@ -36,7 +36,7 @@ main :-
                     ])
                 ])
             ], []),
-            game_object(tower_2, tower, attrs([pos(15, 19)]), [
+            game_object(2, tower, attrs([pos(15, 19)]), [
                 loop([
                     wait_frames(3),
                     spawn(proj, pos(15, 19), [
@@ -45,7 +45,7 @@ main :-
                 ])
             ], []),
             % Enemy spawner
-            game_object(spawner_0, static, attrs([]), [
+            game_object(3, static, attrs([]), [
                 loop([
                     wait_frames(5),
                     spawn(enemy, pos(0, 10), [
