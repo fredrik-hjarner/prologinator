@@ -9,13 +9,12 @@
 
 % :- regtype game_state/1 # "Game state structure".
 
-% game_state(game_state(Frame, Objects, Status, Score, NextID, Keyframe, Commands, RevHints)) :-
+% game_state(game_state(Frame, Objects, Status, Score, NextID, Commands, RevHints)) :-
 %     int(Frame),
 %     list(game_object, Objects),
 %     game_status(Status),
 %     int(Score),
 %     int(NextID),
-%     keyframe(Keyframe),
 %     list(command, Commands),
 %     list(rev_hint, RevHints).
 
@@ -33,12 +32,6 @@
 % game_status(playing).
 % game_status(won).
 % game_status(lost).
-
-% :- regtype keyframe/1 # "Keyframe structure".
-
-% keyframe(keyframe(Frame, Objects)) :-
-%     int(Frame),
-%     list(game_object, Objects).
 
 % :- regtype rev_hint/1 # "Reverse hints: information completeness for reversal".
 

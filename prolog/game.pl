@@ -57,14 +57,13 @@ main :-
         playing,
         0,
         4,
-        keyframe(0, []),
         [],
         []
     ),
     game_loop(InitialState, []).
 
 game_loop(State, History) :-
-    State = game_state(_, _, Status, _, _, _, _, _),
+    State = game_state(_, _, Status, _, _, _, _),
     ( Status = playing ->
         render(State),
         write('Press: f=forward, r=reverse, q=quit'), nl,
@@ -72,8 +71,8 @@ game_loop(State, History) :-
         get_single_char(Char),
         ( Char = end_of_file ->
             % EOF, quit
-            State = game_state(F, Objs, _, Score, NextID, KF, Commands, RevHints),
-            NewState = game_state(F, Objs, lost, Score, NextID, KF, Commands, RevHints),
+            State = game_state(F, Objs, _, Score, NextID, Commands, RevHints),
+            NewState = game_state(F, Objs, lost, Score, NextID, Commands, RevHints),
             NewHistory = History
         ;
             handle_input(Char, State, History, NewState, NewHistory)
@@ -101,8 +100,8 @@ handle_input(Char, State, History, NewState, NewHistory) :-
         )
     ;   char_code(Char, 113) ->  % 'q'
         % Quit: set status to lost to exit loop
-        State = game_state(F, Objs, _, Score, NextID, KF, Commands, RevHints),
-        NewState = game_state(F, Objs, lost, Score, NextID, KF, Commands, RevHints),
+        State = game_state(F, Objs, _, Score, NextID, Commands, RevHints),
+        NewState = game_state(F, Objs, lost, Score, NextID, Commands, RevHints),
         NewHistory = History
     ;
         % Unknown input, stay at current state
@@ -118,7 +117,7 @@ render(State) :-
     char_code(Esc, 27),  % ESC character
     write(Esc), write('[2J'), write(Esc), write('[H'),
     
-    State = game_state(Frame, Objects, Status, Score, _, _, _, _),
+    State = game_state(Frame, Objects, Status, Score, _, _, _),
     
     % Header
     write('=== Tower Defense ==='), nl,

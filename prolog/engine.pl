@@ -15,7 +15,6 @@
     game_state/1,
     game_object/1,
     game_status/1,
-    keyframe/1,
     command/1,
     rev_hint/1,
     action/1,
@@ -36,7 +35,7 @@
 %   game_status(playing|won|lost),
 %   score(Score),
 %   next_id(NextID),
-%   last_keyframe(Keyframe),
+%   commands([...]),
 %   reverse_hints([...])
 % )
 
@@ -172,7 +171,6 @@ test("tick: increments frame and processes empty game state", (
         playing,
         0,
         1,
-        keyframe(0, []),
         [],
         []
     ),
@@ -183,7 +181,6 @@ test("tick: increments frame and processes empty game state", (
         playing,
         0,
         1,
-        _,
         [],
         []
     )
@@ -196,7 +193,6 @@ test("tick: processes object with yielding action (wait_frames)", (
         playing,
         0,
         1,
-        keyframe(0, []),
         [],
         []
     ),
@@ -207,7 +203,6 @@ test("tick: processes object with yielding action (wait_frames)", (
         playing,
         0,
         1,
-        _,
         [],
         []
     )
@@ -220,7 +215,6 @@ test("tick: processes spawn request and creates new object", (
         playing,
         0,
         1,
-        keyframe(0, []),
         [],
         []
     ),
@@ -231,7 +225,6 @@ test("tick: processes spawn request and creates new object", (
         playing,
         0,
         2,
-        _,
         [],
         []
     ),
@@ -246,7 +239,6 @@ test("tick: processes state change (score increase)", (
         playing,
         0,
         1,
-        keyframe(0, []),
         [],
         []
     ),
@@ -257,7 +249,6 @@ test("tick: processes state change (score increase)", (
         playing,
         NewScore,
         1,
-        _,
         [],
         []
     ),
@@ -270,7 +261,7 @@ test("tick: processes state change (score increase)", (
 tick(StateIn, StateOut) :-
     StateIn = game_state(
         F, Objs, Status, Score, NextID,
-        LastKF, _OldCommands, _OldRevHints
+        _OldCommands, _OldRevHints
     ),
     
     % 1. Tick all objects
@@ -304,17 +295,10 @@ tick(StateIn, StateOut) :-
     
     F1 #= F + 1,
     
-    % 8. Create keyframe if needed
-    ( should_create_keyframe(F1) ->
-        NewKF = keyframe(F1, FinalObjs)
-    ;
-        NewKF = LastKF
-    ),
-    
-    % 9. Build new state
+    % 8. Build new state
     StateOut = game_state(
         F1, FinalObjs, NewStatus, NewScore,
-        NewNextID, NewKF, [], AllRevHints
+        NewNextID, [], AllRevHints
     ).
 
 % ============================================================================
@@ -445,12 +429,6 @@ remove_with_rev_hints(
     remove_with_rev_hints(Rest, ToRemove, NewObjs, RestRevHints).
 remove_with_rev_hints([Obj|Rest], ToRemove, [Obj|NewObjs], RevHints) :-
     remove_with_rev_hints(Rest, ToRemove, NewObjs, RevHints).
-
-% ============================================================================
-% Keyframes
-% ============================================================================
-should_create_keyframe(F) :-
-    (F mod 10) #= 0.
 
 % ============================================================================
 % Partition helper (if not available in Ciao)
