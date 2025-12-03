@@ -3096,3 +3096,14 @@ parallel([
 tree.
 
 **Everything else unchanged.**
+
+---
+---
+---
+---
+
+# Tower Defense Design v2 - Addendum 5
+
+I declare key frame to be out of scope for this project.
+The reason is the it's already complicated enough, key
+frames could be added at a later time though.
