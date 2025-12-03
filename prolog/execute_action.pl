@@ -44,6 +44,7 @@ execute_action(
     [],
     []
 ) :-
+    game_object_type(game_object(ID, Type, attrs(Attrs), [_|Rest], Colls)),
     action_type(wait_frames(N)),
     ( N #> 1 ->
         N1 #= N - 1,
@@ -51,7 +52,8 @@ execute_action(
     ;
         % N = 1, wait is done
         NewActions = Rest
-    ).
+    ),
+    game_object_type(game_object(ID, Type, attrs(Attrs), NewActions, Colls)).
 
 % ----------------------------------------------------------------------------
 % Basic Actions: move_to
@@ -64,6 +66,7 @@ execute_action(
     [],
     []
 ) :-
+    game_object_type(game_object(ID, Type, attrs(Attrs), [_|Rest], Colls)),
     action_type(move_to(TargetX, TargetY, Frames)),
     select(pos(CurrentX, CurrentY), Attrs, RestAttrs),
     % Compute step using integer division
@@ -83,7 +86,8 @@ execute_action(
         NewActions = [move_to(TargetX, TargetY, Frames1)|Rest]
     ;
         NewActions = Rest  % Arrived
-    ).
+    ),
+    game_object_type(game_object(ID, Type, attrs(NewAttrs), NewActions, Colls)).
 
 % ----------------------------------------------------------------------------
 % Basic Actions: despawn
@@ -96,6 +100,7 @@ execute_action(
     [],
     [despawned(ID, Attrs)]
 ) :-
+    game_object_type(game_object(ID, _Type, attrs(Attrs), _, _Colls)),
     action_type(despawn),
     !.
 
@@ -110,7 +115,9 @@ execute_action(
     [spawn_request(Type, Pos, Actions)],
     []
 ) :-
-    action_type(spawn(Type, Pos, Actions)).
+    game_object_type(game_object(ID, ObjType, attrs(Attrs), [_|Rest], Colls)),
+    action_type(spawn(Type, Pos, Actions)),
+    game_object_type(game_object(ID, ObjType, attrs(Attrs), Rest, Colls)).
 
 % ----------------------------------------------------------------------------
 % Compound Actions: loop
@@ -123,9 +130,11 @@ execute_action(
     [],
     []
 ) :-
+    game_object_type(game_object(ID, Type, attrs(Attrs), [_|Rest], Colls)),
     action_type(loop(Actions)),
     append(Actions, [loop(Actions)], Expanded),
-    append(Expanded, Rest, NewActions).
+    append(Expanded, Rest, NewActions),
+    game_object_type(game_object(ID, Type, attrs(Attrs), NewActions, Colls)).
 
 % ----------------------------------------------------------------------------
 % Compound Actions: trigger_state_change
@@ -138,7 +147,9 @@ execute_action(
     [state_change(Change)],
     []
 ) :-
-    action_type(trigger_state_change(Change)).
+    game_object_type(game_object(ID, Type, attrs(Attrs), [_|Rest], Colls)),
+    action_type(trigger_state_change(Change)),
+    game_object_type(game_object(ID, Type, attrs(Attrs), Rest, Colls)).
 
 % ----------------------------------------------------------------------------
 % Compound Actions: parallel (from Addendum 2 + 3 - FINAL version)
@@ -151,6 +162,7 @@ execute_action(
     AllCommands,
     AllRevHints
 ) :-
+    game_object_type(game_object(ID, Type, attrs(AttrsIn), [_|Rest], Colls)),
     action_type(parallel(ChildActions)),
     tick_parallel_children(
         ChildActions, ID, Type, AttrsIn, Colls,
@@ -159,10 +171,12 @@ execute_action(
     ( member(caused_despawn, UpdatedChildren) ->
         Result = despawned
     ; all_children_done(UpdatedChildren) ->
-        Result = game_object(ID, Type, attrs(AttrsOut), Rest, Colls)
+        Result = game_object(ID, Type, attrs(AttrsOut), Rest, Colls),
+        game_object_type(Result)
     ;
         NewActions = [parallel_running(UpdatedChildren)|Rest],
-        Result = game_object(ID, Type, attrs(AttrsOut), NewActions, Colls)
+        Result = game_object(ID, Type, attrs(AttrsOut), NewActions, Colls),
+        game_object_type(Result)
     ).
 
 % ----------------------------------------------------------------------------
@@ -173,8 +187,10 @@ execute_action(
     parallel_running(Children),
     Obj, NewObj, Commands, RevHints
 ) :-
+    game_object_type(Obj),
     action_type(parallel_running(Children)),
     execute_action(parallel(Children), Obj, NewObj, Commands, RevHints).
+    % ( NewObj = despawned -> true ; game_object_type(NewObj) ).
 
 % ============================================================================
 % tick_parallel_children/9

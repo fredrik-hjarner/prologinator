@@ -23,10 +23,26 @@
 % ============================================================================
 
 % bounded_list_of/3 - using between/3 to avoid infinite generation (Addendum 2)
+% NOTE: This uses ground/1 for dispatch (choosing algorithm),
+% not for logic (validation). Both branches enforce the same
+% constraint: length(List) =< MaxLen. The predicate remains
+% fully bidirectional:
+% - ?- bounded_list_of(Goal, [a,b], 10).  % validates
+% - ?- bounded_list_of(Goal, List, 3).    % generates
 bounded_list_of(Goal, List, MaxLen) :-
-    between(0, MaxLen, Len),
-    length(List, Len),
-    maplist(Goal, List).
+( ground(List)
+-> % Fast path: List is already ground (validation mode)
+   % Just check length once and validate elements
+   length(List, Len),
+   Len =< MaxLen,
+   maplist(Goal, List)
+;  % Constraint path: List is unbound (generation mode)
+   % Generate lengths 0, 1, 2, ..., MaxLen
+   between(0, MaxLen, Len),
+   length(List, Len),
+   maplist(Goal, List)
+).
+
 
 % bounded_list_of_depth/4 - for recursive structures (Addendum 1)
 bounded_list_of_depth(Goal, List, MaxLen, DepthLeft) :-
@@ -61,9 +77,11 @@ game_state_type(
     
     % Extract IDs
     maplist(get_object_id, Objects, IDs),
-    
     % Enforce ascending order (implicitly ensures uniqueness) - Addendum 4
-    chain(#<, IDs),
+    ( ground(IDs)
+    -> is_ascending(IDs)        % Simple check, no CLP(FD)
+    ;  chain(#<, IDs)            % CLP(FD) for generation
+    ),
     
     % Tail of list is the maximum ID (if list non-empty)
     (IDs = [] -> MaxID = -1 ; last(IDs, MaxID)),
@@ -72,6 +90,7 @@ game_state_type(
     game_status_type(Status),
     Score #>= 0,
     bounded_list_of(command_type, Commands, 100),
+    % TODO: next line causes extreme performance problems.
     bounded_list_of(rev_hint_type, RevHints, 1000).
 
 % ============================================================================
@@ -213,3 +232,18 @@ rev_hint_type(despawned(ID, Attrs)) :-
 % This is a permissive placeholder that accepts any term
 
 collision_type(_).
+
+
+
+
+
+%
+% Random helpers
+%
+
+% Check if ground list is strictly ascending
+is_ascending([]).
+is_ascending([_]).
+is_ascending([A, B|Rest]) :-
+    A < B,                    % Simple comparison, not #
+    is_ascending([B|Rest]).
