@@ -7,7 +7,7 @@
 :- use_module(library(between), [between/3]).
 :- use_module(library(charsio), [get_single_char/1]).
 :- use_module('./engine', [tick/2]).
-:- use_module('./types', [game_state/1, game_object/1]).
+:- use_module('./types', [game_state_type/1, game_object_type/1]).
 
 % ============================================================================
 % Main Game Loop

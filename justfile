@@ -26,3 +26,23 @@ test-all:
 	@just test prolog/execute_action
 	@echo "\nTesting engine..."
 	@just test prolog/engine
+
+# Check a Prolog file for syntax errors
+# Usage: just lint prolog/engine.pl
+lint FILE:
+	@! scryer-prolog {{FILE}} -g "halt" 2>&1 | grep -q "error" || { scryer-prolog {{FILE}} -g "halt" 2>&1; echo "ERROR: {{FILE}} has syntax errors"; exit 1; }
+
+# Check all Prolog files for syntax errors
+lint-all:
+	@echo "Linting prolog files..."
+	@just lint prolog/engine.pl
+	@just lint prolog/game.pl
+	@just lint prolog/types.pl
+	@just lint prolog/execute_action.pl
+	@echo "All files passed linting!"
+
+# Run CI pipeline: lint-all then test-all
+# Fails if any step fails
+ci:
+	@just lint-all
+	@just test-all

@@ -12,15 +12,15 @@
 :- use_module('./third_party/exclude', [exclude/3]).
 :- use_module('./execute_action', [execute_action/5]).
 :- use_module('./types', [
-    game_state/1,
-    game_object/1,
-    game_status/1,
-    command/1,
-    rev_hint/1,
-    action/1,
-    pos/1,
-    attr/1,
-    collision/1
+    game_state_type/1,
+    game_object_type/1,
+    game_status_type/1,
+    command_type/1,
+    rev_hint_type/1,
+    action_type/1,
+    pos_type/1,
+    attr_type/1,
+    collision_type/1
 ]).
 
 % test/2 clauses are intentionally separated by other code (tests are placed near the code they test)

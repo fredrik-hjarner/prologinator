@@ -8,10 +8,10 @@
 :- use_module(library(clpz)).
 :- use_module(library(lists), [append/2, append/3, select/3, member/2]).
 :- use_module('./types', [
-    game_object/1,
-    action/1,
-    command/1,
-    rev_hint/1
+    game_object_type/1,
+    action_type/1,
+    command_type/1,
+    rev_hint_type/1
 ]).
 
 % ============================================================================
