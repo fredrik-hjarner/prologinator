@@ -22,7 +22,7 @@
     pos/1,
     attr/1,
     collision/1
-    ]).
+]).
 
 % test/2 clauses are intentionally separated by other code (tests are placed near the code they test)
 :- discontiguous(test/2).
