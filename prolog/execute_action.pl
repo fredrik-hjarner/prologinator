@@ -44,6 +44,7 @@ execute_action(
     [],
     []
 ) :-
+    action_type(wait_frames(N)),
     ( N #> 1 ->
         N1 #= N - 1,
         NewActions = [wait_frames(N1)|Rest]
@@ -63,6 +64,7 @@ execute_action(
     [],
     []
 ) :-
+    action_type(move_to(TargetX, TargetY, Frames)),
     select(pos(CurrentX, CurrentY), Attrs, RestAttrs),
     % Compute step using integer division
     DX #= (TargetX - CurrentX) // Frames,
@@ -93,7 +95,9 @@ execute_action(
     despawned,
     [],
     [despawned(ID, Attrs)]
-) :- !.
+) :-
+    action_type(despawn),
+    !.
 
 % ----------------------------------------------------------------------------
 % Compound Actions: spawn (from Addendum 3 - FINAL version)
@@ -105,7 +109,8 @@ execute_action(
     game_object(ID, ObjType, attrs(Attrs), Rest, Colls),
     [spawn_request(Type, Pos, Actions)],
     []
-).
+) :-
+    action_type(spawn(Type, Pos, Actions)).
 
 % ----------------------------------------------------------------------------
 % Compound Actions: loop
@@ -118,6 +123,7 @@ execute_action(
     [],
     []
 ) :-
+    action_type(loop(Actions)),
     append(Actions, [loop(Actions)], Expanded),
     append(Expanded, Rest, NewActions).
 
@@ -131,7 +137,8 @@ execute_action(
     game_object(ID, Type, attrs(Attrs), Rest, Colls),
     [state_change(Change)],
     []
-).
+) :-
+    action_type(trigger_state_change(Change)).
 
 % ----------------------------------------------------------------------------
 % Compound Actions: parallel (from Addendum 2 + 3 - FINAL version)
@@ -144,6 +151,7 @@ execute_action(
     AllCommands,
     AllRevHints
 ) :-
+    action_type(parallel(ChildActions)),
     tick_parallel_children(
         ChildActions, ID, Type, AttrsIn, Colls,
         AttrsOut, UpdatedChildren, AllCommands, AllRevHints
@@ -165,6 +173,7 @@ execute_action(
     parallel_running(Children),
     Obj, NewObj, Commands, RevHints
 ) :-
+    action_type(parallel_running(Children)),
     execute_action(parallel(Children), Obj, NewObj, Commands, RevHints).
 
 % ============================================================================

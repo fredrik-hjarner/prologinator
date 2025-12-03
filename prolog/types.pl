@@ -15,7 +15,8 @@
 ]).
 
 :- use_module(library(clpz)).
-:- use_module(library(lists), [maplist/2, length/2, between/3]).
+:- use_module(library(lists), [maplist/2, maplist/3, length/2]).
+:- use_module(library(between), [between/3]).
 
 % ============================================================================
 % Helper Predicates (from Addendums 1 & 2)
@@ -126,7 +127,7 @@ action_type(A) :- action_type(A, 10).
 
 % Internal: tracks depth
 action_type(wait_frames(N), _) :- 
-    N #> 0.
+    N #>= 0.
 
 action_type(move_to(X, Y, Frames), _) :-
     X in -10000..10000,

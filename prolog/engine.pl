@@ -167,7 +167,7 @@ test("tick_object: wait_frames(0) is removed and execution continues until empty
 test("tick: increments frame and processes empty game state", (
     StateIn = game_state(
         0,
-        [game_object(1, static, attrs([pos(0, 0)]), [], [])],
+        [game_object(0, static, attrs([pos(0, 0)]), [], [])],
         playing,
         0,
         1,
@@ -177,7 +177,7 @@ test("tick: increments frame and processes empty game state", (
     tick(StateIn, StateOut),
     StateOut = game_state(
         1,
-        [game_object(1, static, attrs([pos(0, 0)]), [], [])],
+        [game_object(0, static, attrs([pos(0, 0)]), [], [])],
         playing,
         0,
         1,
@@ -189,7 +189,7 @@ test("tick: increments frame and processes empty game state", (
 test("tick: processes object with yielding action (wait_frames)", (
     StateIn = game_state(
         0,
-        [game_object(1, static, attrs([pos(0, 0)]), [wait_frames(3)], [])],
+        [game_object(0, static, attrs([pos(0, 0)]), [wait_frames(3)], [])],
         playing,
         0,
         1,
@@ -199,7 +199,7 @@ test("tick: processes object with yielding action (wait_frames)", (
     tick(StateIn, StateOut),
     StateOut = game_state(
         1,
-        [game_object(1, static, attrs([pos(0, 0)]), [wait_frames(2)], [])],
+        [game_object(0, static, attrs([pos(0, 0)]), [wait_frames(2)], [])],
         playing,
         0,
         1,
@@ -211,7 +211,7 @@ test("tick: processes object with yielding action (wait_frames)", (
 test("tick: processes spawn request and creates new object", (
     StateIn = game_state(
         0,
-        [game_object(1, static, attrs([pos(0, 0)]), [spawn(enemy, pos(5, 5), [])], [])],
+        [game_object(0, static, attrs([pos(0, 0)]), [spawn(enemy, pos(5, 5), [])], [])],
         playing,
         0,
         1,
@@ -228,14 +228,14 @@ test("tick: processes spawn request and creates new object", (
         [],
         []
     ),
-    member(game_object(1, static, attrs([pos(0, 0)]), [], []), FinalObjs),
+    member(game_object(0, static, attrs([pos(0, 0)]), [], []), FinalObjs),
     member(game_object(_NewID, enemy, attrs([pos(5, 5)]), [], []), FinalObjs)
 )).
 
 test("tick: processes state change (score increase)", (
     StateIn = game_state(
         0,
-        [game_object(1, static, attrs([pos(0, 0)]), [trigger_state_change(score(10))], [])],
+        [game_object(0, static, attrs([pos(0, 0)]), [trigger_state_change(score(10))], [])],
         playing,
         0,
         1,
@@ -245,7 +245,7 @@ test("tick: processes state change (score increase)", (
     tick(StateIn, StateOut),
     StateOut = game_state(
         1,
-        [game_object(1, static, attrs([pos(0, 0)]), [], [])],
+        [game_object(0, static, attrs([pos(0, 0)]), [], [])],
         playing,
         NewScore,
         1,
@@ -259,6 +259,7 @@ test("tick: processes state change (score increase)", (
 % Main Tick Function (from Addendum 3 - FINAL version)
 % ============================================================================
 tick(StateIn, StateOut) :-
+    game_state_type(StateIn),
     StateIn = game_state(
         F, Objs, Status, Score, NextID,
         _OldCommands, _OldRevHints
@@ -299,7 +300,10 @@ tick(StateIn, StateOut) :-
     StateOut = game_state(
         F1, FinalObjs, NewStatus, NewScore,
         NewNextID, [], AllRevHints
-    ).
+    ),
+    % NOTE: placing this at the top caused cpu to go bananas
+    %       so there are some performance problems with it..
+    game_state_type(StateOut).
 
 % ============================================================================
 % Tick Helpers
