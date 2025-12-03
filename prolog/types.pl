@@ -8,15 +8,16 @@
     game_status_type/1,
     command_type/1,
     rev_hint_type/1,
-    action_type/1,
-    pos_type/1,
-    attr_type/1,
-    collision_type/1
+    action_type/1
+    % pos_type/1,
+    % attr_type/1
+    % collision_type/1
 ]).
 
 :- use_module(library(clpz)).
 :- use_module(library(lists), [maplist/2, maplist/3, length/2]).
 :- use_module(library(between), [between/3]).
+:- use_module(library(time), [time/1]).
 
 % ============================================================================
 % Helper Predicates (from Addendums 1 & 2)
@@ -73,14 +74,17 @@ game_state_type(
              NextID, Commands, RevHints)
 ) :-
     Frame #>= 0,
-    bounded_list_of(game_object_type, Objects, 1000),
+    % Frame #=< 1000,
+    bounded_list_of(game_object_type, Objects, 200),
     
     % Extract IDs
     maplist(get_object_id, Objects, IDs),
     % Enforce ascending order (implicitly ensures uniqueness) - Addendum 4
     ( ground(IDs)
-    -> is_ascending(IDs)        % Simple check, no CLP(FD)
-    ;  chain(#<, IDs)            % CLP(FD) for generation
+    ->
+        is_ascending(IDs)        % Simple check, no CLP(FD)
+    ;
+        chain(#<, IDs)            % CLP(FD) for generation
     ),
     
     % Tail of list is the maximum ID (if list non-empty)
@@ -91,7 +95,7 @@ game_state_type(
     Score #>= 0,
     bounded_list_of(command_type, Commands, 100),
     % TODO: next line causes extreme performance problems.
-    bounded_list_of(rev_hint_type, RevHints, 1000).
+    bounded_list_of(rev_hint_type, RevHints, 200).
 
 % ============================================================================
 % Status Constraint
@@ -109,6 +113,7 @@ game_object_type(
   game_object(ID, Type, attrs(Attrs), Actions, _Colls)
 ) :-
     ID #>= 0,
+    ID #=< 1000,
     object_type_type(Type),
     bounded_list_of(attribute_type, Attrs, 50),
     bounded_list_of(action_type, Actions, 100).
@@ -131,8 +136,8 @@ object_type_type(tower).  % Used in game.pl
 
 attribute_type(pos(X, Y)) :-
     % Coordinates: bounded integers
-    X in -10000..10000,
-    Y in -10000..10000.
+    X in -10..200,
+    Y in -10..200.
 
 % Alias for compatibility (attr_type/1 exported)
 attr_type(A) :- attribute_type(A).
@@ -149,8 +154,8 @@ action_type(wait_frames(N), _) :-
     N #>= 0.
 
 action_type(move_to(X, Y, Frames), _) :-
-    X in -10000..10000,
-    Y in -10000..10000,
+    X in -10..200,
+    Y in -10..200,
     Frames #> 0.
 
 action_type(despawn, _).
@@ -165,7 +170,7 @@ action_type(spawn(Type, Pos, Acts), DepthLeft) :-
 action_type(loop(Acts), DepthLeft) :-
     DepthLeft #> 0,
     DepthLeft1 #= DepthLeft - 1,
-    bounded_list_of_depth(action_type, Acts, 100, DepthLeft1).
+    bounded_list_of_depth(action_type, Acts, 30, DepthLeft1).
 
 action_type(trigger_state_change(Change), _) :-
     state_change_type(Change).
@@ -189,8 +194,8 @@ action_type(parallel_running(Children), DepthLeft) :-
 % ============================================================================
 
 pos_type(pos(X, Y)) :-
-    X in -10000..10000,
-    Y in -10000..10000.
+    X in 0..200,
+    Y in 0..200.
 
 % ============================================================================
 % command_type/1 Constraint (Addendum 1)
@@ -210,7 +215,7 @@ command_type(state_change(Change)) :-
 
 state_change_type(score(Delta)) :-
     % Score delta: bounded (allow negative for penalties)
-    Delta in -1000..1000.
+    Delta in 0..1000.
 
 state_change_type(game_over(won)).
 state_change_type(game_over(lost)).

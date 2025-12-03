@@ -7,12 +7,6 @@
 
 :- use_module(library(clpz)).
 :- use_module(library(lists), [append/2, append/3, select/3, member/2]).
-:- use_module('./types', [
-    game_object_type/1,
-    action_type/1,
-    command_type/1,
-    rev_hint_type/1
-]).
 
 % ============================================================================
 % execute_action/5
@@ -44,16 +38,13 @@ execute_action(
     [],
     []
 ) :-
-    game_object_type(game_object(ID, Type, attrs(Attrs), [_|Rest], Colls)),
-    action_type(wait_frames(N)),
     ( N #> 1 ->
         N1 #= N - 1,
         NewActions = [wait_frames(N1)|Rest]
     ;
         % N = 1, wait is done
         NewActions = Rest
-    ),
-    game_object_type(game_object(ID, Type, attrs(Attrs), NewActions, Colls)).
+    ).
 
 % ----------------------------------------------------------------------------
 % Basic Actions: move_to
@@ -66,8 +57,6 @@ execute_action(
     [],
     []
 ) :-
-    game_object_type(game_object(ID, Type, attrs(Attrs), [_|Rest], Colls)),
-    action_type(move_to(TargetX, TargetY, Frames)),
     select(pos(CurrentX, CurrentY), Attrs, RestAttrs),
     % Compute step using integer division
     DX #= (TargetX - CurrentX) // Frames,
@@ -86,8 +75,7 @@ execute_action(
         NewActions = [move_to(TargetX, TargetY, Frames1)|Rest]
     ;
         NewActions = Rest  % Arrived
-    ),
-    game_object_type(game_object(ID, Type, attrs(NewAttrs), NewActions, Colls)).
+    ).
 
 % ----------------------------------------------------------------------------
 % Basic Actions: despawn
@@ -99,10 +87,7 @@ execute_action(
     despawned,
     [],
     [despawned(ID, Attrs)]
-) :-
-    game_object_type(game_object(ID, _Type, attrs(Attrs), _, _Colls)),
-    action_type(despawn),
-    !.
+) :- !.
 
 % ----------------------------------------------------------------------------
 % Compound Actions: spawn (from Addendum 3 - FINAL version)
@@ -114,10 +99,7 @@ execute_action(
     game_object(ID, ObjType, attrs(Attrs), Rest, Colls),
     [spawn_request(Type, Pos, Actions)],
     []
-) :-
-    game_object_type(game_object(ID, ObjType, attrs(Attrs), [_|Rest], Colls)),
-    action_type(spawn(Type, Pos, Actions)),
-    game_object_type(game_object(ID, ObjType, attrs(Attrs), Rest, Colls)).
+).
 
 % ----------------------------------------------------------------------------
 % Compound Actions: loop
@@ -130,11 +112,8 @@ execute_action(
     [],
     []
 ) :-
-    game_object_type(game_object(ID, Type, attrs(Attrs), [_|Rest], Colls)),
-    action_type(loop(Actions)),
     append(Actions, [loop(Actions)], Expanded),
-    append(Expanded, Rest, NewActions),
-    game_object_type(game_object(ID, Type, attrs(Attrs), NewActions, Colls)).
+    append(Expanded, Rest, NewActions).
 
 % ----------------------------------------------------------------------------
 % Compound Actions: trigger_state_change
@@ -146,10 +125,7 @@ execute_action(
     game_object(ID, Type, attrs(Attrs), Rest, Colls),
     [state_change(Change)],
     []
-) :-
-    game_object_type(game_object(ID, Type, attrs(Attrs), [_|Rest], Colls)),
-    action_type(trigger_state_change(Change)),
-    game_object_type(game_object(ID, Type, attrs(Attrs), Rest, Colls)).
+).
 
 % ----------------------------------------------------------------------------
 % Compound Actions: parallel (from Addendum 2 + 3 - FINAL version)
@@ -162,8 +138,6 @@ execute_action(
     AllCommands,
     AllRevHints
 ) :-
-    game_object_type(game_object(ID, Type, attrs(AttrsIn), [_|Rest], Colls)),
-    action_type(parallel(ChildActions)),
     tick_parallel_children(
         ChildActions, ID, Type, AttrsIn, Colls,
         AttrsOut, UpdatedChildren, AllCommands, AllRevHints
@@ -171,12 +145,10 @@ execute_action(
     ( member(caused_despawn, UpdatedChildren) ->
         Result = despawned
     ; all_children_done(UpdatedChildren) ->
-        Result = game_object(ID, Type, attrs(AttrsOut), Rest, Colls),
-        game_object_type(Result)
+        Result = game_object(ID, Type, attrs(AttrsOut), Rest, Colls)
     ;
         NewActions = [parallel_running(UpdatedChildren)|Rest],
-        Result = game_object(ID, Type, attrs(AttrsOut), NewActions, Colls),
-        game_object_type(Result)
+        Result = game_object(ID, Type, attrs(AttrsOut), NewActions, Colls)
     ).
 
 % ----------------------------------------------------------------------------
@@ -187,10 +159,7 @@ execute_action(
     parallel_running(Children),
     Obj, NewObj, Commands, RevHints
 ) :-
-    game_object_type(Obj),
-    action_type(parallel_running(Children)),
     execute_action(parallel(Children), Obj, NewObj, Commands, RevHints).
-    % ( NewObj = despawned -> true ; game_object_type(NewObj) ).
 
 % ============================================================================
 % tick_parallel_children/9
