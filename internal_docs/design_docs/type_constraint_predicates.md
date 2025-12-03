@@ -90,7 +90,7 @@
 game_state(
   game_state(
     Frame, Objects, Status, 
-    Score, NextID, Keyframe, 
+    Score, NextID, 
     Commands, RevHints
   )
 ) :-
@@ -106,8 +106,6 @@ game_state(
     Score #>= 0,
     % NextID: non-negative integer (next ID to assign)
     NextID #>= 0,
-    % Keyframe: valid keyframe structure
-    keyframe(Keyframe), % NOTE: maybe it should be a list?
     % Commands: list of command structures
     (Commands = [] ; 
      Commands = [_|_]),
@@ -278,16 +276,6 @@ collision(C) :-
     var(C) ; compound(C) ; atom(C) ; number(C).
 
 % ================================================================
-% keyframe/1 Constraint
-% ================================================================
-
-keyframe(keyframe(Frame, Objects)) :-
-    Frame #>= 0,
-    (Objects = [] ; 
-     Objects = [_|_]),
-    maplist(game_object, Objects).
-
-% ================================================================
 % rev_hint/1 Constraint
 % ================================================================
 
@@ -368,14 +356,13 @@ maplist_with_depth(Goal, [H|T], DepthLeft) :-
 
 game_state(
   game_state(Frame, Objects, Status, Score, 
-             NextID, Keyframe, Commands, RevHints)
+             NextID, Commands, RevHints)
 ) :-
     Frame #>= 0,
     bounded_list_of(game_object, Objects, 1000),
     game_status(Status),
     Score #>= 0,
     NextID #>= 0,
-    keyframe(Keyframe),
     bounded_list_of(command, Commands, 100),
     bounded_list_of(rev_hint, RevHints, 1000).
 
@@ -450,14 +437,6 @@ command(spawn_request(Type, Pos, Acts)) :-
 
 command(state_change(Change)) :-
     state_change(Change).
-
-% ----------------------------------------------------------------
-% keyframe/1 - NO depth parameter (not recursive)
-% ----------------------------------------------------------------
-
-keyframe(keyframe(Frame, Objects)) :-
-    Frame #>= 0,
-    bounded_list_of(game_object, Objects, 1000).
 
 % ================================================================
 % USAGE NOTES
@@ -585,7 +564,7 @@ bounded_list_of_depth(Goal, List, MaxLen, DepthLeft) :-
 
 game_state(
   game_state(Frame, Objects, Status, Score, 
-             NextID, Keyframe, Commands, RevHints)
+             NextID, Commands, RevHints)
 ) :-
     Frame #>= 0,
     bounded_list_of(game_object, Objects, 1000),
@@ -601,7 +580,6 @@ game_state(
     game_status(Status),
     Score #>= 0,
     % Remove standalone: NextID #>= 0  (replaced by above)
-    keyframe(Keyframe),
     bounded_list_of(command, Commands, 100),
     bounded_list_of(rev_hint, RevHints, 1000).
 
@@ -667,7 +645,7 @@ get_object_id(game_object(ID, _, _, _, _), ID).
 
 game_state(
   game_state(Frame, Objects, Status, Score, 
-             NextID, Keyframe, Commands, RevHints)
+             NextID, Commands, RevHints)
 ) :-
     Frame #>= 0,
     bounded_list_of(game_object, Objects, 1000),
@@ -684,7 +662,6 @@ game_state(
     
     game_status(Status),
     Score #>= 0,
-    keyframe(Keyframe),
     bounded_list_of(command, Commands, 100),
     bounded_list_of(rev_hint, RevHints, 1000).
 
