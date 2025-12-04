@@ -8,7 +8,15 @@
 ]).
 
 :- use_module(library(clpz)).
-:- use_module(library(lists), [append/2, append/3, select/3, member/2, maplist/5, list_to_set/2, length/2]).
+:- use_module(library(lists), [
+    append/2,
+    append/3,
+    select/3,
+    member/2,
+    maplist/5,
+    list_to_set/2,
+    length/2
+]).
 :- use_module('./third_party/exclude', [exclude/3]).
 :- use_module('./execute_action', [execute_action/5]).
 :- use_module('./types', [
@@ -23,12 +31,13 @@
     collision_type/1
 ]).
 
-% test/2 clauses are intentionally separated by other code (tests are placed near the code they test)
+% test/2 clauses are intentionally separated by other code
+% (tests are placed near the code they test)
 :- discontiguous(test/2).
 
-% ============================================================================
+% ==========================================================
 % State Structure (from Addendum 3 - FINAL version)
-% ============================================================================
+% ==========================================================
 % game_state(
 %   frame(N),
 %   objects([...]),
@@ -39,9 +48,9 @@
 %   reverse_hints([...])
 % )
 
-% ============================================================================
+% ==========================================================
 % GameObject Structure
-% ============================================================================
+% ==========================================================
 % game_object(
 %   id(ID),
 %   attrs([...]),
@@ -49,21 +58,25 @@
 %   collisions([...])
 % )
 
-% ============================================================================
+% ==========================================================
 % Yielding Actions (from Addendum 1 + 3)
-% ============================================================================
-% Bidirectional: works forward (check if action yields) and backward (generate yielding actions)
-% Modes: yields(?Action) - can be called with Action bound or unbound
-% :- pred yields(?Action) # "Checks if an action yields control, or generates yielding actions.".
+% ==========================================================
+% Bidirectional: works forward (check if action yields) and
+% backward (generate yielding actions)
+% Modes: yields(?Action) - can be called with Action bound
+% or unbound
+% :- pred yields(?Action) # "Checks if an action yields \
+% control, or generates yielding actions.".
 
 yields(wait_frames(N)) :- N #> 0.
 yields(move_to(_, _, Frames)) :- Frames #> 0.
 yields(parallel_running(_)).
 
-% ============================================================================
+% ==========================================================
 % Tests
-% ============================================================================
-test("yields: wait_frames with positive number should yield", (
+% ==========================================================
+test("yields: wait_frames with positive number should \
+yield", (
     A = wait_frames(5),
     yields(A)
 )).
@@ -78,17 +91,21 @@ test("yields: move_to with positive frames should yield", (
     yields(A)
 )).
 
-test("yields: can generate yielding actions bidirectionally", (
+test("yields: can generate yielding actions \
+bidirectionally", (
     yields(A),
-    ( A = wait_frames(_) ; A = move_to(_, _, _) ; A = parallel_running(_) )
+    ( A = wait_frames(_)
+    ; A = move_to(_, _, _)
+    ; A = parallel_running(_) )
 )).
 
-% ============================================================================
+% ==========================================================
 % Execution Model: tick_object (from Addendum 1)
-% ============================================================================
+% ==========================================================
 
 % % forward execution
-% :- pred tick_object(+ObjIn, -ObjOut, -AllCommands, -AllRevHints).
+% :- pred tick_object(+ObjIn, -ObjOut, -AllCommands,
+% -AllRevHints).
 
 tick_object(
     game_object(ID, Type, attrs(Attrs), [], Colls),
@@ -114,11 +131,12 @@ tick_object(ObjIn, ObjOut, AllCommands, AllRevHints) :-
         append(R1, R2, AllRevHints)
     ).
 
-% ============================================================================
+% ==========================================================
 % Tests for tick_object
-% ============================================================================
+% ==========================================================
 
-test("tick_object: empty action list returns unchanged object", (
+test("tick_object: empty action list returns unchanged \
+object", (
     ObjIn = game_object(
         1,
         static,
@@ -127,12 +145,15 @@ test("tick_object: empty action list returns unchanged object", (
         []
     ),
     tick_object(ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = game_object(1, static, attrs([pos(0, 0)]), [], []),
+    ObjOut = game_object(
+        1, static, attrs([pos(0, 0)]), [], []
+    ),
     Commands = [],
     RevHints = []
 )).
 
-test("tick_object: yielding action (wait_frames) stops after one execution", (
+test("tick_object: yielding action (wait_frames) stops \
+after one execution", (
     ObjIn = game_object(
         1,
         static,
@@ -141,12 +162,19 @@ test("tick_object: yielding action (wait_frames) stops after one execution", (
         []
     ),
     tick_object(ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = game_object(1, static, attrs([pos(0, 0)]), [wait_frames(4)], []),
+    ObjOut = game_object(
+        1,
+        static,
+        attrs([pos(0, 0)]),
+        [wait_frames(4)],
+        []
+    ),
     Commands = [],
     RevHints = []
 )).
 
-test("tick_object: wait_frames(0) is removed and execution continues until empty", (
+test("tick_object: wait_frames(0) is removed and execution \
+continues until empty", (
     ObjIn = game_object(
         1,
         static,
@@ -155,19 +183,28 @@ test("tick_object: wait_frames(0) is removed and execution continues until empty
         []
     ),
     tick_object(ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = game_object(1, static, attrs([pos(0, 0)]), [], []),
+    ObjOut = game_object(
+        1, static, attrs([pos(0, 0)]), [], []
+    ),
     Commands = [],
     RevHints = []
 )).
 
-% ============================================================================
+% ==========================================================
 % Tests for tick
-% ============================================================================
+% ==========================================================
 
-test("tick: increments frame and processes empty game state", (
+test("tick: increments frame and processes empty game \
+state", (
     StateIn = game_state(
         0,
-        [game_object(0, static, attrs([pos(0, 0)]), [], [])],
+        [game_object(
+            0,
+            static,
+            attrs([pos(0, 0)]),
+            [],
+            []
+        )],
         playing,
         0,
         1,
@@ -177,7 +214,13 @@ test("tick: increments frame and processes empty game state", (
     tick(StateIn, StateOut),
     StateOut = game_state(
         1,
-        [game_object(0, static, attrs([pos(0, 0)]), [], [])],
+        [game_object(
+            0,
+            static,
+            attrs([pos(0, 0)]),
+            [],
+            []
+        )],
         playing,
         0,
         1,
@@ -186,10 +229,17 @@ test("tick: increments frame and processes empty game state", (
     )
 )).
 
-test("tick: processes object with yielding action (wait_frames)", (
+test("tick: processes object with yielding action \
+(wait_frames)", (
     StateIn = game_state(
         0,
-        [game_object(0, static, attrs([pos(0, 0)]), [wait_frames(3)], [])],
+        [game_object(
+            0,
+            static,
+            attrs([pos(0, 0)]),
+            [wait_frames(3)],
+            []
+        )],
         playing,
         0,
         1,
@@ -199,7 +249,13 @@ test("tick: processes object with yielding action (wait_frames)", (
     tick(StateIn, StateOut),
     StateOut = game_state(
         1,
-        [game_object(0, static, attrs([pos(0, 0)]), [wait_frames(2)], [])],
+        [game_object(
+            0,
+            static,
+            attrs([pos(0, 0)]),
+            [wait_frames(2)],
+            []
+        )],
         playing,
         0,
         1,
@@ -208,10 +264,17 @@ test("tick: processes object with yielding action (wait_frames)", (
     )
 )).
 
-test("tick: processes spawn request and creates new object", (
+test("tick: processes spawn request and creates new \
+object", (
     StateIn = game_state(
         0,
-        [game_object(0, static, attrs([pos(0, 0)]), [spawn(enemy, pos(5, 5), [])], [])],
+        [game_object(
+            0,
+            static,
+            attrs([pos(0, 0)]),
+            [spawn(enemy, pos(5, 5), [])],
+            []
+        )],
         playing,
         0,
         1,
@@ -228,14 +291,32 @@ test("tick: processes spawn request and creates new object", (
         [],
         []
     ),
-    member(game_object(0, static, attrs([pos(0, 0)]), [], []), FinalObjs),
-    member(game_object(_NewID, enemy, attrs([pos(5, 5)]), [], []), FinalObjs)
+    member(
+        game_object(0, static, attrs([pos(0, 0)]), [], []),
+        FinalObjs
+    ),
+    member(
+        game_object(
+            _NewID,
+            enemy,
+            attrs([pos(5, 5)]),
+            [],
+            []
+        ),
+        FinalObjs
+    )
 )).
 
 test("tick: processes state change (score increase)", (
     StateIn = game_state(
         0,
-        [game_object(0, static, attrs([pos(0, 0)]), [trigger_state_change(score(10))], [])],
+        [game_object(
+            0,
+            static,
+            attrs([pos(0, 0)]),
+            [trigger_state_change(score(10))],
+            []
+        )],
         playing,
         0,
         1,
@@ -245,7 +326,13 @@ test("tick: processes state change (score increase)", (
     tick(StateIn, StateOut),
     StateOut = game_state(
         1,
-        [game_object(0, static, attrs([pos(0, 0)]), [], [])],
+        [game_object(
+            0,
+            static,
+            attrs([pos(0, 0)]),
+            [],
+            []
+        )],
         playing,
         NewScore,
         1,
@@ -255,22 +342,28 @@ test("tick: processes state change (score increase)", (
     NewScore = 10
 )).
 
-% ============================================================================
+% ==========================================================
 % Collision Test: Simple enemy-projectile collision
-% ============================================================================
+% ==========================================================
 
 % TODO: fix perf issue.
 test("collision: simple enemy-projectile collision", (
-    % Start with one enemy and one projectile that will collide
-    % Both move towards the same target position so they collide
+    % Start with one enemy and one projectile that will
+    % collide
+    % Both move towards the same target position so they
+    % collide
     InitialState = game_state(
         0,
         [
             game_object(0, enemy, attrs([pos(5, 10)]), [
-                move_to(10, 10, 1)  % Moving right, arrives at (10, 10) in 1 frame
+                % Moving right, arrives at (10, 10) in 1
+                % frame
+                move_to(10, 10, 1)
             ], []),
             game_object(1, proj, attrs([pos(5, 10)]), [
-                move_to(10, 10, 1)  % Moving to same target, arrives at (10, 10) in 1 frame
+                % Moving to same target, arrives at (10, 10)
+                % in 1 frame
+                move_to(10, 10, 1)
             ], [])
         ],
         playing,
@@ -279,20 +372,23 @@ test("collision: simple enemy-projectile collision", (
         [],
         []
     ),
-    % Run 2 frames - collision should happen at frame 1 when both reach (10, 10)
+    % Run 2 frames - collision should happen at frame 1 when
+    % both reach (10, 10)
     tick(InitialState, State1),
     State1 = game_state(1, Objs1, _, _, _, _, _),
-    % After collision at frame 1, both objects should be removed
+    % After collision at frame 1, both objects should be
+    % removed
     length(Objs1, ObjCount),
     ObjCount = 0
 )).
 
-% ============================================================================
+% ==========================================================
 % Performance Test: Run game to frame 31 (reproduces freeze)
-% ============================================================================
+% ==========================================================
 
 % TODO: fix perf issue.
-test("performance: run game to frame 32 to reproduce freeze (first collision)", (
+test("performance: run game to frame 32 to reproduce \
+freeze (first collision)", (
     % Same initial state as game.pl
     InitialState = game_state(
         0,
@@ -336,7 +432,8 @@ test("performance: run game to frame 32 to reproduce freeze (first collision)", 
         [],
         []
     ),
-    % Run tick 32 times (first collision should happen around here)
+    % Run tick 32 times (first collision should happen
+    % around here)
     run_ticks(InitialState, 32, FinalState),
     FinalState = game_state(32, _, _, _, _, _, _)
 )).
@@ -349,9 +446,9 @@ run_ticks(StateIn, N, StateOut) :-
     N1 is N - 1,
     run_ticks(StateNext, N1, StateOut).
 
-% ============================================================================
+% ==========================================================
 % Main Tick Function (from Addendum 3 - FINAL version)
-% ============================================================================
+% ==========================================================
 tick(StateIn, StateOut) :-
     game_state_type(StateIn),
     StateIn = game_state(
@@ -362,7 +459,8 @@ tick(StateIn, StateOut) :-
     % 1. Tick all objects
     tick_all_objects(Objs, TempObjs, Commands1, RevHints1),
     
-    % 2. Detect collisions (collisions only produce rev_hints, no commands)
+    % 2. Detect collisions (collisions only produce
+    % rev_hints, no commands)
     detect_collisions(TempObjs, NewObjs, RevHints2),
     
     % 3. Combine commands and rev_hints
@@ -370,8 +468,18 @@ tick(StateIn, StateOut) :-
     append(RevHints1, RevHints2, AllRevHints),
     
     % 4. Partition commands
-    partition(is_spawn_request, AllCommands, SpawnReqs, OtherCommands),
-    partition(is_state_change, OtherCommands, StateChanges, _),
+    partition(
+        is_spawn_request,
+        AllCommands,
+        SpawnReqs,
+        OtherCommands
+    ),
+    partition(
+        is_state_change,
+        OtherCommands,
+        StateChanges,
+        _
+    ),
     
     % 5. Process spawns with ID assignment
     process_spawn_requests(
@@ -399,10 +507,12 @@ tick(StateIn, StateOut) :-
     %       so there are some performance problems with it..
     game_state_type(StateOut).
 
-% ============================================================================
+% ==========================================================
 % Tick Helpers
-% ============================================================================
-tick_all_objects(Objects, FinalObjects, AllCommands, AllRevHints) :-
+% ==========================================================
+tick_all_objects(
+    Objects, FinalObjects, AllCommands, AllRevHints
+) :-
     maplist(
         tick_object, % predicate
         Objects, % "input"
@@ -410,22 +520,30 @@ tick_all_objects(Objects, FinalObjects, AllCommands, AllRevHints) :-
         CommandLists, % collected "output"
         RevHintLists % collected "output"
     ),
-    append(CommandLists, AllCommands), % append/2 flattens the list of lists
-    append(RevHintLists, AllRevHints), % append/2 flattens the list of lists
+    % append/2 flattens the list of lists
+    append(CommandLists, AllCommands),
+    % append/2 flattens the list of lists
+    append(RevHintLists, AllRevHints),
     exclude(is_despawned, TempObjects, FinalObjects).
 
 is_despawned(despawned).
 
-% ============================================================================
+% ==========================================================
 % Spawn Processing (from Addendum 3)
-% ============================================================================
+% ==========================================================
 is_spawn_request(spawn_request(_, _, _)).
 
 process_spawn_requests([], ID, [], ID).
 process_spawn_requests(
     [spawn_request(Type, Pos, Acts)|Rest],
     IDIn,
-    [game_object(ObjID, Type, attrs([Pos]), Acts, [])|RestObjs],
+    [game_object(
+        ObjID,
+        Type,
+        attrs([Pos]),
+        Acts,
+        []
+    )|RestObjs],
     IDOut
 ) :-
     % Generate ID: just use the integer directly
@@ -435,9 +553,9 @@ process_spawn_requests(
     
     process_spawn_requests(Rest, IDIn1, RestObjs, IDOut).
 
-% ============================================================================
+% ==========================================================
 % State Change Processing
-% ============================================================================
+% ==========================================================
 is_state_change(state_change(_)).
 
 apply_state_changes([], Status, Score, Status, Score).
@@ -452,29 +570,45 @@ apply_state_changes(
     ( Status = lost ->
         FinalStatus = lost, FinalScore = Score
     ;
-        apply_state_changes(Rest, won, Score, FinalStatus, FinalScore)
+        apply_state_changes(
+            Rest, won, Score, FinalStatus, FinalScore
+        )
     ).
 apply_state_changes(
     [state_change(score(Delta))|Rest],
     Status, Score, FinalStatus, FinalScore
 ) :-
     NewScore #= Score + Delta,
-    apply_state_changes(Rest, Status, NewScore, FinalStatus, FinalScore).
-apply_state_changes([_|Rest], Status, Score, FinalStatus, FinalScore) :-
-    apply_state_changes(Rest, Status, Score, FinalStatus, FinalScore).
+    apply_state_changes(
+        Rest, Status, NewScore, FinalStatus, FinalScore
+    ).
+apply_state_changes(
+    [_|Rest], Status, Score,FinalStatus, FinalScore
+) :-
+    apply_state_changes(
+        Rest, Status, Score, FinalStatus, FinalScore
+    ).
 
-% ============================================================================
+% ==========================================================
 % Collision Detection (simplified - grid-based)
-% ============================================================================
-% Note: CiaoPP cannot verify the findall call, but the code is correct
-% :- trust pred detect_collisions(+list(game_object), -list(game_object), -list(hint)).
+% ==========================================================
+% Note: CiaoPP cannot verify the findall call, but the code
+% is correct
+% :- trust pred detect_collisions(+list(game_object),
+% -list(game_object), -list(hint)).
 
 detect_collisions(Objects, NewObjects, RevHints) :-
     findall(
         collision(ID1, ID2),
         (
-            member(game_object(ID1, _, attrs(A1), _, _), Objects),
-            member(game_object(ID2, _, attrs(A2), _, _), Objects),
+            member(
+                game_object(ID1, _, attrs(A1), _, _),
+                Objects
+            ),
+            member(
+                game_object(ID2, _, attrs(A2), _, _),
+                Objects
+            ),
             ID1 @< ID2,
             member(pos(X1, Y1), A1),
             member(pos(X2, Y2), A2),
@@ -482,22 +616,41 @@ detect_collisions(Objects, NewObjects, RevHints) :-
         ),
         Collisions
     ),
-    handle_collisions(Objects, Collisions, NewObjects, RevHints).
+    handle_collisions(
+        Objects, Collisions, NewObjects, RevHints
+    ).
 
 collides_at(X, Y, X, Y).
 
-handle_collisions(Objects, Collisions, NewObjects, RevHints) :-
+handle_collisions(
+    Objects,
+    Collisions,
+    NewObjects,
+    RevHints
+) :-
     findall(
         (ProjID, EnemyID),
         (
             member(collision(ID1, ID2), Collisions),
-            member(game_object(ID1, proj, _, _, _), Objects),
-            member(game_object(ID2, enemy, _, _, _), Objects),
+            member(
+                game_object(ID1, proj, _, _, _),
+                Objects
+            ),
+            member(
+                game_object(ID2, enemy, _, _, _),
+                Objects
+            ),
             ProjID = ID1, EnemyID = ID2
         ;
             member(collision(ID1, ID2), Collisions),
-            member(game_object(ID1, enemy, _, _, _), Objects),
-            member(game_object(ID2, proj, _, _, _), Objects),
+            member(
+                game_object(ID1, enemy, _, _, _),
+                Objects
+            ),
+            member(
+                game_object(ID2, proj, _, _, _),
+                Objects
+            ),
             ProjID = ID2, EnemyID = ID1
         ),
         ToRemove
@@ -506,11 +659,15 @@ handle_collisions(Objects, Collisions, NewObjects, RevHints) :-
     findall(ID, member((_, ID), ToRemove), P2),
     append(P1, P2, AllIDs),
     list_to_set(AllIDs, UniqueIDs),
-    % TODO: I dont like that what happens at collision is hard-coded like this.
+    % TODO: I dont like that what happens at collision is
+    % hard-coded like this.
     %       should be dynamic.
-    remove_with_rev_hints(Objects, UniqueIDs, NewObjects, RevHints).
+    remove_with_rev_hints(
+        Objects, UniqueIDs, NewObjects, RevHints
+    ).
 
-% :- pred remove_with_rev_hints(+Objects, +IDsOfObjectsToRemove, -NewObjects, -RevHints).
+% :- pred remove_with_rev_hints(+Objects,
+% +IDsOfObjectsToRemove, -NewObjects, -RevHints).
 
 remove_with_rev_hints([], _, [], []).
 remove_with_rev_hints(
@@ -521,13 +678,19 @@ remove_with_rev_hints(
 ) :-
     member(ID, ToRemove),
     !,
-    remove_with_rev_hints(Rest, ToRemove, NewObjs, RestRevHints).
-remove_with_rev_hints([Obj|Rest], ToRemove, [Obj|NewObjs], RevHints) :-
-    remove_with_rev_hints(Rest, ToRemove, NewObjs, RevHints).
+    remove_with_rev_hints(
+        Rest, ToRemove, NewObjs, RestRevHints
+    ).
+remove_with_rev_hints(
+    [Obj|Rest], ToRemove, [Obj|NewObjs], RevHints
+) :-
+    remove_with_rev_hints(
+        Rest, ToRemove, NewObjs, RevHints
+    ).
 
-% ============================================================================
+% ==========================================================
 % Partition helper (if not available in Ciao)
-% ============================================================================
+% ==========================================================
 partition(_Pred, [], [], []).
 partition(Pred, [X|Xs], Yes, No) :-
     ( call(Pred, X) ->

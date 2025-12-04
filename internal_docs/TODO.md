@@ -1,3 +1,8 @@
+# For forward execution I should have type validators
+
+Yes, if ground then a thing should be validated with nice
+error messages.
+
 # Collisions not 100% implemented
 
 The `Colls` field exists on game objects, but it's currently always empty (`[]`). Here's what I found:

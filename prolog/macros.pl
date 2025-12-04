@@ -1,16 +1,19 @@
 :- module(macros, [run_tests/0]).
 :- use_module(library(lists), [maplist/3]).
 
-% 1. Explicitly allow dynamic definition (Correct Syntax: use parentheses)
+% 1. Explicitly allow dynamic definition
+%    (Correct Syntax: use parentheses)
 :- dynamic(macro_val/2).
 
-% 2. Hook into global expansion safely (Correct Syntax: use parentheses)
-%    Without multifile, loading this file will crash if clpz/dcgs are used.
+% 2. Hook into global expansion safely
+%    (Correct Syntax: use parentheses)
+%    Without multifile, loading this file will crash if
+%    clpz/dcgs are used.
 :- multifile(user:term_expansion/2).
 
-% ============================================================================
+% ==========================================================
 % Recursive Replacement Logic
-% ============================================================================
+% ==========================================================
 
 replace_macros(Term, Term) :-
     var(Term), !.
@@ -20,7 +23,8 @@ replace_macros(Term, Replaced) :-
     functor(Term, def, 1),
     arg(1, Term, Name),
     atom(Name),
-    % No catch needed because we declared dynamic(macro_val/2)
+    % No catch needed because we declared
+    % dynamic(macro_val/2)
     macro_val(Name, Value),
     !,
     Replaced = Value.
@@ -42,9 +46,9 @@ replace_macros(TermIn, TermOut) :-
 % 5. Everything else (Atoms, Numbers) stays same
 replace_macros(Term, Term).
 
-% ============================================================================
+% ==========================================================
 % Term Expansion Hooks
-% ============================================================================
+% ==========================================================
 
 user:term_expansion(Term, []) :-
     nonvar(Term),
@@ -58,7 +62,8 @@ user:term_expansion(TermIn, TermOut) :-
     nonvar(TermIn),
     % Don't expand define directives themselves
     \+ (TermIn = define(_, _)),
-    % Don't expand module declarations, directives, or term_expansion clauses
+    % Don't expand module declarations, directives, or
+    % term_expansion clauses
     \+ (TermIn = (:- _)),
     \+ (functor(TermIn, ':-', _)),
     \+ (functor(TermIn, user:term_expansion, _)),
@@ -66,15 +71,30 @@ user:term_expansion(TermIn, TermOut) :-
     replace_macros(TermIn, TermOut),
     TermIn \== TermOut.
 
-% ============================================================================
+% ==========================================================
 % Tests
-% ============================================================================
+% ==========================================================
 
 run_tests :-
-    findall(T, (test(T, G), (G -> format("PASS: ~s~n", [T]); format("FAIL: ~s~n", [T]))), _).
+    findall(
+        T,
+        (
+            test(T, G),
+            ( G ->
+                format("PASS: ~s~n", [T])
+            ;
+                format("FAIL: ~s~n", [T])
+            )
+        ),
+        _
+    ).
 
 % Helpers for tests to clean up after themselves
-set_def(K, V) :- (retractall(macro_val(K, _)); true), assertz(macro_val(K, V)).
+set_def(K, V) :-
+    ( retractall(macro_val(K, _))
+    ; true
+    ),
+    assertz(macro_val(K, V)).
 clr_def(K)    :- retractall(macro_val(K, _)).
 
 test("basic replacement", (

@@ -1,0 +1,276 @@
+<root>
+We keep to 60 characters per line in this project.
+Only fix lines that are too long.
+Go through each single problem and fix.
+Don't "fix" that don't need fixing.
+<important>
+If a line is already 60 chars or less wide,
+then DON'T attempt to fix it's length!
+</important>
+<important>
+run `just lint-len`
+fix *ONE* problem
+then run `just lint-len`
+fix *ONE* problem
+etc. repeat
+don't be sloppy.
+take your time, one at a time.
+dont pretend to fore future changes no, concentrate on the
+now, one problem, just one problem at a time.
+being fast is a sin, be slow, take it easy, dont stress.
+</important>
+<important>
+If an inline comment after code does not fit, then move
+it above, the comment that is, the comment should go above
+whatever line it commented.
+</important>
+
+<example>
+<bad>
+% too long line. must be fixed.
+:- use_module(library(lists), [append/2, append/3, select/3, member/2, maplist/5, list_to_set/2, length/2]).
+</bad>
+<bad_fix>
+% Nah one import per line is better.
+:- use_module(library(lists), [
+    append/2, append/3, select/3, member/2,
+    maplist/5, list_to_set/2, length/2
+]).
+</bad_fix>
+<good_fix>
+% like this.
+:- use_module(library(lists), [
+    append/2,
+    append/3,
+    select/3,
+    member/2,
+    maplist/5,
+    list_to_set/2,
+    length/2
+]).
+</good_fix>
+</example>
+
+
+
+<example>
+<bad>
+% too long line. must be fixed.
+test("yields: can generate yielding actions bidirectionally", (
+    yields(A),
+    ( A = wait_frames(_) ; A = move_to(_, _, _) ; A = parallel_running(_) )
+)).
+</bad>
+<bad_fix>
+% nah. changed the text. not okey.
+test("yields: can generate yielding actions bidir", (
+    yields(A),
+    ( A = wait_frames(_)
+    ; A = move_to(_, _, _)
+    ; A = parallel_running(_) )
+)).
+</bad_fix>
+<good_fix>
+% like this. text not changed.
+test("yields: can generate yielding actions \
+bidirectionally", (
+    yields(A),
+    ( A = wait_frames(_)
+    ; A = move_to(_, _, _)
+    ; A = parallel_running(_) )
+)).
+</good_fix>
+</example>
+
+
+
+<example>
+<bad>
+% too long line. must be fixed.
+ObjOut = game_object(1, static, attrs([pos(0, 0)]), [], [], []),
+</bad>
+<bad_fix>
+% nah
+ObjOut = game_object(1, static, attrs([pos(0, 0)]),
+                     [], [], []),
+</bad_fix>
+<good_fix>
+% yep if all args fit on one line afterwards.
+ObjOut = game_object(
+    1, static, attrs([pos(0, 0)]), [], [], []
+),
+</good_fix>
+</example>
+
+
+
+<example>
+<bad>
+[game_object(0, static, attrs([pos(0, 0)]), [spawn(enemy, pos(5, 5), [])], [])],
+</bad>
+<bad_fix>
+[game_object(0, static, attrs([pos(0, 0)]),
+             [spawn(enemy, pos(5, 5), [])], [])],
+</bad_fix>
+<good_fix>
+% if all the args of game_object did not fit one line.
+[game_object(
+    0,
+    static,
+    attrs([pos(0, 0)]),
+    [spawn(enemy, pos(5, 5), [])],
+    []
+)],
+</good_fix>
+</example>
+
+
+
+<example>
+<bad>
+member(game_object(_NewID, enemy, attrs([pos(5, 5)]), [], []), FinalObjs)
+</bad>
+<bad_fix>
+member(game_object(_NewID, enemy, attrs([pos(5, 5)]),
+                   [], []), FinalObjs)
+</bad_fix>
+<good_fix>
+% do you see the pattern now?
+member(game_object(
+    _NewID, enemy, attrs([pos(5, 5)]), [], []), FinalObjs
+)
+</good_fix>
+</example>
+
+
+
+<example>
+<bad>
+% test/2 clauses are intentionally separated by other code (tests are placed near the code they test)
+</bad>
+<bad_fix>
+% test/2 clauses are intentionally separated by other code \
+% (tests are placed near the code they test)
+</bad_fix>
+It's not a string so no need for backslash there.
+<good_fix>
+% test/2 clauses are intentionally separated by other code
+% (tests are placed near the code they test)
+</good_fix>
+</example>
+
+
+
+<example>
+<already_good>
+) :- !. % TODO: Can this cut hurt bidirectionality?
+</already_good>
+<bad_fix>
+) :- !. % TODO: Can this cut hurt \
+% bidirectionality?
+</bad_fix>
+Just leave lines without problem.
+</example>
+
+
+
+<example>
+<bad>
+% ============================================================================
+% Collision Test: Simple enemy-projectile collision
+% ============================================================================
+</bad>
+<bad_fix>
+% ============================================
+% Collision Test: Simple enemy-projectile \
+% collision
+% ============================================
+</bad_fix>
+Cut too much unnecessarily. We do 60 chars max *not* 46...
+<good_fix>
+% ==========================================================
+% Collision Test: Simple enemy-projectile collision
+% ==========================================================
+</good_fix>
+</example>
+
+
+
+<example>
+<bad>
+    % Start with one enemy and one projectile that will collide
+</bad>
+<bad_fix>
+    % Start with one enemy and one projectile that will \
+% collide
+</bad_fix>
+ruined indentation. nah.
+<good_fix>
+    % Start with one enemy and one projectile that will
+    % collide
+</good_fix>
+</example>
+
+
+
+<example>
+<bad>
+    append(CommandLists, AllCommands), % append/2 flattens the list of lists
+</bad>
+<bad_fix>
+    append(CommandLists, AllCommands),
+    % append/2 flattens the list of lists
+</bad_fix>
+no comment goes above.
+<good_fix>
+    % append/2 flattens the list of lists
+    append(CommandLists, AllCommands),
+</good_fix>
+</example>
+
+
+
+<example>
+<bad>
+    member(game_object(0, static, attrs([pos(0, 0)]), [], []), FinalObjs),
+</bad>
+<bad_fix>
+    member(game_object(
+        0, static, attrs([pos(0, 0)]), [], []
+    ), FinalObjs),
+</bad_fix>
+above looks too messy
+<good_fix>
+    member(
+        game_object(0, static, attrs([pos(0, 0)]), [], []),
+        FinalObjs
+    ),
+</good_fix>
+</example>
+
+
+
+<example>
+<bad>
+    apply_state_changes(Rest, Status, Score, FinalStatus, FinalScore).
+</bad>
+<bad_fix>
+    apply_state_changes(
+        Rest,
+        Status,
+        Score,
+        FinalStatus,
+        FinalScore
+    ).
+</bad_fix>
+if args fit on one line then let them be on one line
+<good_fix>
+    apply_state_changes(
+        Rest, Status, Score, FinalStatus, FinalScore
+    ).
+</good_fix>
+</example>
+
+
+
+</root>

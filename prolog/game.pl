@@ -1,5 +1,6 @@
 % Simple ASCII Tower Defense Game
-% Usage: just run game (or: ciaosh -l game.pl -e "main" -t halt)
+% Usage: just run game (or: ciaosh -l game.pl -e "main" -t
+% halt)
 
 :- module(game, [main/0]).
 
@@ -7,14 +8,18 @@
 :- use_module(library(between), [between/3]).
 :- use_module(library(charsio), [get_single_char/1]).
 :- use_module('./engine', [tick/2]).
-:- use_module('./types', [game_state_type/1, game_object_type/1]).
+:- use_module('./types', [
+    game_state_type/1,
+    game_object_type/1
+]).
 
-% ============================================================================
+% ==========================================================
 % Main Game Loop
-% ============================================================================
+% ==========================================================
 main :-
     % Initial game state:
-    % - Multiple towers at the bottom row that shoot projectiles periodically
+    % - Multiple towers at the bottom row that shoot
+    %   projectiles periodically
     % - A spawner that creates enemies every 5 frames
     InitialState = game_state(
         0,
@@ -71,11 +76,29 @@ game_loop(State, History) :-
         get_single_char(Char),
         ( Char = end_of_file ->
             % EOF, quit
-            State = game_state(F, Objs, _, Score, NextID, Commands, RevHints),
-            NewState = game_state(F, Objs, lost, Score, NextID, Commands, RevHints),
+            State = game_state(
+                F,
+                Objs,
+                _,
+                Score,
+                NextID,
+                Commands,
+                RevHints
+            ),
+            NewState = game_state(
+                F,
+                Objs,
+                lost,
+                Score,
+                NextID,
+                Commands,
+                RevHints
+            ),
             NewHistory = History
         ;
-            handle_input(Char, State, History, NewState, NewHistory)
+            handle_input(
+                Char, State, History, NewState, NewHistory
+            )
         ),
         game_loop(NewState, NewHistory)
     ;
@@ -100,8 +123,24 @@ handle_input(Char, State, History, NewState, NewHistory) :-
         )
     ;   char_code(Char, 113) ->  % 'q'
         % Quit: set status to lost to exit loop
-        State = game_state(F, Objs, _, Score, NextID, Commands, RevHints),
-        NewState = game_state(F, Objs, lost, Score, NextID, Commands, RevHints),
+        State = game_state(
+            F,
+            Objs,
+            _,
+            Score,
+            NextID,
+            Commands,
+            RevHints
+        ),
+        NewState = game_state(
+            F,
+            Objs,
+            lost,
+            Score,
+            NextID,
+            Commands,
+            RevHints
+        ),
         NewHistory = History
     ;
         % Unknown input, stay at current state
@@ -109,19 +148,23 @@ handle_input(Char, State, History, NewState, NewHistory) :-
         NewHistory = History
     ).
 
-% ============================================================================
+% ==========================================================
 % ASCII Rendering
-% ============================================================================
+% ==========================================================
 render(State) :-
     % Clear screen (ANSI escape code)
     char_code(Esc, 27),  % ESC character
     write(Esc), write('[2J'), write(Esc), write('[H'),
     
-    State = game_state(Frame, Objects, Status, Score, _, _, _),
+    State = game_state(
+        Frame, Objects, Status, Score, _, _, _
+    ),
     
     % Header
     write('=== Tower Defense ==='), nl,
-    write('Frame: '), write(Frame), write(' | Score: '), write(Score), write(' | Status: '), write(Status), nl,
+    write('Frame: '), write(Frame),
+    write(' | Score: '), write(Score),
+    write(' | Status: '), write(Status), nl,
     write('================================'), nl, nl,
     
     % Render grid (10x10 for simplicity)
@@ -142,7 +185,10 @@ render_grid_rows(_, Y) :-
 
 render_grid_row(Objects, Y, X) :-
     X =< 19,
-    ( member(game_object(_, _, attrs(Attrs), _, _), Objects),
+    ( member(
+        game_object(_, _, attrs(Attrs), _, _),
+        Objects
+    ),
       member(pos(X, Y), Attrs) ->
         get_symbol(Objects, X, Y, Symbol)
     ;
@@ -156,7 +202,10 @@ render_grid_row(_, _, X) :-
     X > 19.
 
 get_symbol(Objects, X, Y, Symbol) :-
-    member(game_object(_, Type, attrs(Attrs), _, _), Objects),
+    member(
+        game_object(_, Type, attrs(Attrs), _, _),
+        Objects
+    ),
     member(pos(X, Y), Attrs),
     (   Type = tower -> char_code(Symbol, 84)  % 'T'
     ;   Type = enemy -> char_code(Symbol, 69)  % 'E'

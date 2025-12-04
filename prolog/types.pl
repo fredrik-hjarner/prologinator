@@ -15,16 +15,22 @@
 ]).
 
 :- use_module(library(clpz)).
-:- use_module(library(lists), [maplist/2, maplist/3, length/2]).
+:- use_module(library(lists), [
+    maplist/2,
+    maplist/3,
+    length/2
+]).
 :- use_module(library(between), [between/3]).
 :- use_module(library(time), [time/1]).
 
-% ============================================================================
+% ==========================================================
 % Helper Predicates (from Addendums 1 & 2)
-% ============================================================================
+% ==========================================================
 
-% bounded_list_of/3 - using between/3 to avoid infinite generation (Addendum 2)
-% NOTE: This uses ground/1 for dispatch (choosing algorithm),
+% bounded_list_of/3 - using between/3 to avoid infinite
+% generation (Addendum 2)
+% NOTE: This uses ground/1 for dispatch (choosing
+% algorithm),
 % not for logic (validation). Both branches enforce the same
 % constraint: length(List) =< MaxLen. The predicate remains
 % fully bidirectional:
@@ -45,7 +51,8 @@ bounded_list_of(Goal, List, MaxLen) :-
 ).
 
 
-% bounded_list_of_depth/4 - for recursive structures (Addendum 1)
+% bounded_list_of_depth/4 - for recursive structures
+% (Addendum 1)
 bounded_list_of_depth(Goal, List, MaxLen, DepthLeft) :-
     between(0, MaxLen, Len),
     length(List, Len),
@@ -57,7 +64,8 @@ maplist_with_depth(Goal, [H|T], DepthLeft) :-
     call(Goal, H, DepthLeft),
     maplist_with_depth(Goal, T, DepthLeft).
 
-% get_object_id/2 - extract ID from game_object (Addendum 3/4)
+% get_object_id/2 - extract ID from game_object
+% (Addendum 3/4)
 get_object_id(game_object(ID, _, _, _, _), ID).
 
 % last/2 - get last element of a list (for Addendum 4)
@@ -65,9 +73,10 @@ last([X], X).
 last([_|T], X) :-
     last(T, X).
 
-% ============================================================================
-% Core game_state_type/1 Constraint (Addendum 4 - final version)
-% ============================================================================
+% ==========================================================
+% Core game_state_type/1 Constraint
+% (Addendum 4 - final version)
+% ==========================================================
 
 game_state_type(
   game_state(Frame, Objects, Status, Score, 
@@ -79,7 +88,8 @@ game_state_type(
     
     % Extract IDs
     maplist(get_object_id, Objects, IDs),
-    % Enforce ascending order (implicitly ensures uniqueness) - Addendum 4
+    % Enforce ascending order
+    % (implicitly ensures uniqueness) - Addendum 4
     ( ground(IDs)
     ->
         is_ascending(IDs)        % Simple check, no CLP(FD)
@@ -97,17 +107,18 @@ game_state_type(
     % TODO: next line causes extreme performance problems.
     bounded_list_of(rev_hint_type, RevHints, 200).
 
-% ============================================================================
+% ==========================================================
 % Status Constraint
-% ============================================================================
+% ==========================================================
 
 game_status_type(playing).
 game_status_type(won).
 game_status_type(lost).
 
-% ============================================================================
-% game_object_type/1 Constraint (Addendum 1 - skip collision constraints)
-% ============================================================================
+% ==========================================================
+% game_object_type/1 Constraint
+% (Addendum 1 - skip collision constraints)
+% ==========================================================
 
 game_object_type(
   game_object(ID, Type, attrs(Attrs), Actions, _Colls)
@@ -117,12 +128,13 @@ game_object_type(
     object_type_type(Type),
     bounded_list_of(attribute_type, Attrs, 50),
     bounded_list_of(action_type, Actions, 100).
-    % Skip collision constraints - feature not implemented yet
+    % Skip collision constraints - feature not
+    % implemented yet
     % Colls is left unconstrained (permissive)
 
-% ============================================================================
+% ==========================================================
 % object_type_type/1 Constraint
-% ============================================================================
+% ==========================================================
 
 object_type_type(static).
 object_type_type(enemy).
@@ -130,9 +142,9 @@ object_type_type(proj).
 object_type_type(player).
 object_type_type(tower).  % Used in game.pl
 
-% ============================================================================
+% ==========================================================
 % attribute_type/1 Constraint
-% ============================================================================
+% ==========================================================
 
 attribute_type(pos(X, Y)) :-
     % Coordinates: bounded integers
@@ -142,9 +154,9 @@ attribute_type(pos(X, Y)) :-
 % Alias for compatibility (attr_type/1 exported)
 attr_type(A) :- attribute_type(A).
 
-% ============================================================================
+% ==========================================================
 % action_type/1 and action_type/2 Constraints (Addendum 1)
-% ============================================================================
+% ==========================================================
 
 % Public wrapper: defaults to depth 10
 action_type(A) :- action_type(A, 10).
@@ -165,12 +177,16 @@ action_type(spawn(Type, Pos, Acts), DepthLeft) :-
     DepthLeft1 #= DepthLeft - 1,
     object_type_type(Type),
     pos_type(Pos),
-    bounded_list_of_depth(action_type, Acts, 100, DepthLeft1).
+    bounded_list_of_depth(
+        action_type, Acts, 100, DepthLeft1
+    ).
 
 action_type(loop(Acts), DepthLeft) :-
     DepthLeft #> 0,
     DepthLeft1 #= DepthLeft - 1,
-    bounded_list_of_depth(action_type, Acts, 30, DepthLeft1).
+    bounded_list_of_depth(
+        action_type, Acts, 30, DepthLeft1
+    ).
 
 action_type(trigger_state_change(Change), _) :-
     state_change_type(Change).
@@ -189,17 +205,17 @@ action_type(parallel_running(Children), DepthLeft) :-
         action_type, Children, 100, DepthLeft1
     ).
 
-% ============================================================================
+% ==========================================================
 % pos_type/1 Constraint
-% ============================================================================
+% ==========================================================
 
 pos_type(pos(X, Y)) :-
     X in 0..200,
     Y in 0..200.
 
-% ============================================================================
+% ==========================================================
 % command_type/1 Constraint (Addendum 1)
-% ============================================================================
+% ==========================================================
 
 command_type(spawn_request(Type, Pos, Acts)) :-
     object_type_type(Type),
@@ -209,9 +225,9 @@ command_type(spawn_request(Type, Pos, Acts)) :-
 command_type(state_change(Change)) :-
     state_change_type(Change).
 
-% ============================================================================
+% ==========================================================
 % state_change_type/1 Constraint
-% ============================================================================
+% ==========================================================
 
 state_change_type(score(Delta)) :-
     % Score delta: bounded (allow negative for penalties)
@@ -220,9 +236,9 @@ state_change_type(score(Delta)) :-
 state_change_type(game_over(won)).
 state_change_type(game_over(lost)).
 
-% ============================================================================
+% ==========================================================
 % rev_hint_type/1 Constraint
-% ============================================================================
+% ==========================================================
 
 rev_hint_type(despawned(ID, Attrs)) :-
     % Object ID: non-negative integer
@@ -230,10 +246,11 @@ rev_hint_type(despawned(ID, Attrs)) :-
     % Saved attributes at despawn time
     bounded_list_of(attribute_type, Attrs, 50).
 
-% ============================================================================
+% ==========================================================
 % collision_type/1 Constraint
-% ============================================================================
-% NOTE: Collision constraints are skipped - feature not implemented yet
+% ==========================================================
+% NOTE: Collision constraints are skipped - feature not
+% implemented yet
 % This is a permissive placeholder that accepts any term
 
 collision_type(_).

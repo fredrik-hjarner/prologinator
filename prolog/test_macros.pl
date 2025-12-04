@@ -7,7 +7,8 @@ define(default_health, 100).
 define(spawn_point, pos(0, 0, 0)).
 
 % Test using the macros
-% Note: Macros are expanded at compile time, so these will work when the file is loaded
+% Note: Macros are expanded at compile time, so these will
+% work when the file is loaded
 test_player_init(ID, Player) :-
     MaxPlayers = def(max_players),
     ID =< MaxPlayers,
@@ -19,6 +20,7 @@ test_health_check(H) :-
     DefaultHealth = def(default_health),
     H < DefaultHealth.
 
-% Note: Testing macros in the same file where they're defined can be tricky
-% because expansion happens during loading. These examples just show syntax.
+% Note: Testing macros in the same file where they're
+% defined can be tricky because expansion happens during
+% loading. These examples just show syntax.
 

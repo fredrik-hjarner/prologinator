@@ -17,19 +17,33 @@ if (paths.length === 0) {
 let hasErrors = false;
 
 for (const path of paths) {
-    const text = await Bun.file(`prolog/${path}`).text();
+    const text = await Bun.file(`${path}`).text();
     const lines = text.split("\n");
+    
+    let inErrorBlock = false;
     
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        if (line && line.length > MAX_LENGTH) {
+        const isError = line && line.length > MAX_LENGTH;
+        
+        if (isError) {
             console.error(
                 `${path}:${i + 1}:` +
                 ` line exceeds ${MAX_LENGTH} ` +
                 `characters (${line.length})`
             );
             hasErrors = true;
+            inErrorBlock = true;
+        } else if (inErrorBlock) {
+            // We were in an error block, but now we hit a line without error
+            // Stop checking and exit
+            process.exit(1);
         }
+    }
+    
+    // If we finished the file while still in an error block, exit
+    if (inErrorBlock) {
+        process.exit(1);
     }
 }
 
