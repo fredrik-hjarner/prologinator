@@ -13,7 +13,7 @@ game:
 # The module name will be extracted from the last path component
 test MODULE:
 	@base=$(basename "{{MODULE}}") && \
-	scryer-prolog -g "use_module('submodules/scryer-prolog/src/tests/test_framework'), use_module('./{{MODULE}}'), main($base)." 2>&1 | tee /tmp/just_test_output.txt; \
+	VALIDATION_ERR_MSG=false scryer-prolog -g "catch((use_module('submodules/scryer-prolog/src/tests/test_framework'), use_module('./{{MODULE}}'), main($base)), Error, (format(\"Uncaught exception: ~w~n\", [Error]), halt(1)))." 2>&1 | tee /tmp/just_test_output.txt; \
 	if grep -q "Failed test" /tmp/just_test_output.txt; then rm -f /tmp/just_test_output.txt; exit 1; fi; \
 	rm -f /tmp/just_test_output.txt
 
@@ -24,10 +24,12 @@ test-quiet MODULE:
 	scryer-prolog -g "use_module('submodules/scryer-prolog/src/tests/test_framework'), use_module('./{{MODULE}}'), main_quiet($base)."
 
 test-all:
-	@echo "\nTesting execute_action..."
-	@just test prolog/execute_action || exit 1
-	@echo "\nTesting engine..."
-	@just test prolog/engine || exit 1
+    @echo "\nTesting execute_action..."
+    @just test prolog/execute_action || exit 1
+    @echo "\nTesting engine..."
+    @just test prolog/engine || exit 1
+    @echo "\nTesting validation..."
+    @just test prolog/types/validation || exit 1
 
 # Check a Prolog file for syntax errors
 # Usage: just lint prolog/engine.pl
@@ -39,8 +41,9 @@ lint-all:
 	@echo "Linting prolog files..."
 	@just lint prolog/engine.pl || exit 1
 	@just lint prolog/game.pl || exit 1
-	@just lint prolog/types.pl || exit 1
+	@just lint prolog/types/constraints.pl || exit 1
 	@just lint prolog/execute_action.pl || exit 1
+	@just lint prolog/types/validation.pl || exit 1
 	@echo "All files passed linting!"
 
 # lint the max length of files.
@@ -50,7 +53,8 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/game.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/macros.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/test_macros.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/constraints.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/validation.pl
 
 # Run CI pipeline: lint-all then test-all
 # Fails if any step fails

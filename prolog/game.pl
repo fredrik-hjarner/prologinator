@@ -8,9 +8,9 @@
 :- use_module(library(between), [between/3]).
 :- use_module(library(charsio), [get_single_char/1]).
 :- use_module('./engine', [tick/2]).
-:- use_module('./types', [
-    game_state_type/1,
-    game_object_type/1
+:- use_module('./types/constraints', [
+    game_state_constraint/1,
+    game_object_constraint/1
 ]).
 
 % ==========================================================
@@ -22,53 +22,67 @@ main :-
     %   projectiles periodically
     % - A spawner that creates enemies every 5 frames
     InitialState = game_state(
-        0,
-        [
+        frame(0),
+        objects([
             % Towers at bottom row (y=19)
-            game_object(0, tower, attrs([pos(5, 19)]), [
-                loop([
-                    wait_frames(3),
-                    spawn(proj, pos(5, 19), [
-                        move_to(5, 0, 20)
+            game_object(
+                id(0), type(tower), attrs([pos(5, 19)]),
+                actions([
+                    loop([
+                        wait_frames(3),
+                        spawn(proj, pos(5, 19), [
+                            move_to(5, 0, 20)
+                        ])
                     ])
-                ])
-            ], []),
-            game_object(1, tower, attrs([pos(10, 19)]), [
-                loop([
-                    wait_frames(3),
-                    spawn(proj, pos(10, 19), [
-                        move_to(10, 0, 20)
+                ]), collisions([])
+            ),
+            game_object(
+                id(1), type(tower), attrs([pos(10, 19)]),
+                actions([
+                    loop([
+                        wait_frames(3),
+                        spawn(proj, pos(10, 19), [
+                            move_to(10, 0, 20)
+                        ])
                     ])
-                ])
-            ], []),
-            game_object(2, tower, attrs([pos(15, 19)]), [
-                loop([
-                    wait_frames(3),
-                    spawn(proj, pos(15, 19), [
-                        move_to(15, 0, 20)
+                ]), collisions([])
+            ),
+            game_object(
+                id(2), type(tower), attrs([pos(15, 19)]),
+                actions([
+                    loop([
+                        wait_frames(3),
+                        spawn(proj, pos(15, 19), [
+                            move_to(15, 0, 20)
+                        ])
                     ])
-                ])
-            ], []),
+                ]), collisions([])
+            ),
             % Enemy spawner
-            game_object(3, static, attrs([]), [
-                loop([
-                    wait_frames(5),
-                    spawn(enemy, pos(0, 10), [
-                        move_to(19, 10, 30)
+            game_object(
+                id(3), type(static), attrs([]),
+                actions([
+                    loop([
+                        wait_frames(5),
+                        spawn(enemy, pos(0, 10), [
+                            move_to(19, 10, 30)
+                        ])
                     ])
-                ])
-            ], [])
-        ],
-        playing,
-        0,
-        4,
-        [],
-        []
+                ]), collisions([])
+            )
+        ]),
+        status(playing),
+        score(0),
+        next_id(4),
+        commands([]),
+        rev_hints([])
     ),
     game_loop(InitialState, []).
 
 game_loop(State, History) :-
-    State = game_state(_, _, Status, _, _, _, _),
+    State = game_state(
+        frame(_), objects(_), status(Status), _, _, _, _
+    ),
     ( Status = playing ->
         render(State),
         write('Press: f=forward, r=reverse, q=quit'), nl,
@@ -77,22 +91,22 @@ game_loop(State, History) :-
         ( Char = end_of_file ->
             % EOF, quit
             State = game_state(
-                F,
-                Objs,
+                frame(F),
+                objects(Objs),
                 _,
-                Score,
-                NextID,
-                Commands,
-                RevHints
+                score(Score),
+                next_id(NextID),
+                commands(Commands),
+                rev_hints(RevHints)
             ),
             NewState = game_state(
-                F,
-                Objs,
-                lost,
-                Score,
-                NextID,
-                Commands,
-                RevHints
+                frame(F),
+                objects(Objs),
+                status(lost),
+                score(Score),
+                next_id(NextID),
+                commands(Commands),
+                rev_hints(RevHints)
             ),
             NewHistory = History
         ;
@@ -124,22 +138,22 @@ handle_input(Char, State, History, NewState, NewHistory) :-
     ;   char_code(Char, 113) ->  % 'q'
         % Quit: set status to lost to exit loop
         State = game_state(
-            F,
-            Objs,
+            frame(F),
+            objects(Objs),
             _,
-            Score,
-            NextID,
-            Commands,
-            RevHints
+            score(Score),
+            next_id(NextID),
+            commands(Commands),
+            rev_hints(RevHints)
         ),
         NewState = game_state(
-            F,
-            Objs,
-            lost,
-            Score,
-            NextID,
-            Commands,
-            RevHints
+            frame(F),
+            objects(Objs),
+            status(lost),
+            score(Score),
+            next_id(NextID),
+            commands(Commands),
+            rev_hints(RevHints)
         ),
         NewHistory = History
     ;
@@ -157,7 +171,13 @@ render(State) :-
     write(Esc), write('[2J'), write(Esc), write('[H'),
     
     State = game_state(
-        Frame, Objects, Status, Score, _, _, _
+        frame(Frame),
+        objects(Objects),
+        status(Status),
+        score(Score),
+        _,
+        _,
+        _
     ),
     
     % Header
@@ -186,7 +206,7 @@ render_grid_rows(_, Y) :-
 render_grid_row(Objects, Y, X) :-
     X =< 19,
     ( member(
-        game_object(_, _, attrs(Attrs), _, _),
+        game_object(_, _, attrs(Attrs), _, collisions(_)),
         Objects
     ),
       member(pos(X, Y), Attrs) ->
@@ -203,7 +223,9 @@ render_grid_row(_, _, X) :-
 
 get_symbol(Objects, X, Y, Symbol) :-
     member(
-        game_object(_, Type, attrs(Attrs), _, _),
+        game_object(
+            _, type(Type), attrs(Attrs), _, collisions(_)
+        ),
         Objects
     ),
     member(pos(X, Y), Attrs),

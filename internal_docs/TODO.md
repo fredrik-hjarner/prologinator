@@ -1,3 +1,7 @@
+# Rename game_state to state and game_object to object
+
+yup shorter that way.
+
 # For forward execution I should have type validators
 
 Yes, if ground then a thing should be validated with nice
