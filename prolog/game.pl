@@ -21,7 +21,7 @@ main :-
     % - Multiple towers at the bottom row that shoot
     %   projectiles periodically
     % - A spawner that creates enemies every 5 frames
-    InitialState = state(
+    InitialContext = ctx(state(
         frame(0),
         objects([
             % Towers at bottom row (y=19)
@@ -76,15 +76,16 @@ main :-
         next_id(4),
         commands([]),
         rev_hints([])
-    ),
-    game_loop(InitialState, []).
+    )),
+    game_loop(ctx_in(InitialContext), []).
 
-game_loop(State, History) :-
+game_loop(ctx_in(Ctx), History) :-
+    Ctx = ctx(State),
     State = state(
         frame(_), objects(_), status(Status), _, _, _, _
     ),
     ( Status = playing ->
-        render(State),
+        render(ctx_in(Ctx)),
         write('Press: f=forward, r=reverse, q=quit'), nl,
         flush_output,
         get_single_char(Char),
@@ -108,35 +109,43 @@ game_loop(State, History) :-
                 commands(Commands),
                 rev_hints(RevHints)
             ),
+            NewCtx = ctx(NewState),
             NewHistory = History
         ;
             handle_input(
-                Char, State, History, NewState, NewHistory
+                Char,
+                ctx_in(Ctx),
+                History,
+                ctx_out(NewCtx),
+                NewHistory
             )
         ),
-        game_loop(NewState, NewHistory)
+        game_loop(ctx_in(NewCtx), NewHistory)
     ;
-        render(State),
+        render(ctx_in(Ctx)),
         write('Game Over!'), nl
     ).
 
-handle_input(Char, State, History, NewState, NewHistory) :-
+handle_input(
+    Char, ctx_in(Ctx), History, ctx_out(NewCtx), NewHistory
+) :-
     (   char_code(Char, 102) ->  % 'f'
         % Forward: tick and add to history
-        tick(State, NewState),
-        NewHistory = [State|History]
+        tick(ctx_in(Ctx), ctx_out(NewCtx)),
+        NewHistory = [ctx_in(Ctx)|History]
     ;   char_code(Char, 114) ->  % 'r'
         % Reverse: go back to previous state
-        ( History = [PrevState|RestHistory] ->
-            NewState = PrevState,
+        ( History = [ctx_in(PrevCtx)|RestHistory] ->
+            NewCtx = PrevCtx,
             NewHistory = RestHistory
         ;
             % No history, stay at current state
-            NewState = State,
+            NewCtx = Ctx,
             NewHistory = History
         )
     ;   char_code(Char, 113) ->  % 'q'
         % Quit: set status to lost to exit loop
+        Ctx = ctx(State),
         State = state(
             frame(F),
             objects(Objs),
@@ -155,21 +164,23 @@ handle_input(Char, State, History, NewState, NewHistory) :-
             commands(Commands),
             rev_hints(RevHints)
         ),
+        NewCtx = ctx(NewState),
         NewHistory = History
     ;
         % Unknown input, stay at current state
-        NewState = State,
+        NewCtx = Ctx,
         NewHistory = History
     ).
 
 % ==========================================================
 % ASCII Rendering
 % ==========================================================
-render(State) :-
+render(ctx_in(Ctx)) :-
     % Clear screen (ANSI escape code)
     char_code(Esc, 27),  % ESC character
     write(Esc), write('[2J'), write(Esc), write('[H'),
     
+    Ctx = ctx(State),
     State = state(
         frame(Frame),
         objects(Objects),

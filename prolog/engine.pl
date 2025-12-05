@@ -3,7 +3,7 @@
 
 :- module(engine, [
     tick/2,
-    tick_object/4,
+    tick_object/5,
     yields/1
 ]).
 
@@ -18,7 +18,7 @@
     length/2
 ]).
 :- use_module('./third_party/exclude', [exclude/3]).
-:- use_module('./execute_action', [execute_action/5]).
+:- use_module('./execute_action', [execute_action/6]).
 :- use_module('./types/constraints', [
     state_constraint/1,
     object_constraint/1,
@@ -30,7 +30,16 @@
     attr_constraint/1,
     collision_constraint/1
 ]).
+:- use_module('./types/accessors', [
+    context_objects/2,
+    context_set_objects/3,
+    context_commands/2,
+    context_set_commands/3,
+    context_rev_hints/2,
+    context_set_rev_hints/3
+]).
 :- use_module('./types/validation', [
+    context_validation/1,
     state_validation/1,
     object_validation/1
 ]).
@@ -115,34 +124,42 @@ bidirectionally", (
 % -AllRevHints).
 
 tick_object(
+    ctx_in(_Ctx),
     object(
         id(ID), type(Type), attrs(Attrs), actions([]),
         collisions(Colls)
     ),
-    object(
+    [object(
         id(ID), type(Type), attrs(Attrs), actions([]),
         collisions(Colls)
-    ),
+    )],
     [],
     []
 ) :- !. % TODO: Can this cut hurt bidirectionality?
 
-tick_object(ObjIn, ObjOut, AllCommands, AllRevHints) :-
+% Observe thta ObjOut is either [object] or [].
+% It's empty list when the object have been removed.
+tick_object(
+    ctx_in(Ctx), ObjIn, ObjOut, AllCommands, AllRevHints
+) :-
     object_validation(ObjIn),
     ObjIn = object(
         _ID, _Type, _A, actions([Act|_Rest]), collisions(_C)
     ),
-    execute_action(Act, ObjIn, ObjTemp, C1, R1),
-    ( ObjTemp = despawned ->
-        ObjOut = despawned,
+    execute_action(
+        ctx_in(Ctx), Act, ObjIn, ObjTempList, C1, R1
+    ),
+    ( ObjTempList = [] ->
+        ObjOut = [],
         AllCommands = C1,
         AllRevHints = R1
     ; yields(Act) ->
-        ObjOut = ObjTemp,
+        ObjOut = ObjTempList,
         AllCommands = C1,
         AllRevHints = R1
     ;
-        tick_object(ObjTemp, ObjOut, C2, R2),
+        ObjTempList = [ObjTemp],
+        tick_object(ctx_in(Ctx), ObjTemp, ObjOut, C2, R2),
         append(C1, C2, AllCommands),
         append(R1, R2, AllRevHints)
     ).
@@ -160,14 +177,25 @@ object", (
         actions([]),
         collisions([])
     ),
-    tick_object(ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = object(
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
+    tick_object(
+        ctx_in(Ctx), ObjIn, ObjOut, Commands, RevHints
+    ),
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
         actions([]),
         collisions([])
-    ),
+    )],
     Commands = [],
     RevHints = []
 )).
@@ -181,14 +209,25 @@ after one execution", (
         actions([wait_frames(5)]),
         collisions([])
     ),
-    tick_object(ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = object(
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
+    tick_object(
+        ctx_in(Ctx), ObjIn, ObjOut, Commands, RevHints
+    ),
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
         actions([wait_frames(4)]),
         collisions([])
-    ),
+    )],
     Commands = [],
     RevHints = []
 )).
@@ -202,14 +241,25 @@ continues until empty", (
         actions([wait_frames(0)]),
         collisions([])
     ),
-    tick_object(ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = object(
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
+    tick_object(
+        ctx_in(Ctx), ObjIn, ObjOut, Commands, RevHints
+    ),
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
         actions([]),
         collisions([])
-    ),
+    )],
     Commands = [],
     RevHints = []
 )).
@@ -220,7 +270,7 @@ continues until empty", (
 
 test("tick: increments frame and processes empty game \
 state", (
-    StateIn = state(
+    CtxIn = ctx(state(
         frame(0),
         objects([object(
             id(0),
@@ -234,9 +284,9 @@ state", (
         next_id(1),
         commands([]),
         rev_hints([])
-    ),
-    tick(StateIn, StateOut),
-    StateOut = state(
+    )),
+    tick(ctx_in(CtxIn), ctx_out(CtxOut)),
+    CtxOut = ctx(state(
         frame(1),
         objects([object(
             id(0),
@@ -250,12 +300,12 @@ state", (
         next_id(1),
         commands([]),
         rev_hints([])
-    )
+    ))
 )).
 
 test("tick: processes object with yielding action \
 (wait_frames)", (
-    StateIn = state(
+    CtxIn = ctx(state(
         frame(0),
         objects([object(
             id(0),
@@ -269,9 +319,9 @@ test("tick: processes object with yielding action \
         next_id(1),
         commands([]),
         rev_hints([])
-    ),
-    tick(StateIn, StateOut),
-    StateOut = state(
+    )),
+    tick(ctx_in(CtxIn), ctx_out(CtxOut)),
+    CtxOut = ctx(state(
         frame(1),
         objects([object(
             id(0),
@@ -285,12 +335,12 @@ test("tick: processes object with yielding action \
         next_id(1),
         commands([]),
         rev_hints([])
-    )
+    ))
 )).
 
 test("tick: processes spawn request and creates new \
 object", (
-    StateIn = state(
+    CtxIn = ctx(state(
         frame(0),
         objects([object(
             id(0),
@@ -306,9 +356,9 @@ object", (
         next_id(1),
         commands([]),
         rev_hints([])
-    ),
-    tick(StateIn, StateOut),
-    StateOut = state(
+    )),
+    tick(ctx_in(CtxIn), ctx_out(CtxOut)),
+    CtxOut = ctx(state(
         frame(1),
         objects(FinalObjs),
         status(playing),
@@ -316,7 +366,7 @@ object", (
         next_id(2),
         commands([]),
         rev_hints([])
-    ),
+    )),
     member(
         object(
             id(0),
@@ -340,7 +390,7 @@ object", (
 )).
 
 test("tick: processes state change (score increase)", (
-    StateIn = state(
+    CtxIn = ctx(state(
         frame(0),
         objects([object(
             id(0),
@@ -354,9 +404,9 @@ test("tick: processes state change (score increase)", (
         next_id(1),
         commands([]),
         rev_hints([])
-    ),
-    tick(StateIn, StateOut),
-    StateOut = state(
+    )),
+    tick(ctx_in(CtxIn), ctx_out(CtxOut)),
+    CtxOut = ctx(state(
         frame(1),
         objects([object(
             id(0),
@@ -370,7 +420,7 @@ test("tick: processes state change (score increase)", (
         next_id(1),
         commands([]),
         rev_hints([])
-    ),
+    )),
     NewScore = 10
 )).
 
@@ -384,7 +434,7 @@ test("collision: simple enemy-projectile collision", (
     % collide
     % Both move towards the same target position so they
     % collide
-    InitialState = state(
+    InitialContext = ctx(state(
         frame(0),
         objects([
             object(
@@ -409,11 +459,11 @@ test("collision: simple enemy-projectile collision", (
         next_id(2),
         commands([]),
         rev_hints([])
-    ),
+    )),
     % Run 2 frames - collision should happen at frame 1 when
     % both reach (10, 10)
-    tick(InitialState, State1),
-    State1 = state(
+    tick(ctx_in(InitialContext), ctx_out(Context1)),
+    Context1 = ctx(state(
         frame(1),
         objects(Objs1),
         status(_),
@@ -421,7 +471,7 @@ test("collision: simple enemy-projectile collision", (
         next_id(_),
         commands(_),
         rev_hints(_)
-    ),
+    )),
     % After collision at frame 1, both objects should be
     % removed
     length(Objs1, ObjCount),
@@ -436,7 +486,7 @@ test("collision: simple enemy-projectile collision", (
 test("performance: run game to frame 32 to reproduce \
 freeze (first collision)", (
     % Same initial state as game.pl
-    InitialState = state(
+    InitialContext = ctx(state(
         frame(0),
         objects([
             object(
@@ -489,11 +539,13 @@ freeze (first collision)", (
         next_id(4),
         commands([]),
         rev_hints([])
-    ),
+    )),
     % Run tick 32 times (first collision should happen
     % around here)
-    run_ticks(InitialState, 32, FinalState),
-    FinalState = state(
+    run_ticks(
+        ctx_in(InitialContext), 32, ctx_out(FinalContext)
+    ),
+    FinalContext = ctx(state(
         frame(32),
         objects(_),
         status(_),
@@ -501,43 +553,53 @@ freeze (first collision)", (
         next_id(_),
         commands(_),
         rev_hints(_)
-    )
+    ))
 )).
 
 % Helper: run tick N times
-run_ticks(State, 0, State).
-run_ticks(StateIn, N, StateOut) :-
+run_ticks(ctx_in(Ctx), 0, ctx_out(Ctx)).
+run_ticks(ctx_in(CtxIn), N, ctx_out(CtxOut)) :-
     N > 0,
-    tick(StateIn, StateNext),
+    tick(ctx_in(CtxIn), ctx_out(CtxNext)),
     N1 is N - 1,
-    run_ticks(StateNext, N1, StateOut).
+    run_ticks(ctx_in(CtxNext), N1, ctx_out(CtxOut)).
 
 % ==========================================================
 % Main Tick Function (from Addendum 3 - FINAL version)
 % ==========================================================
-tick(StateIn, StateOut) :-
-    % game_state_constraint(StateIn),
-    state_validation(StateIn),
-    StateIn = state(
+tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
+    % game_state_constraint(CtxIn),
+    context_validation(CtxIn),
+    CtxIn = ctx(state(
         frame(F),
-        objects(Objs),
+        _,
         status(Status),
         score(Score),
         next_id(NextID),
-        commands(_OldCommands),
-        rev_hints(_OldRevHints)
+        _,
+        _
+    )),
+    
+    % 1. Tick all objects (updates objects, commands, and
+    % rev_hints in context)
+    tick_all_objects(
+        ctx_in(CtxIn),
+        ctx_out(CtxAfterTick)
     ),
     
-    % 1. Tick all objects
-    tick_all_objects(Objs, TempObjs, Commands1, RevHints1),
+    % Extract objects and rev_hints from returned context
+    context_objects(CtxAfterTick, TempObjs),
+    context_rev_hints(CtxAfterTick, RevHints1),
     
     % 2. Detect collisions (collisions only produce
     % rev_hints, no commands)
     detect_collisions(TempObjs, NewObjs, RevHints2),
     
-    % 3. Combine commands and rev_hints
-    AllCommands = Commands1,
+    % 3. Combine rev_hints
     append(RevHints1, RevHints2, AllRevHints),
+    
+    % Get commands from context
+    context_commands(CtxAfterTick, AllCommands),
     
     % 4. Partition commands
     partition(
@@ -570,8 +632,8 @@ tick(StateIn, StateOut) :-
     
     F1 #= F + 1,
     
-    % 8. Build new state
-    StateOut = state(
+    % 8. Build final context with updated state
+    CtxOut = ctx(state(
         frame(F1),
         objects(FinalObjs),
         status(NewStatus),
@@ -579,7 +641,7 @@ tick(StateIn, StateOut) :-
         next_id(NewNextID),
         commands([]),
         rev_hints(AllRevHints)
-    ).
+    )).
     % NOTE: placing this at the top caused cpu to go bananas
     %       so there are some performance problems with it..
     % game_state_constraint(StateOut).
@@ -587,23 +649,30 @@ tick(StateIn, StateOut) :-
 % ==========================================================
 % Tick Helpers
 % ==========================================================
-tick_all_objects(
-    Objects, FinalObjects, AllCommands, AllRevHints
-) :-
+
+% TODO: It got messy here with context... need to refactor.
+tick_all_objects(ctx_in(CtxIn), ctx_out(CtxOut)) :-
+    context_objects(CtxIn, Objects),
+    context_commands(CtxIn, OldCommands),
+    context_rev_hints(CtxIn, OldRevHints),
     maplist(
-        tick_object, % predicate
+        tick_object(ctx_in(CtxIn)), % predicate with context
         Objects, % "input"
-        TempObjects, % collected "output"
+        TempObjectLists, % collected output (list of lists)
         CommandLists, % collected "output"
         RevHintLists % collected "output"
     ),
-    % append/2 flattens the list of lists
-    append(CommandLists, AllCommands),
-    % append/2 flattens the list of lists
-    append(RevHintLists, AllRevHints),
-    exclude(is_despawned, TempObjects, FinalObjects).
-
-is_despawned(despawned).
+    % append/2 flattens the list of lists, append/3 combines
+    append(CommandLists, NewCommands),
+    append(OldCommands, NewCommands, AllCommands),
+    % append/2 flattens the list of lists, append/3 combines
+    append(RevHintLists, NewRevHints),
+    append(OldRevHints, NewRevHints, AllRevHints),
+    % Flatten list of lists and filter out empty lists
+    append(TempObjectLists, FinalObjects),
+    context_set_objects(CtxIn, FinalObjects, CtxTemp),
+    context_set_commands(CtxTemp, AllCommands, CtxTemp2),
+    context_set_rev_hints(CtxTemp2, AllRevHints, CtxOut).
 
 % ==========================================================
 % Spawn Processing (from Addendum 3)

@@ -2,7 +2,7 @@
 % Handles execution of all game actions
 
 :- module(execute_action, [
-    execute_action/5
+    execute_action/6
 ]).
 
 :- use_module(library(clpz)).
@@ -39,22 +39,47 @@
 %     +Commands, +RevHints).
 
 % Wrapper: validates action then delegates to implementation
-execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :-
+execute_action(
+    ctx_in(Ctx), Action, ObjIn, ObjOut, Commands, RevHints
+) :-
     action_validation(Action),
     execute_action_impl(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ).
 
 % ==========================================================
 % execute_action_impl/5
 % ==========================================================
 % Internal implementation (no validation)
+% Multifile: some clauses are defined in parallel.pl
+
+:- multifile(execute_action_impl/6).
+
+% Load parallel.pl after this module loads to make multifile
+% clauses available. This is necessary because:
+% 1. parallel.pl defines execute_action:execute_action_impl
+%    clauses
+% 2. Tests load execute_action.pl directly, so parallel.pl
+%    won't be loaded automatically
+% 3. We use initialization (runs after file loads) instead
+%    of use_module to avoid circular dependency (parallel.pl
+%    imports execute_action)
+% 4. parallel.pl uses module qualification
+%    (execute_action:execute_action) to call execute_action,
+%    avoiding the need to import it
+:- initialization(use_module('./actions/parallel', [])).
 
 % ----------------------------------------------------------
 % Basic Actions: wait_frames
 % ----------------------------------------------------------
 
 execute_action_impl(
+    ctx_in(_Ctx),
     wait_frames(N),
     object(
         id(ID),
@@ -63,13 +88,13 @@ execute_action_impl(
         actions([_|Rest]),
         collisions(Colls)
     ),
-    object(
+    [object(
         id(ID),
         type(Type),
         attrs(Attrs),
         actions(NewActions),
         collisions(Colls)
-    ),
+    )],
     [],
     []
 ) :-
@@ -86,6 +111,7 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
+    ctx_in(_Ctx),
     move_to(TargetX, TargetY, Frames),
     object(
         id(ID),
@@ -94,13 +120,13 @@ execute_action_impl(
         actions([_|Rest]),
         Colls
     ),
-    object(
+    [object(
         id(ID),
         type(Type),
         attrs(NewAttrs),
         actions(NewActions),
         Colls
-    ),
+    )],
     [],
     []
 ) :-
@@ -132,6 +158,7 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
+    ctx_in(_Ctx),
     despawn,
     object(
         id(ID),
@@ -140,7 +167,7 @@ execute_action_impl(
         actions(_),
         collisions(_Colls)
     ),
-    despawned,
+    [],
     [],
     [despawned(ID, Attrs)]
 ) :- !.
@@ -150,6 +177,7 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
+    ctx_in(_Ctx),
     spawn(Type, Pos, Actions),
     object(
         id(ID),
@@ -158,13 +186,13 @@ execute_action_impl(
         actions([_|Rest]),
         collisions(Colls)
     ),
-    object(
+    [object(
         id(ID),
         type(ObjType),
         attrs(Attrs),
         actions(Rest),
         collisions(Colls)
-    ),
+    )],
     [spawn_request(Type, Pos, Actions)],
     []
 ).
@@ -174,6 +202,7 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
+    ctx_in(_Ctx),
     loop(Actions),
     object(
         id(ID),
@@ -182,13 +211,13 @@ execute_action_impl(
         actions([_|Rest]),
         collisions(Colls)
     ),
-    object(
+    [object(
         id(ID),
         type(Type),
         attrs(Attrs),
         actions(NewActions),
         collisions(Colls)
-    ),
+    )],
     [],
     []
 ) :-
@@ -200,6 +229,7 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
+    ctx_in(_Ctx),
     trigger_state_change(Change),
     object(
         id(ID),
@@ -208,167 +238,22 @@ execute_action_impl(
         actions([_|Rest]),
         Colls
     ),
-    object(
+    [object(
         id(ID),
         type(Type),
         attrs(Attrs),
         actions(Rest),
         Colls
-    ),
+    )],
     [state_change(Change)],
     []
 ).
 
 % ----------------------------------------------------------
-% Compound Actions: parallel (from Addendum 2 + 3 -
-% FINAL version)
+% Compound Actions: parallel
 % ----------------------------------------------------------
-
-execute_action_impl(
-    parallel(ChildActions),
-    object(
-        id(ID),
-        type(Type),
-        attrs(AttrsIn),
-        actions([_|Rest]),
-        collisions(Colls)
-    ),
-    Result,
-    AllCommands,
-    AllRevHints
-) :-
-    tick_parallel_children(
-        ChildActions, ID, Type, AttrsIn, collisions(Colls),
-        AttrsOut, UpdatedChildren, AllCommands, AllRevHints
-    ),
-    ( member(caused_despawn, UpdatedChildren) ->
-        Result = despawned
-    ; all_children_done(UpdatedChildren) ->
-        Result = object(
-            id(ID),
-            type(Type),
-            attrs(AttrsOut),
-            actions(Rest),
-            collisions(Colls)
-        )
-    ;
-        NewActionsList = [parallel_running(UpdatedChildren)|
-            Rest],
-        Result = object(
-            id(ID),
-            type(Type),
-            attrs(AttrsOut),
-            actions(NewActionsList),
-            collisions(Colls)
-        )
-    ).
-
-% --------------------------------------------------------
-% Compound Actions: parallel_running
-% --------------------------------------------------------
-
-execute_action_impl(
-    parallel_running(Children),
-    Obj, NewObj, Commands, RevHints
-) :-
-    execute_action(
-        parallel(Children), Obj, NewObj, Commands, RevHints
-    ).
-
-% ==========================================================
-% tick_parallel_children/9
-% ==========================================================
-
-% TODO: Tighten type
-% :- pred tick_parallel_children(?Children, ?ID, ?Type,
-%     ?AttrsIn, ?Colls, ?AttrsOut, ?UpdatedChildren,
-%     ?AllCommands, ?AllRevHints).
-
-tick_parallel_children(
-    [], _ID, _Type, Attrs, collisions(_Colls),
-    Attrs, [], [], []
-).
-
-tick_parallel_children(
-    [Child|RestChildren],
-    ID, Type, AttrsIn, collisions(Colls),
-    AttrsOut, [UpdatedChild|RestUpdated],
-    AllCommands, AllRevHints
-) :-
-    tick_one_child(
-        Child, ID, Type, AttrsIn, collisions(Colls),
-        Attrs1, UpdatedChild, Commands1, RevHints1
-    ),
-    tick_parallel_children(
-        RestChildren, ID, Type, Attrs1, collisions(Colls),
-        AttrsOut, RestUpdated, Commands2, RevHints2
-    ),
-    append(Commands1, Commands2, AllCommands),
-    append(RevHints1, RevHints2, AllRevHints).
-
-% ==========================================================
-% tick_one_child/9
-% ==========================================================
-
-% TOODO: Tighten type
-% :- pred tick_one_child(?Child, ?ID, ?Type, ?AttrsIn,
-%     ?Colls, ?AttrsOut, ?UpdatedChild, ?Commands,
-%     ?RevHints).
-
-tick_one_child(done, _, _, A, _, A, done, [], []) :- !.
-
-tick_one_child(
-    caused_despawn,
-    _, _, A, _, A, caused_despawn, [], []
-) :- !.
-
-tick_one_child(
-    Child,
-    ID,
-    Type,
-    AIn,
-    collisions(C),
-    AOut,
-    U,
-    Commands,
-    RevHints
-) :-
-    execute_action(
-        Child,
-        object(
-            id(ID),
-            type(Type),
-            attrs(AIn),
-            actions([Child]),
-            collisions(C)
-        ),
-        Result,
-        Commands,
-        RevHints
-    ),
-    ( Result = despawned ->
-        U = caused_despawn,
-        AOut = AIn
-    ;
-        Result = object(
-            id(_), _, attrs(AOut), actions(NewActs), _
-        ),
-        ( NewActs = [] -> U = done ; [U|_] = NewActs )
-    ).
-
-% ==========================================================
-% all_children_done/1
-% ==========================================================
-
-% :- pred all_children_done(?Children).
-
-all_children_done([]).
-
-all_children_done([done|R]) :-
-    all_children_done(R).
-
-all_children_done([caused_despawn|_]) :-
-    !, fail.
+% Note: parallel and parallel_running actions are handled
+% in prolog/actions/parallel.pl via multifile clauses
 
 % ==========================================================
 % Tests
@@ -388,16 +273,30 @@ remaining", (
         actions([move_to(10, 20, 3)]),
         []
     ),
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
     execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ),
-    ObjOut = object(
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(NewX, NewY)|_]),
         actions([move_to(10, 20, 2)|_]),
         []
-    ),
+    )],
     NewX = 3,
     NewY = 6,
     Commands = [],
@@ -414,16 +313,30 @@ remaining", (
         actions([move_to(0, 0, 3)]),
         []
     ),
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
     execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ),
-    ObjOut = object(
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(NewX, NewY)|_]),
         actions([move_to(0, 0, 2)|_]),
         []
-    ),
+    )],
     NewX = 7,
     NewY = 14,
     Commands = [],
@@ -439,16 +352,30 @@ test("move_to: single frame, arrives at target", (
         actions([move_to(5, 5, 1)]),
         []
     ),
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
     execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ),
-    ObjOut = object(
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(5, 5)|_]),
         actions([]),
         []
-    ),
+    )],
     Commands = [],
     RevHints = []
 )).
@@ -463,16 +390,30 @@ continues with remaining frames", (
         actions([move_to(10, 20, 3)]),
         []
     ),
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
     execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ),
-    ObjOut = object(
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(10, 20)|_]),
         actions([move_to(10, 20, 2)|_]),
         []
-    ),
+    )],
     Commands = [],
     RevHints = []
 )).
@@ -486,16 +427,30 @@ test("move_to: negative target coordinates", (
         actions([move_to(-5, -10, 2)]),
         []
     ),
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
     execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ),
-    ObjOut = object(
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(NewX, NewY)|_]),
         actions([move_to(-5, -10, 1)|_]),
         []
-    ),
+    )],
     NewX = -2,
     NewY = -5,
     Commands = [],
@@ -513,17 +468,31 @@ coordinates from final position", (
         actions([move_to(TargetX, TargetY, 1)]),
         []
     ),
-    ObjOut = object(
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(5, 5)|_]),
         actions([]),
         []
-    ),
+    )],
     Commands = [],
     RevHints = [],
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
     execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ),
     % Verify that TargetX was correctly inferred
     TargetX = 5,
@@ -548,17 +517,31 @@ count from remaining frames", (
         actions([wait_frames(N)]),
         collisions([])
     ),
-    ObjOut = object(
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([]),
         actions([wait_frames(2)]),
         collisions([])
-    ),
+    )],
     Commands = [],
     RevHints = [],
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
     execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ),
     N = 3  % Verify that N was correctly inferred
 )).
@@ -581,19 +564,33 @@ parameters from spawn_request command", (
         ]),
         collisions([])
     ),
-    ObjOut = object(
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([]),
         actions([]),
         collisions([])
-    ),
+    )],
     Commands = [spawn_request(
         enemy, pos(10, 5), [move_to(0, 0, 10)]
     )],
     RevHints = [],
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
     execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ),
     % Verify that Type was correctly inferred
     Type = enemy,
@@ -618,17 +615,31 @@ change from state_change command", (
         actions([trigger_state_change(Change)]),
         collisions([])
     ),
-    ObjOut = object(
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([]),
         actions([]),
         collisions([])
-    ),
+    )],
     Commands = [state_change(score(10))],
     RevHints = [],
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
     execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ),
     % Verify that Change was correctly inferred
     Change = score(10)
@@ -649,7 +660,7 @@ final action list", (
         actions([loop(Actions)]),
         collisions([])
     ),
-    ObjOut = object(
+    ObjOut = [object(
         id(1),
         type(static),
         attrs([]),
@@ -658,11 +669,25 @@ final action list", (
             loop([move_to(5, 5, 1)])
         ]),
         collisions([])
-    ),
+    )],
     Commands = [],
     RevHints = [],
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
     execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ),
     % Verify that Actions were correctly inferred
     Actions = [move_to(5, 5, 1)]
@@ -683,52 +708,27 @@ from despawned rev_hint", (
         actions([]),
         collisions([])
     ),
-    ObjOut = despawned,
+    ObjOut = [],
     Commands = [],
     RevHints = [despawned(1, [pos(10, 20)])],
+    Ctx = ctx(state(
+        frame(0),
+        [],
+        status(playing),
+        score(0),
+        next_id(1),
+        [],
+        []
+    )),
     execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
+        ctx_in(Ctx),
+        Action,
+        ObjIn,
+        ObjOut,
+        Commands,
+        RevHints
     ),
     ID = 1,  % Verify that ID was correctly inferred
     % Verify that Attrs were correctly inferred
     Attrs = [pos(10, 20)]
 )).
-
-% ==========================================================
-% Tests: parallel
-% ==========================================================
-
-test("parallel: backward test - can infer original \
-wait_frames values from parallel_running state", (
-    % N1 and N2 are unknown - should be inferred
-    Action = parallel([wait_frames(N1), wait_frames(N2)]),
-    ObjIn = object(
-        id(1),
-        type(static),
-        attrs([]),
-        actions([
-            parallel([wait_frames(N1), wait_frames(N2)])
-        ]),
-        collisions([])
-    ),
-    ObjOut = object(
-        id(1),
-        type(static),
-        attrs([]),
-        actions([
-            parallel_running([
-                wait_frames(2),
-                wait_frames(3)
-            ])
-        ]),
-        collisions([])
-    ),
-    Commands = [],
-    RevHints = [],
-    execute_action(
-        Action, ObjIn, ObjOut, Commands, RevHints
-    ),
-    N1 = 3,  % Verify that N1 was correctly inferred
-    N2 = 4   % Verify that N2 was correctly inferred
-)).
-

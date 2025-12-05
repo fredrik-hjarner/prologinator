@@ -24,6 +24,7 @@
 :- use_module(library(between), [between/3]).
 :- use_module(library(time), [time/1]).
 :- use_module(library(format), [format/2]).
+:- use_module('./accessors', [object_id/2]).
 
 % ==========================================================
 % Helper Predicates (from Addendums 1 & 2)
@@ -66,9 +67,6 @@ maplist_with_depth(Goal, [H|T], DepthLeft) :-
     call(Goal, H, DepthLeft),
     maplist_with_depth(Goal, T, DepthLeft).
 
-% get_object_id/2 - extract ID from game_object
-% (Addendum 3/4)
-get_object_id(object(id(ID), _, _, _, _), ID).
 
 % last/2 - get last element of a list (for Addendum 4)
 last([X], X).
@@ -96,7 +94,7 @@ state_constraint(
     bounded_list_of(object_constraint, Objects, 200),
     
     % Extract IDs
-    maplist(get_object_id, Objects, IDs),
+    maplist(object_id, Objects, IDs),
     % Enforce ascending order
     % (implicitly ensures uniqueness) - Addendum 4
     ( ground(IDs)

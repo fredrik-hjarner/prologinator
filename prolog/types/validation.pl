@@ -45,6 +45,7 @@
 % ==========================================================
 
 :- module(validation, [
+    context_validation/1,
     state_validation/1,
     object_validation/1,
     game_status_validation/1,
@@ -75,6 +76,17 @@ format_(Format, Args) :-
 % These predicates validate ground terms only.
 % If term is not ground, they succeed without checking.
 % If term is ground and invalid, they throw an error.
+
+% ==========================================================
+% context_validation/1
+% ==========================================================
+
+context_validation(ctx(State)) :-
+    state_validation(State).
+
+% ==========================================================
+% state_validation/1
+% ==========================================================
 
 state_validation(Term) :-
     ( ground(Term) ->
@@ -509,6 +521,62 @@ multiple objects and commands", (
         ])
     ),
     state_validation(State)
+)).
+
+test("context_validation: complex context with multiple \
+objects, commands, and rev_hints", (
+    Ctx = ctx(state(
+        frame(42),
+        objects([
+            object(
+                id(0), type(tower), attrs([pos(5, 19)]),
+                actions([
+                    loop([
+                        wait_frames(3),
+                        spawn(proj, pos(5, 19), [
+                            move_to(5, 0, 20)
+                        ])
+                    ])
+                ]), collisions([])
+            ),
+            object(
+                id(1), type(enemy), attrs([pos(10, 5)]),
+                actions([
+                    move_to(19, 5, 15),
+                    trigger_state_change(score(10))
+                ]), collisions([])
+            ),
+            object(
+                id(2), type(proj), attrs([pos(15, 10)]),
+                actions([move_to(15, 0, 10)]),
+                collisions([])
+            ),
+            object(
+                id(3), type(static), attrs([]),
+                actions([
+                    parallel([
+                        wait_frames(5),
+                        spawn(enemy, pos(0, 10), [])
+                    ])
+                ]), collisions([])
+            )
+        ]),
+        status(playing),
+        score(250),
+        next_id(4),
+        commands([
+            spawn_request(enemy, pos(0, 0), []),
+            state_change(score(5)),
+            spawn_request(proj, pos(10, 10), [
+                move_to(10, 0, 10)
+            ])
+        ]),
+        rev_hints([
+            despawned(1, [pos(19, 5)]),
+            despawned(2, [pos(15, 0)])
+        ])
+    )),
+    context_validation(Ctx)
 )).
 
 % ----------------------------------------------------------

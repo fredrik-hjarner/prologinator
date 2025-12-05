@@ -1,3 +1,7 @@
+# Rename object to obj
+
+yup shorter.
+
 # Add some setting via env or something to toggle validation
 
 Add some setting via env or something to toggle validation

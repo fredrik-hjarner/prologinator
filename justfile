@@ -17,6 +17,12 @@ test MODULE:
 	if grep -q "Failed test" /tmp/just_test_output.txt; then rm -f /tmp/just_test_output.txt; exit 1; fi; \
 	rm -f /tmp/just_test_output.txt
 
+test-verbose MODULE:
+	@base=$(basename "{{MODULE}}") && \
+	scryer-prolog -g "catch((use_module('submodules/scryer-prolog/src/tests/test_framework'), use_module('./{{MODULE}}'), main($base)), Error, (format(\"Uncaught exception: ~w~n\", [Error]), halt(1)))." 2>&1 | tee /tmp/just_test_output.txt; \
+	if grep -q "Failed test" /tmp/just_test_output.txt; then rm -f /tmp/just_test_output.txt; exit 1; fi; \
+	rm -f /tmp/just_test_output.txt
+
 # Run tests for a module (quiet output - just pass/fail summary)
 # Usage: just test-quiet prolog/execute_action
 test-quiet MODULE:
@@ -26,12 +32,16 @@ test-quiet MODULE:
 test-all:
     @echo "\nTesting execute_action..."
     @just test prolog/execute_action || exit 1
+    @echo "\nTesting parallel..."
+    @just test prolog/actions/parallel || exit 1
     @echo "\nTesting engine..."
     @just test prolog/engine || exit 1
     @echo "\nTesting validation..."
     @just test prolog/types/validation || exit 1
     @echo "\nTesting macros..."
     @just test prolog/macros || exit 1
+    @echo "\nTesting xod..."
+    @just test prolog/xod/xod || exit 1
 
 # Check a Prolog file for syntax errors
 # Usage: just lint prolog/engine.pl
@@ -44,21 +54,27 @@ lint-all:
 	@just lint prolog/engine.pl || exit 1
 	@just lint prolog/game.pl || exit 1
 	@just lint prolog/types/constraints.pl || exit 1
+	@just lint prolog/types/accessors.pl || exit 1
 	@just lint prolog/execute_action.pl || exit 1
+	@just lint prolog/actions/parallel.pl || exit 1
 	@just lint prolog/types/validation.pl || exit 1
 	@just lint prolog/macros.pl || exit 1
 	@just lint prolog/test_macros.pl || exit 1
+	@just lint prolog/xod/xod.pl || exit 1
 	@echo "All files passed linting!"
 
 # lint the max length of files.
 lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/game.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/macros.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/test_macros.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/accessors.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/constraints.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/validation.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/xod/xod.pl
 
 # Run CI pipeline: lint-all then test-all
 # Fails if any step fails
