@@ -4,8 +4,8 @@
 
 :- module(constraints, [
     % constraints
-    game_state_constraint/1,
-    game_object_constraint/1,
+    state_constraint/1,
+    object_constraint/1,
     game_status_constraint/1,
     command_constraint/1,
     rev_hint_constraint/1,
@@ -68,7 +68,7 @@ maplist_with_depth(Goal, [H|T], DepthLeft) :-
 
 % get_object_id/2 - extract ID from game_object
 % (Addendum 3/4)
-get_object_id(game_object(id(ID), _, _, _, _), ID).
+get_object_id(object(id(ID), _, _, _, _), ID).
 
 % last/2 - get last element of a list (for Addendum 4)
 last([X], X).
@@ -80,8 +80,8 @@ last([_|T], X) :-
 % (Addendum 4 - final version)
 % ==========================================================
 
-game_state_constraint(
-  game_state(
+state_constraint(
+  state(
       frame(Frame),
       objects(Objects),
       status(Status),
@@ -93,7 +93,7 @@ game_state_constraint(
 ) :-
     Frame #>= 0,
     % Frame #=< 1000,
-    bounded_list_of(game_object_constraint, Objects, 200),
+    bounded_list_of(object_constraint, Objects, 200),
     
     % Extract IDs
     maplist(get_object_id, Objects, IDs),
@@ -125,12 +125,12 @@ game_status_constraint(won).
 game_status_constraint(lost).
 
 % ==========================================================
-% game_object_constraint/1 Constraint
+% object_constraint/1 Constraint
 % (Addendum 1 - skip collision constraints)
 % ==========================================================
 
-game_object_constraint(
-  game_object(
+object_constraint(
+  object(
       id(ID),
       type(Type),
       attrs(Attrs),

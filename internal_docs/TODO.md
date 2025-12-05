@@ -1,3 +1,8 @@
+# Wrap state in context
+
+And just like in golang thread context down as FIRST
+argument.
+
 # Rename game_state to state and game_object to object
 
 yup shorter that way.

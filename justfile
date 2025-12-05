@@ -30,6 +30,8 @@ test-all:
     @just test prolog/engine || exit 1
     @echo "\nTesting validation..."
     @just test prolog/types/validation || exit 1
+    @echo "\nTesting macros..."
+    @just test prolog/macros || exit 1
 
 # Check a Prolog file for syntax errors
 # Usage: just lint prolog/engine.pl
@@ -44,6 +46,8 @@ lint-all:
 	@just lint prolog/types/constraints.pl || exit 1
 	@just lint prolog/execute_action.pl || exit 1
 	@just lint prolog/types/validation.pl || exit 1
+	@just lint prolog/macros.pl || exit 1
+	@just lint prolog/test_macros.pl || exit 1
 	@echo "All files passed linting!"
 
 # lint the max length of files.

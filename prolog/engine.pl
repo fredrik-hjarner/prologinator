@@ -20,8 +20,8 @@
 :- use_module('./third_party/exclude', [exclude/3]).
 :- use_module('./execute_action', [execute_action/5]).
 :- use_module('./types/constraints', [
-    game_state_constraint/1,
-    game_object_constraint/1,
+    state_constraint/1,
+    object_constraint/1,
     game_status_constraint/1,
     command_constraint/1,
     rev_hint_constraint/1,
@@ -31,8 +31,8 @@
     collision_constraint/1
 ]).
 :- use_module('./types/validation', [
-    game_state_validation/1,
-    game_object_validation/1
+    state_validation/1,
+    object_validation/1
 ]).
 
 % test/2 clauses are intentionally separated by other code
@@ -115,11 +115,11 @@ bidirectionally", (
 % -AllRevHints).
 
 tick_object(
-    game_object(
+    object(
         id(ID), type(Type), attrs(Attrs), actions([]),
         collisions(Colls)
     ),
-    game_object(
+    object(
         id(ID), type(Type), attrs(Attrs), actions([]),
         collisions(Colls)
     ),
@@ -128,8 +128,8 @@ tick_object(
 ) :- !. % TODO: Can this cut hurt bidirectionality?
 
 tick_object(ObjIn, ObjOut, AllCommands, AllRevHints) :-
-    game_object_validation(ObjIn),
-    ObjIn = game_object(
+    object_validation(ObjIn),
+    ObjIn = object(
         _ID, _Type, _A, actions([Act|_Rest]), collisions(_C)
     ),
     execute_action(Act, ObjIn, ObjTemp, C1, R1),
@@ -153,7 +153,7 @@ tick_object(ObjIn, ObjOut, AllCommands, AllRevHints) :-
 
 test("tick_object: empty action list returns unchanged \
 object", (
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
@@ -161,7 +161,7 @@ object", (
         collisions([])
     ),
     tick_object(ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
@@ -174,7 +174,7 @@ object", (
 
 test("tick_object: yielding action (wait_frames) stops \
 after one execution", (
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
@@ -182,7 +182,7 @@ after one execution", (
         collisions([])
     ),
     tick_object(ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
@@ -195,7 +195,7 @@ after one execution", (
 
 test("tick_object: wait_frames(0) is removed and execution \
 continues until empty", (
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
@@ -203,7 +203,7 @@ continues until empty", (
         collisions([])
     ),
     tick_object(ObjIn, ObjOut, Commands, RevHints),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
@@ -220,9 +220,9 @@ continues until empty", (
 
 test("tick: increments frame and processes empty game \
 state", (
-    StateIn = game_state(
+    StateIn = state(
         frame(0),
-        objects([game_object(
+        objects([object(
             id(0),
             type(static),
             attrs([pos(0, 0)]),
@@ -236,9 +236,9 @@ state", (
         rev_hints([])
     ),
     tick(StateIn, StateOut),
-    StateOut = game_state(
+    StateOut = state(
         frame(1),
-        objects([game_object(
+        objects([object(
             id(0),
             type(static),
             attrs([pos(0, 0)]),
@@ -255,9 +255,9 @@ state", (
 
 test("tick: processes object with yielding action \
 (wait_frames)", (
-    StateIn = game_state(
+    StateIn = state(
         frame(0),
-        objects([game_object(
+        objects([object(
             id(0),
             type(static),
             attrs([pos(0, 0)]),
@@ -271,9 +271,9 @@ test("tick: processes object with yielding action \
         rev_hints([])
     ),
     tick(StateIn, StateOut),
-    StateOut = game_state(
+    StateOut = state(
         frame(1),
-        objects([game_object(
+        objects([object(
             id(0),
             type(static),
             attrs([pos(0, 0)]),
@@ -290,9 +290,9 @@ test("tick: processes object with yielding action \
 
 test("tick: processes spawn request and creates new \
 object", (
-    StateIn = game_state(
+    StateIn = state(
         frame(0),
-        objects([game_object(
+        objects([object(
             id(0),
             type(static),
             attrs([pos(0, 0)]),
@@ -308,7 +308,7 @@ object", (
         rev_hints([])
     ),
     tick(StateIn, StateOut),
-    StateOut = game_state(
+    StateOut = state(
         frame(1),
         objects(FinalObjs),
         status(playing),
@@ -318,7 +318,7 @@ object", (
         rev_hints([])
     ),
     member(
-        game_object(
+        object(
             id(0),
             type(static),
             attrs([pos(0, 0)]),
@@ -328,7 +328,7 @@ object", (
         FinalObjs
     ),
     member(
-        game_object(
+        object(
             id(_NewID),
             type(enemy),
             attrs([pos(5, 5)]),
@@ -340,9 +340,9 @@ object", (
 )).
 
 test("tick: processes state change (score increase)", (
-    StateIn = game_state(
+    StateIn = state(
         frame(0),
-        objects([game_object(
+        objects([object(
             id(0),
             type(static),
             attrs([pos(0, 0)]),
@@ -356,9 +356,9 @@ test("tick: processes state change (score increase)", (
         rev_hints([])
     ),
     tick(StateIn, StateOut),
-    StateOut = game_state(
+    StateOut = state(
         frame(1),
-        objects([game_object(
+        objects([object(
             id(0),
             type(static),
             attrs([pos(0, 0)]),
@@ -384,10 +384,10 @@ test("collision: simple enemy-projectile collision", (
     % collide
     % Both move towards the same target position so they
     % collide
-    InitialState = game_state(
+    InitialState = state(
         frame(0),
         objects([
-            game_object(
+            object(
                 id(0), type(enemy), attrs([pos(5, 10)]),
                 actions([
                     % Moving right, arrives at (10, 10) in 1
@@ -395,7 +395,7 @@ test("collision: simple enemy-projectile collision", (
                     move_to(10, 10, 1)
                 ]), collisions([])
             ),
-            game_object(
+            object(
                 id(1), type(proj), attrs([pos(5, 10)]),
                 actions([
                     % Moving to same target, arrives at
@@ -413,7 +413,7 @@ test("collision: simple enemy-projectile collision", (
     % Run 2 frames - collision should happen at frame 1 when
     % both reach (10, 10)
     tick(InitialState, State1),
-    State1 = game_state(
+    State1 = state(
         frame(1),
         objects(Objs1),
         status(_),
@@ -436,10 +436,10 @@ test("collision: simple enemy-projectile collision", (
 test("performance: run game to frame 32 to reproduce \
 freeze (first collision)", (
     % Same initial state as game.pl
-    InitialState = game_state(
+    InitialState = state(
         frame(0),
         objects([
-            game_object(
+            object(
                 id(0), type(tower), attrs([pos(5, 19)]),
                 actions([
                     loop([
@@ -450,7 +450,7 @@ freeze (first collision)", (
                     ])
                 ]), collisions([])
             ),
-            game_object(
+            object(
                 id(1), type(tower), attrs([pos(10, 19)]),
                 actions([
                     loop([
@@ -461,7 +461,7 @@ freeze (first collision)", (
                     ])
                 ]), collisions([])
             ),
-            game_object(
+            object(
                 id(2), type(tower), attrs([pos(15, 19)]),
                 actions([
                     loop([
@@ -472,7 +472,7 @@ freeze (first collision)", (
                     ])
                 ]), collisions([])
             ),
-            game_object(
+            object(
                 id(3), type(static), attrs([]),
                 actions([
                     loop([
@@ -493,7 +493,7 @@ freeze (first collision)", (
     % Run tick 32 times (first collision should happen
     % around here)
     run_ticks(InitialState, 32, FinalState),
-    FinalState = game_state(
+    FinalState = state(
         frame(32),
         objects(_),
         status(_),
@@ -517,8 +517,8 @@ run_ticks(StateIn, N, StateOut) :-
 % ==========================================================
 tick(StateIn, StateOut) :-
     % game_state_constraint(StateIn),
-    game_state_validation(StateIn),
-    StateIn = game_state(
+    state_validation(StateIn),
+    StateIn = state(
         frame(F),
         objects(Objs),
         status(Status),
@@ -571,7 +571,7 @@ tick(StateIn, StateOut) :-
     F1 #= F + 1,
     
     % 8. Build new state
-    StateOut = game_state(
+    StateOut = state(
         frame(F1),
         objects(FinalObjs),
         status(NewStatus),
@@ -614,7 +614,7 @@ process_spawn_requests([], ID, [], ID).
 process_spawn_requests(
     [spawn_request(Type, Pos, Acts)|Rest],
     IDIn,
-    [game_object(
+    [object(
         id(ObjID),
         type(Type),
         attrs([Pos]),
@@ -679,13 +679,13 @@ detect_collisions(Objects, NewObjects, RevHints) :-
         collision(ID1, ID2),
         (
             member(
-                game_object(
+                object(
                     id(ID1), _, attrs(A1), _, collisions(_)
                 ),
                 Objects
             ),
             member(
-                game_object(
+                object(
                     id(ID2), _, attrs(A2), _, collisions(_)
                 ),
                 Objects
@@ -714,13 +714,13 @@ handle_collisions(
         (
             member(collision(ID1, ID2), Collisions),
             member(
-                game_object(
+                object(
                     id(ID1), type(proj), _, _, collisions(_)
                 ),
                 Objects
             ),
             member(
-                game_object(
+                object(
                     id(ID2),
                     type(enemy),
                     _,
@@ -733,7 +733,7 @@ handle_collisions(
         ;
             member(collision(ID1, ID2), Collisions),
             member(
-                game_object(
+                object(
                     id(ID1),
                     type(enemy),
                     _,
@@ -743,7 +743,7 @@ handle_collisions(
                 Objects
             ),
             member(
-                game_object(
+                object(
                     id(ID2),
                     type(proj),
                     _,
@@ -772,7 +772,7 @@ handle_collisions(
 
 remove_with_rev_hints([], _, [], []).
 remove_with_rev_hints(
-    [game_object(
+    [object(
         id(ID), _, attrs(AttrList), _, collisions(_)
     )|Rest],
     ToRemove,

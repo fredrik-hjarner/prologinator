@@ -45,8 +45,8 @@
 % ==========================================================
 
 :- module(validation, [
-    game_state_validation/1,
-    game_object_validation/1,
+    state_validation/1,
+    object_validation/1,
     game_status_validation/1,
     command_validation/1,
     rev_hint_validation/1,
@@ -76,27 +76,27 @@ format_(Format, Args) :-
 % If term is not ground, they succeed without checking.
 % If term is ground and invalid, they throw an error.
 
-game_state_validation(Term) :-
+state_validation(Term) :-
     ( ground(Term) ->
-        ( game_state_validation_helper(Term) ->
+        ( state_validation_helper(Term) ->
             true
         ;
             format_("ERROR: Invalid game_state:~n  ~w~n",
                    [Term]),
             throw(error(type_error(game_state, Term),
-                        game_state_validation/1))
+                        state_validation/1))
         )
     ;
         true
     ).
 
 % ==========================================================
-% game_state_validation_helper/1
+% state_validation_helper/1
 % ==========================================================
 
-game_state_validation_helper(Term) :-
+state_validation_helper(Term) :-
     ( ground(Term) ->
-        ( Term = game_state(
+        ( Term = state(
               frame(Frame),
               objects(Objects),
               status(Status),
@@ -124,13 +124,13 @@ game_state_validation_helper(Term) :-
         ;
             % Structure doesn't match - throw
             format_(
-                "ERROR: Invalid game_state structure:~n  \
-~w~n",
+                "ERROR: Invalid game_state structure:\n  \
+ ~w~n",
                 [Term]
             ),
             throw(
                 error(type_error(game_state, Term),
-                      game_state_validation_helper/1)
+                      state_validation_helper/1)
             )
         )
     ;
@@ -143,7 +143,7 @@ game_state_validation_helper(Term) :-
 
 extract_ids([], []).
 extract_ids(
-    [game_object(id(ID), _, _, _, _)|Rest], [ID|IDs]
+    [object(id(ID), _, _, _, _)|Rest], [ID|IDs]
 ) :-
     extract_ids(Rest, IDs).
 
@@ -157,27 +157,27 @@ last_id([X], X).
 last_id([_|T], X) :-
     last_id(T, X).
 
-game_object_validation(Term) :-
+object_validation(Term) :-
     ( ground(Term) ->
-        ( game_object_validation_helper(Term) ->
+        ( object_validation_helper(Term) ->
             true
         ;
-            format_("ERROR: Invalid game_object:~n  ~w~n",
+            format_("ERROR: Invalid object:~n  ~w~n",
                    [Term]),
-            throw(error(type_error(game_object, Term),
-                        game_object_validation/1))
+            throw(error(type_error(object, Term),
+                        object_validation/1))
         )
     ;
         true
     ).
 
 % ==========================================================
-% game_object_validation_helper/1
+% object_validation_helper/1
 % ==========================================================
 
-game_object_validation_helper(Term) :-
+object_validation_helper(Term) :-
     ( ground(Term) ->
-        ( Term = game_object(
+        ( Term = object(
               id(ID), type(Type), attrs(Attrs),
               actions(Actions), collisions(_Colls)
           ) ->
@@ -189,13 +189,13 @@ game_object_validation_helper(Term) :-
         ;
             % Structure doesn't match - throw
             format_(
-                "ERROR: Invalid game_object structure:~n  \
+                "ERROR: Invalid object structure:~n  \
 ~w~n",
                 [Term]
             ),
             throw(
-                error(type_error(game_object, Term),
-                      game_object_validation_helper/1)
+                error(type_error(object, Term),
+                      object_validation_helper/1)
             )
         )
     ;
@@ -463,9 +463,9 @@ action_validation_helper(Term) :-
 :- discontiguous(test/2).
 
 test("game_state_validation: valid state passes", (
-    State = game_state(
+    State = state(
         frame(0),
-        objects([game_object(
+        objects([object(
             id(0), type(static), attrs([pos(0, 0)]),
             actions([]), collisions([])
         )]),
@@ -475,24 +475,24 @@ test("game_state_validation: valid state passes", (
         commands([]),
         rev_hints([])
     ),
-    game_state_validation(State)
+    state_validation(State)
 )).
 
 test("game_state_validation: complex state with \
 multiple objects and commands", (
-    State = game_state(
+    State = state(
         frame(5),
         objects([
-            game_object(
+            object(
                 id(0), type(tower), attrs([pos(10, 19)]),
                 actions([wait_frames(3)]), collisions([])
             ),
-            game_object(
+            object(
                 id(1), type(enemy), attrs([pos(5, 5)]),
                 actions([move_to(10, 10, 5)]),
                 collisions([])
             ),
-            game_object(
+            object(
                 id(2), type(proj), attrs([pos(15, 15)]),
                 actions([]), collisions([])
             )
@@ -508,7 +508,7 @@ multiple objects and commands", (
             despawned(1, [pos(10, 10)])
         ])
     ),
-    game_state_validation(State)
+    state_validation(State)
 )).
 
 % ----------------------------------------------------------
@@ -546,7 +546,7 @@ expect_exception(Goal) :-
 % ----------------------------------------------------------
 
 test("game_state_validation: invalid status fails", (
-    State = game_state(
+    State = state(
         frame(0),
         objects([]),
         status(invalid_status),
@@ -555,11 +555,11 @@ test("game_state_validation: invalid status fails", (
         commands([]),
         rev_hints([])
     ),
-    expect_exception(game_state_validation(State))
+    expect_exception(state_validation(State))
 )).
 
 test("game_state_validation: non-integer frame fails", (
-    State = game_state(
+    State = state(
         frame(not_an_int),
         objects([]),
         status(playing),
@@ -568,18 +568,18 @@ test("game_state_validation: non-integer frame fails", (
         commands([]),
         rev_hints([])
     ),
-    expect_exception(game_state_validation(State))
+    expect_exception(state_validation(State))
 )).
 
 test("game_state_validation: NextID <= max ID fails", (
-    Obj = game_object(
+    Obj = object(
         id(5),
         type(static),
         attrs([]),
         actions([]),
         collisions([])
     ),
-    State = game_state(
+    State = state(
         frame(0),
         objects([Obj]),
         status(playing),
@@ -588,30 +588,30 @@ test("game_state_validation: NextID <= max ID fails", (
         commands([]),
         rev_hints([])
     ),
-    expect_exception(game_state_validation(State))
+    expect_exception(state_validation(State))
 )).
 
-test("game_object_validation: wrong structure (ID not \
+test("object_validation: wrong structure (ID not \
 wrapped) throws", (
-    Obj = game_object(
+    Obj = object(
         5,
         type(static),
         attrs([]),
         actions([]),
         collisions([])
     ),
-    expect_exception(game_object_validation(Obj))
+    expect_exception(object_validation(Obj))
 )).
 
-test("game_object_validation: invalid object type fails", (
-    Obj = game_object(
+test("object_validation: invalid object type fails", (
+    Obj = object(
         id(0),
         type(invalid_type),
         attrs([]),
         actions([]),
         collisions([])
     ),
-    expect_exception(game_object_validation(Obj))
+    expect_exception(object_validation(Obj))
 )).
 
 test("command_validation: invalid spawn type fails", (
@@ -666,7 +666,7 @@ test("rev_hint_validation: invalid despawned fails", (
 % wrong argument structure)
 
 test("game_state_validation: wrong arity throws", (
-    State = game_state(
+    State = state(
         frame(0),
         objects([]),
         status(playing),
@@ -674,11 +674,11 @@ test("game_state_validation: wrong arity throws", (
         next_id(1),
         commands([])
     ),
-    expect_exception(game_state_validation(State))
+    expect_exception(state_validation(State))
 )).
 
 test("game_state_validation: wrong functor throws", (
-    State = not_game_state(
+    State = not_state(
         frame(0),
         objects([]),
         status(playing),
@@ -687,25 +687,25 @@ test("game_state_validation: wrong functor throws", (
         commands([]),
         rev_hints([])
     ),
-    expect_exception(game_state_validation(State))
+    expect_exception(state_validation(State))
 )).
 
-test("game_object_validation: wrong arity throws", (
-    Obj = game_object(
+test("object_validation: wrong arity throws", (
+    Obj = object(
         id(0), type(static), attrs([]), actions([])
     ),
-    expect_exception(game_object_validation(Obj))
+    expect_exception(object_validation(Obj))
 )).
 
-test("game_object_validation: wrong functor throws", (
-    Obj = not_game_object(
+test("object_validation: wrong functor throws", (
+    Obj = not_object(
         id(0),
         type(static),
         attrs([]),
         actions([]),
         collisions([])
     ),
-    expect_exception(game_object_validation(Obj))
+    expect_exception(object_validation(Obj))
 )).
 
 test("spawn_request_validation: wrong arity throws", (

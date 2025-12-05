@@ -56,14 +56,14 @@ execute_action(Action, ObjIn, ObjOut, Commands, RevHints) :-
 
 execute_action_impl(
     wait_frames(N),
-    game_object(
+    object(
         id(ID),
         type(Type),
         attrs(Attrs),
         actions([_|Rest]),
         collisions(Colls)
     ),
-    game_object(
+    object(
         id(ID),
         type(Type),
         attrs(Attrs),
@@ -87,14 +87,14 @@ execute_action_impl(
 
 execute_action_impl(
     move_to(TargetX, TargetY, Frames),
-    game_object(
+    object(
         id(ID),
         type(Type),
         attrs(Attrs),
         actions([_|Rest]),
         Colls
     ),
-    game_object(
+    object(
         id(ID),
         type(Type),
         attrs(NewAttrs),
@@ -133,7 +133,7 @@ execute_action_impl(
 
 execute_action_impl(
     despawn,
-    game_object(
+    object(
         id(ID),
         type(_Type),
         attrs(Attrs),
@@ -151,14 +151,14 @@ execute_action_impl(
 
 execute_action_impl(
     spawn(Type, Pos, Actions),
-    game_object(
+    object(
         id(ID),
         type(ObjType),
         attrs(Attrs),
         actions([_|Rest]),
         collisions(Colls)
     ),
-    game_object(
+    object(
         id(ID),
         type(ObjType),
         attrs(Attrs),
@@ -175,14 +175,14 @@ execute_action_impl(
 
 execute_action_impl(
     loop(Actions),
-    game_object(
+    object(
         id(ID),
         type(Type),
         attrs(Attrs),
         actions([_|Rest]),
         collisions(Colls)
     ),
-    game_object(
+    object(
         id(ID),
         type(Type),
         attrs(Attrs),
@@ -201,14 +201,14 @@ execute_action_impl(
 
 execute_action_impl(
     trigger_state_change(Change),
-    game_object(
+    object(
         id(ID),
         type(Type),
         attrs(Attrs),
         actions([_|Rest]),
         Colls
     ),
-    game_object(
+    object(
         id(ID),
         type(Type),
         attrs(Attrs),
@@ -226,7 +226,7 @@ execute_action_impl(
 
 execute_action_impl(
     parallel(ChildActions),
-    game_object(
+    object(
         id(ID),
         type(Type),
         attrs(AttrsIn),
@@ -244,7 +244,7 @@ execute_action_impl(
     ( member(caused_despawn, UpdatedChildren) ->
         Result = despawned
     ; all_children_done(UpdatedChildren) ->
-        Result = game_object(
+        Result = object(
             id(ID),
             type(Type),
             attrs(AttrsOut),
@@ -254,7 +254,7 @@ execute_action_impl(
     ;
         NewActionsList = [parallel_running(UpdatedChildren)|
             Rest],
-        Result = game_object(
+        Result = object(
             id(ID),
             type(Type),
             attrs(AttrsOut),
@@ -335,7 +335,7 @@ tick_one_child(
 ) :-
     execute_action(
         Child,
-        game_object(
+        object(
             id(ID),
             type(Type),
             attrs(AIn),
@@ -350,7 +350,7 @@ tick_one_child(
         U = caused_despawn,
         AOut = AIn
     ;
-        Result = game_object(
+        Result = object(
             id(_), _, attrs(AOut), actions(NewActs), _
         ),
         ( NewActs = [] -> U = done ; [U|_] = NewActs )
@@ -381,7 +381,7 @@ all_children_done([caused_despawn|_]) :-
 test("move_to: positive direction, multiple frames \
 remaining", (
     Action = move_to(10, 20, 3),
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
@@ -391,7 +391,7 @@ remaining", (
     execute_action(
         Action, ObjIn, ObjOut, Commands, RevHints
     ),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([pos(NewX, NewY)|_]),
@@ -407,7 +407,7 @@ remaining", (
 test("move_to: negative direction, multiple frames \
 remaining", (
     Action = move_to(0, 0, 3),
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([pos(10, 20)]),
@@ -417,7 +417,7 @@ remaining", (
     execute_action(
         Action, ObjIn, ObjOut, Commands, RevHints
     ),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([pos(NewX, NewY)|_]),
@@ -432,7 +432,7 @@ remaining", (
 
 test("move_to: single frame, arrives at target", (
     Action = move_to(5, 5, 1),
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
@@ -442,7 +442,7 @@ test("move_to: single frame, arrives at target", (
     execute_action(
         Action, ObjIn, ObjOut, Commands, RevHints
     ),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([pos(5, 5)|_]),
@@ -456,7 +456,7 @@ test("move_to: single frame, arrives at target", (
 test("move_to: already at target, stays at position and \
 continues with remaining frames", (
     Action = move_to(10, 20, 3),
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([pos(10, 20)]),
@@ -466,7 +466,7 @@ continues with remaining frames", (
     execute_action(
         Action, ObjIn, ObjOut, Commands, RevHints
     ),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([pos(10, 20)|_]),
@@ -479,7 +479,7 @@ continues with remaining frames", (
 
 test("move_to: negative target coordinates", (
     Action = move_to(-5, -10, 2),
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
@@ -489,7 +489,7 @@ test("move_to: negative target coordinates", (
     execute_action(
         Action, ObjIn, ObjOut, Commands, RevHints
     ),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([pos(NewX, NewY)|_]),
@@ -506,14 +506,14 @@ test("move_to: backward test - can infer target \
 coordinates from final position", (
     % TargetX and TargetY are unknown - should be inferred
     Action = move_to(TargetX, TargetY, 1),
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
         actions([move_to(TargetX, TargetY, 1)]),
         []
     ),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([pos(5, 5)|_]),
@@ -541,14 +541,14 @@ test("wait_frames: backward test - can infer initial frame \
 count from remaining frames", (
     % N is unknown - should be inferred
     Action = wait_frames(N),
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([]),
         actions([wait_frames(N)]),
         collisions([])
     ),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([]),
@@ -572,7 +572,7 @@ parameters from spawn_request command", (
     % Type, Pos, and Actions are unknown - should be
     % inferred
     Action = spawn(Type, Pos, Actions),
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([]),
@@ -581,7 +581,7 @@ parameters from spawn_request command", (
         ]),
         collisions([])
     ),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([]),
@@ -611,14 +611,14 @@ test("trigger_state_change: backward test - can infer \
 change from state_change command", (
     % Change is unknown - should be inferred
     Action = trigger_state_change(Change),
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([]),
         actions([trigger_state_change(Change)]),
         collisions([])
     ),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([]),
@@ -642,14 +642,14 @@ test("loop: backward test - can infer looped actions from \
 final action list", (
     % Actions is unknown - should be inferred
     Action = loop(Actions),
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([]),
         actions([loop(Actions)]),
         collisions([])
     ),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([]),
@@ -676,7 +676,7 @@ test("despawn: backward test - can infer ID and attributes \
 from despawned rev_hint", (
     Action = despawn,
     % ID and Attrs are unknown - should be inferred
-    ObjIn = game_object(
+    ObjIn = object(
         id(ID),
         type(static),
         attrs(Attrs),
@@ -702,7 +702,7 @@ test("parallel: backward test - can infer original \
 wait_frames values from parallel_running state", (
     % N1 and N2 are unknown - should be inferred
     Action = parallel([wait_frames(N1), wait_frames(N2)]),
-    ObjIn = game_object(
+    ObjIn = object(
         id(1),
         type(static),
         attrs([]),
@@ -711,7 +711,7 @@ wait_frames values from parallel_running state", (
         ]),
         collisions([])
     ),
-    ObjOut = game_object(
+    ObjOut = object(
         id(1),
         type(static),
         attrs([]),

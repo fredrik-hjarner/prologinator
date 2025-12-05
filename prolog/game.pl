@@ -9,8 +9,8 @@
 :- use_module(library(charsio), [get_single_char/1]).
 :- use_module('./engine', [tick/2]).
 :- use_module('./types/constraints', [
-    game_state_constraint/1,
-    game_object_constraint/1
+    state_constraint/1,
+    object_constraint/1
 ]).
 
 % ==========================================================
@@ -21,11 +21,11 @@ main :-
     % - Multiple towers at the bottom row that shoot
     %   projectiles periodically
     % - A spawner that creates enemies every 5 frames
-    InitialState = game_state(
+    InitialState = state(
         frame(0),
         objects([
             % Towers at bottom row (y=19)
-            game_object(
+            object(
                 id(0), type(tower), attrs([pos(5, 19)]),
                 actions([
                     loop([
@@ -36,7 +36,7 @@ main :-
                     ])
                 ]), collisions([])
             ),
-            game_object(
+            object(
                 id(1), type(tower), attrs([pos(10, 19)]),
                 actions([
                     loop([
@@ -47,7 +47,7 @@ main :-
                     ])
                 ]), collisions([])
             ),
-            game_object(
+            object(
                 id(2), type(tower), attrs([pos(15, 19)]),
                 actions([
                     loop([
@@ -59,7 +59,7 @@ main :-
                 ]), collisions([])
             ),
             % Enemy spawner
-            game_object(
+            object(
                 id(3), type(static), attrs([]),
                 actions([
                     loop([
@@ -80,7 +80,7 @@ main :-
     game_loop(InitialState, []).
 
 game_loop(State, History) :-
-    State = game_state(
+    State = state(
         frame(_), objects(_), status(Status), _, _, _, _
     ),
     ( Status = playing ->
@@ -90,7 +90,7 @@ game_loop(State, History) :-
         get_single_char(Char),
         ( Char = end_of_file ->
             % EOF, quit
-            State = game_state(
+            State = state(
                 frame(F),
                 objects(Objs),
                 _,
@@ -99,7 +99,7 @@ game_loop(State, History) :-
                 commands(Commands),
                 rev_hints(RevHints)
             ),
-            NewState = game_state(
+            NewState = state(
                 frame(F),
                 objects(Objs),
                 status(lost),
@@ -137,7 +137,7 @@ handle_input(Char, State, History, NewState, NewHistory) :-
         )
     ;   char_code(Char, 113) ->  % 'q'
         % Quit: set status to lost to exit loop
-        State = game_state(
+        State = state(
             frame(F),
             objects(Objs),
             _,
@@ -146,7 +146,7 @@ handle_input(Char, State, History, NewState, NewHistory) :-
             commands(Commands),
             rev_hints(RevHints)
         ),
-        NewState = game_state(
+        NewState = state(
             frame(F),
             objects(Objs),
             status(lost),
@@ -170,7 +170,7 @@ render(State) :-
     char_code(Esc, 27),  % ESC character
     write(Esc), write('[2J'), write(Esc), write('[H'),
     
-    State = game_state(
+    State = state(
         frame(Frame),
         objects(Objects),
         status(Status),
@@ -206,7 +206,7 @@ render_grid_rows(_, Y) :-
 render_grid_row(Objects, Y, X) :-
     X =< 19,
     ( member(
-        game_object(_, _, attrs(Attrs), _, collisions(_)),
+        object(_, _, attrs(Attrs), _, collisions(_)),
         Objects
     ),
       member(pos(X, Y), Attrs) ->
@@ -223,7 +223,7 @@ render_grid_row(_, _, X) :-
 
 get_symbol(Objects, X, Y, Symbol) :-
     member(
-        game_object(
+        object(
             _, type(Type), attrs(Attrs), _, collisions(_)
         ),
         Objects
