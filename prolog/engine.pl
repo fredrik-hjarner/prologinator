@@ -88,33 +88,6 @@ yields(move_to(_, _, Frames)) :- Frames #> 0.
 yields(parallel_running(_)).
 
 % ==========================================================
-% Tests
-% ==========================================================
-test("yields: wait_frames with positive number should \
-yield", (
-    A = wait_frames(5),
-    yields(A)
-)).
-
-test("yields: wait_frames with zero should not yield", (
-    A = wait_frames(0),
-    \+ yields(A)
-)).
-
-test("yields: move_to with positive frames should yield", (
-    A = move_to(10, 20, 3),
-    yields(A)
-)).
-
-test("yields: can generate yielding actions \
-bidirectionally", (
-    yields(A),
-    ( A = wait_frames(_)
-    ; A = move_to(_, _, _)
-    ; A = parallel_running(_) )
-)).
-
-% ==========================================================
 % Execution Model: tick_object (from Addendum 1)
 % ==========================================================
 
@@ -167,7 +140,212 @@ tick_object(
     ).
 
 % ==========================================================
-% Tests for tick_object
+% Main Tick Function (from Addendum 3 - FINAL version)
+% ==========================================================
+tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
+    % game_state_constraint(CtxIn),
+    context_validation(CtxIn),
+    CtxIn = ctx(state(
+        frame(F),
+        _,
+        status(Status),
+        score(Score),
+        next_id(NextID),
+        _,
+        _
+    )),
+    
+    % 1. Tick all objects (updates objects, commands, and
+    % rev_hints in context)
+    tick_all_objects(
+        ctx_in(CtxIn),
+        ctx_out(CtxAfterTick)
+    ),
+    
+    % Extract objects and rev_hints from returned context
+    context_objects(CtxAfterTick, TempObjs),
+    context_rev_hints(CtxAfterTick, RevHints1),
+    
+    % 2. Detect collisions (collisions only produce
+    % rev_hints, no commands)
+    detect_collisions(TempObjs, NewObjs, RevHints2),
+    
+    % 3. Combine rev_hints
+    append(RevHints1, RevHints2, AllRevHints),
+    
+    % Get commands from context
+    context_commands(CtxAfterTick, AllCommands),
+    
+    % 4. Partition commands
+    partition(
+        is_spawn_request,
+        AllCommands,
+        SpawnReqs,
+        OtherCommands
+    ),
+    partition(
+        is_state_change,
+        OtherCommands,
+        StateChanges,
+        _
+    ),
+    
+    % 5. Process spawns with ID assignment
+    process_spawn_requests(
+        SpawnReqs,
+        NextID,
+        SpawnedObjs,
+        NewNextID
+    ),
+    
+    % 6. Add spawned objects
+    append(NewObjs, SpawnedObjs, FinalObjs),
+    
+    % 7. Apply state changes
+    apply_state_changes(StateChanges, Status, Score,
+                        NewStatus, NewScore),
+    
+    F1 #= F + 1,
+    
+    % 8. Build final context with updated state
+    CtxOut = ctx(state(
+        frame(F1),
+        objects(FinalObjs),
+        status(NewStatus),
+        score(NewScore),
+        next_id(NewNextID),
+        commands([]),
+        rev_hints(AllRevHints)
+    )).
+    % NOTE: placing this at the top caused cpu to go bananas
+    %       so there are some performance problems with it..
+    % game_state_constraint(StateOut).
+
+% ==========================================================
+% Tick Helpers
+% ==========================================================
+
+% TODO: It got messy here with context... need to refactor.
+tick_all_objects(ctx_in(CtxIn), ctx_out(CtxOut)) :-
+    context_objects(CtxIn, Objects),
+    context_commands(CtxIn, OldCommands),
+    context_rev_hints(CtxIn, OldRevHints),
+    maplist(
+        tick_object(ctx_in(CtxIn)), % predicate with context
+        Objects, % "input"
+        TempObjectLists, % collected output (list of lists)
+        CommandLists, % collected "output"
+        RevHintLists % collected "output"
+    ),
+    % append/2 flattens the list of lists, append/3 combines
+    append(CommandLists, NewCommands),
+    append(OldCommands, NewCommands, AllCommands),
+    % append/2 flattens the list of lists, append/3 combines
+    append(RevHintLists, NewRevHints),
+    append(OldRevHints, NewRevHints, AllRevHints),
+    % Flatten list of lists and filter out empty lists
+    append(TempObjectLists, FinalObjects),
+    context_set_objects(CtxIn, FinalObjects, CtxTemp),
+    context_set_commands(CtxTemp, AllCommands, CtxTemp2),
+    context_set_rev_hints(CtxTemp2, AllRevHints, CtxOut).
+
+% ==========================================================
+% Spawn Processing (from Addendum 3)
+% ==========================================================
+is_spawn_request(spawn_request(_, _, _)).
+
+process_spawn_requests([], ID, [], ID).
+process_spawn_requests(
+    [spawn_request(Type, Pos, Acts)|Rest],
+    IDIn,
+    [object(
+        id(ObjID),
+        type(Type),
+        attrs([Pos]),
+        actions(Acts),
+        collisions([])
+    )|RestObjs],
+    IDOut
+) :-
+    % Generate ID: just use the integer directly
+    ObjID = IDIn,
+    
+    IDIn1 #= IDIn + 1,
+    
+    process_spawn_requests(Rest, IDIn1, RestObjs, IDOut).
+
+% ==========================================================
+% State Change Processing
+% ==========================================================
+is_state_change(state_change(_)).
+
+apply_state_changes([], Status, Score, Status, Score).
+apply_state_changes(
+    [state_change(game_over(lost))|_],
+    _, Score, lost, Score
+) :- !.
+apply_state_changes(
+    [state_change(game_over(won))|Rest],
+    Status, Score, FinalStatus, FinalScore
+) :-
+    ( Status = lost ->
+        FinalStatus = lost, FinalScore = Score
+    ;
+        apply_state_changes(
+            Rest, won, Score, FinalStatus, FinalScore
+        )
+    ).
+apply_state_changes(
+    [state_change(score(Delta))|Rest],
+    Status, Score, FinalStatus, FinalScore
+) :-
+    NewScore #= Score + Delta,
+    apply_state_changes(
+        Rest, Status, NewScore, FinalStatus, FinalScore
+    ).
+apply_state_changes(
+    [_|Rest], Status, Score,FinalStatus, FinalScore
+) :-
+    apply_state_changes(
+        Rest, Status, Score, FinalStatus, FinalScore
+    ).
+
+% ==========================================================
+% ==========================================================
+% TESTS
+% ==========================================================
+% ==========================================================
+
+% ==========================================================
+% Tests for yields/1
+% ==========================================================
+
+test("yields: wait_frames with positive number should \
+yield", (
+    A = wait_frames(5),
+    yields(A)
+)).
+
+test("yields: wait_frames with zero should not yield", (
+    A = wait_frames(0),
+    \+ yields(A)
+)).
+
+test("yields: move_to with positive frames should yield", (
+    A = move_to(10, 20, 3),
+    yields(A)
+)).
+
+test("yields: can generate yielding actions \
+bidirectionally", (
+    yields(A),
+    ( A = wait_frames(_)
+    ; A = move_to(_, _, _)
+    ; A = parallel_running(_) )
+)).
+
+% ==========================================================
+% Tests for tick_object/5
 % ==========================================================
 
 test("tick_object: empty action list returns unchanged \
@@ -267,7 +445,7 @@ continues until empty", (
 )).
 
 % ==========================================================
-% Tests for tick
+% Tests for tick/2
 % ==========================================================
 
 test("tick: increments frame and processes empty game \
@@ -481,7 +659,7 @@ test("collision: simple enemy-projectile collision", (
 )).
 
 % ==========================================================
-% Performance Test: Run game to frame 31 (reproduces freeze)
+% Performance Test: Run game to frame 32 (reproduces freeze)
 % ==========================================================
 
 % TODO: fix perf issue.
@@ -558,184 +736,13 @@ freeze (first collision)", (
     ))
 )).
 
-% Helper: run tick N times
+% ==========================================================
+% Test Helper: run tick N times
+% ==========================================================
+
 run_ticks(ctx_in(Ctx), 0, ctx_out(Ctx)).
 run_ticks(ctx_in(CtxIn), N, ctx_out(CtxOut)) :-
     N > 0,
     tick(ctx_in(CtxIn), ctx_out(CtxNext)),
     N1 is N - 1,
     run_ticks(ctx_in(CtxNext), N1, ctx_out(CtxOut)).
-
-% ==========================================================
-% Main Tick Function (from Addendum 3 - FINAL version)
-% ==========================================================
-tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
-    % game_state_constraint(CtxIn),
-    context_validation(CtxIn),
-    CtxIn = ctx(state(
-        frame(F),
-        _,
-        status(Status),
-        score(Score),
-        next_id(NextID),
-        _,
-        _
-    )),
-    
-    % 1. Tick all objects (updates objects, commands, and
-    % rev_hints in context)
-    tick_all_objects(
-        ctx_in(CtxIn),
-        ctx_out(CtxAfterTick)
-    ),
-    
-    % Extract objects and rev_hints from returned context
-    context_objects(CtxAfterTick, TempObjs),
-    context_rev_hints(CtxAfterTick, RevHints1),
-    
-    % 2. Detect collisions (collisions only produce
-    % rev_hints, no commands)
-    detect_collisions(TempObjs, NewObjs, RevHints2),
-    
-    % 3. Combine rev_hints
-    append(RevHints1, RevHints2, AllRevHints),
-    
-    % Get commands from context
-    context_commands(CtxAfterTick, AllCommands),
-    
-    % 4. Partition commands
-    partition(
-        is_spawn_request,
-        AllCommands,
-        SpawnReqs,
-        OtherCommands
-    ),
-    partition(
-        is_state_change,
-        OtherCommands,
-        StateChanges,
-        _
-    ),
-    
-    % 5. Process spawns with ID assignment
-    process_spawn_requests(
-        SpawnReqs,
-        NextID,
-        SpawnedObjs,
-        NewNextID
-    ),
-    
-    % 6. Add spawned objects
-    append(NewObjs, SpawnedObjs, FinalObjs),
-    
-    % 7. Apply state changes
-    apply_state_changes(StateChanges, Status, Score,
-                        NewStatus, NewScore),
-    
-    F1 #= F + 1,
-    
-    % 8. Build final context with updated state
-    CtxOut = ctx(state(
-        frame(F1),
-        objects(FinalObjs),
-        status(NewStatus),
-        score(NewScore),
-        next_id(NewNextID),
-        commands([]),
-        rev_hints(AllRevHints)
-    )).
-    % NOTE: placing this at the top caused cpu to go bananas
-    %       so there are some performance problems with it..
-    % game_state_constraint(StateOut).
-
-% ==========================================================
-% Tick Helpers
-% ==========================================================
-
-% TODO: It got messy here with context... need to refactor.
-tick_all_objects(ctx_in(CtxIn), ctx_out(CtxOut)) :-
-    context_objects(CtxIn, Objects),
-    context_commands(CtxIn, OldCommands),
-    context_rev_hints(CtxIn, OldRevHints),
-    maplist(
-        tick_object(ctx_in(CtxIn)), % predicate with context
-        Objects, % "input"
-        TempObjectLists, % collected output (list of lists)
-        CommandLists, % collected "output"
-        RevHintLists % collected "output"
-    ),
-    % append/2 flattens the list of lists, append/3 combines
-    append(CommandLists, NewCommands),
-    append(OldCommands, NewCommands, AllCommands),
-    % append/2 flattens the list of lists, append/3 combines
-    append(RevHintLists, NewRevHints),
-    append(OldRevHints, NewRevHints, AllRevHints),
-    % Flatten list of lists and filter out empty lists
-    append(TempObjectLists, FinalObjects),
-    context_set_objects(CtxIn, FinalObjects, CtxTemp),
-    context_set_commands(CtxTemp, AllCommands, CtxTemp2),
-    context_set_rev_hints(CtxTemp2, AllRevHints, CtxOut).
-
-% ==========================================================
-% Spawn Processing (from Addendum 3)
-% ==========================================================
-is_spawn_request(spawn_request(_, _, _)).
-
-process_spawn_requests([], ID, [], ID).
-process_spawn_requests(
-    [spawn_request(Type, Pos, Acts)|Rest],
-    IDIn,
-    [object(
-        id(ObjID),
-        type(Type),
-        attrs([Pos]),
-        actions(Acts),
-        collisions([])
-    )|RestObjs],
-    IDOut
-) :-
-    % Generate ID: just use the integer directly
-    ObjID = IDIn,
-    
-    IDIn1 #= IDIn + 1,
-    
-    process_spawn_requests(Rest, IDIn1, RestObjs, IDOut).
-
-% ==========================================================
-% State Change Processing
-% ==========================================================
-is_state_change(state_change(_)).
-
-apply_state_changes([], Status, Score, Status, Score).
-apply_state_changes(
-    [state_change(game_over(lost))|_],
-    _, Score, lost, Score
-) :- !.
-apply_state_changes(
-    [state_change(game_over(won))|Rest],
-    Status, Score, FinalStatus, FinalScore
-) :-
-    ( Status = lost ->
-        FinalStatus = lost, FinalScore = Score
-    ;
-        apply_state_changes(
-            Rest, won, Score, FinalStatus, FinalScore
-        )
-    ).
-apply_state_changes(
-    [state_change(score(Delta))|Rest],
-    Status, Score, FinalStatus, FinalScore
-) :-
-    NewScore #= Score + Delta,
-    apply_state_changes(
-        Rest, Status, NewScore, FinalStatus, FinalScore
-    ).
-apply_state_changes(
-    [_|Rest], Status, Score,FinalStatus, FinalScore
-) :-
-    apply_state_changes(
-        Rest, Status, Score, FinalStatus, FinalScore
-    ).
-
-
-
