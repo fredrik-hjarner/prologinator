@@ -38,10 +38,28 @@ test-all:
     @just test prolog/engine || exit 1
     @echo "\nTesting validation..."
     @just test prolog/types/validation || exit 1
+    @echo "\nTesting validation2..."
+    @just test prolog/types/validation2 || exit 1
     @echo "\nTesting macros..."
     @just test prolog/macros || exit 1
     @echo "\nTesting xod..."
     @just test prolog/xod/xod || exit 1
+
+test-all-verbose:
+    @echo "\nTesting execute_action..."
+    @just test-verbose prolog/execute_action || exit 1
+    @echo "\nTesting parallel..."
+    @just test-verbose prolog/actions/parallel || exit 1
+    @echo "\nTesting engine..."
+    @just test-verbose prolog/engine || exit 1
+    @echo "\nTesting validation..."
+    @just test-verbose prolog/types/validation || exit 1
+    @echo "\nTesting validation2..."
+    @just test-verbose prolog/types/validation2 || exit 1
+    @echo "\nTesting macros..."
+    @just test-verbose prolog/macros || exit 1
+    @echo "\nTesting xod..."
+    @just test-verbose prolog/xod/xod || exit 1
 
 # Check a Prolog file for syntax errors
 # Usage: just lint prolog/engine.pl

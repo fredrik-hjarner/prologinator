@@ -2,7 +2,49 @@
 % Defines xod schemas for game types
 % Callers use: validate(Term, validation2:state_schema), etc.
 
-:- module(validation2, []).
+:- module(validation2, [
+    % Primitive schemas
+    object_type_schema/1,
+    game_status_schema/1,
+    pos_schema/1,
+    % State change schemas
+    score_change_schema/1,
+    game_over_schema/1,
+    state_change_content_schema/1,
+    % Action schemas
+    action_schema/1,
+    wait_frames_schema/1,
+    move_to_schema/1,
+    despawn_schema/1,
+    spawn_action_schema/1,
+    loop_schema/1,
+    trigger_state_change_schema/1,
+    parallel_schema/1,
+    parallel_running_schema/1,
+    % Command schemas
+    command_schema/1,
+    spawn_request_schema/1,
+    state_change_schema/1,
+    % Rev hint schemas
+    rev_hint_schema/1,
+    % Object schemas
+    id_schema/1,
+    type_schema/1,
+    attrs_schema/1,
+    actions_schema/1,
+    collisions_schema/1,
+    object_schema/1,
+    % State schemas
+    frame_schema/1,
+    objects_schema/1,
+    status_schema/1,
+    score_schema/1,
+    next_id_schema/1,
+    commands_schema/1,
+    rev_hints_schema/1,
+    state_schema/1,
+    context_schema/1
+]).
 
 :- use_module('../xod/xod', [validate/2]).
 
@@ -53,10 +95,12 @@ state_change_content_schema(union([
 % ==========================================================
 
 % Action: various action types (union of all action schemas)
+% Note: despawn_schema (enum) is checked first because it's an atom,
+% not a compound term, so it should be matched before struct schemas
 action_schema(union([
+    schema(despawn_schema),
     schema(wait_frames_schema),
     schema(move_to_schema),
-    schema(despawn_schema),
     schema(spawn_action_schema),
     schema(loop_schema),
     schema(trigger_state_change_schema),
@@ -76,8 +120,9 @@ move_to_schema(struct(move_to, [
     frames(integer)
 ])).
 
-% Despawn: despawn (no arguments)
-despawn_schema(struct(despawn, [])).
+% Despawn: despawn (no arguments, just an atom)
+% despawn_schema(struct(despawn, [])).
+despawn_schema(enum([despawn])).
 
 % Spawn: spawn(Type, Pos, Acts)
 spawn_action_schema(struct(spawn, [
@@ -603,4 +648,68 @@ test("action_validation: move_to wrong arity throws", (
 test("action_validation: spawn wrong arity throws", (
     Action = spawn(enemy, pos(0, 0)),
     expect_exception(validate(Action, validation2:action_schema))
+)).
+
+test("action_validation: despawn", (
+    validate(despawn, validation2:action_schema)
+)).
+
+% ==========================================================
+% Tests: Actions with unbound variables (backward execution)
+% ==========================================================
+% These tests prove that validation correctly handles
+% unbound variables in actions, which is needed for
+% backward execution/inference in execute_action.pl
+
+test("action_validation: spawn with unbound variables passes", (
+    Action = spawn(Type, Pos, Actions),
+    % Type, Pos, and Actions are unbound - should pass
+    validate(Action, validation2:action_schema),
+    % Verify it's still unbound after validation
+    var(Type),
+    var(Pos),
+    var(Actions)
+)).
+
+test("action_validation: loop with unbound actions passes", (
+    Action = loop(Actions),
+    % Actions is unbound - should pass
+    validate(Action, validation2:action_schema),
+    % Verify it's still unbound after validation
+    var(Actions)
+)).
+
+test("action_validation: trigger_state_change with unbound change passes", (
+    Action = trigger_state_change(Change),
+    % Change is unbound - should pass
+    validate(Action, validation2:action_schema),
+    % Verify it's still unbound after validation
+    var(Change)
+)).
+
+test("action_validation: wait_frames with unbound N passes", (
+    Action = wait_frames(N),
+    % N is unbound - should pass
+    validate(Action, validation2:action_schema),
+    % Verify it's still unbound after validation
+    var(N)
+)).
+
+test("action_validation: move_to with unbound coordinates passes", (
+    Action = move_to(X, Y, Frames),
+    % X, Y, and Frames are unbound - should pass
+    validate(Action, validation2:action_schema),
+    % Verify they're still unbound after validation
+    var(X),
+    var(Y),
+    var(Frames)
+)).
+
+test("action_validation: spawn with partially bound variables passes", (
+    Action = spawn(enemy, Pos, Actions),
+    % Pos and Actions are unbound, Type is bound - should pass
+    validate(Action, validation2:action_schema),
+    % Verify unbound variables are still unbound
+    var(Pos),
+    var(Actions)
 )).

@@ -187,8 +187,12 @@ validates_against(V, atom, Path, _) :-
 
 % ENUM: Must be in options if bound
 validates_against(V, enum(Opts), Path, _) :-
-    check(V, memberchk(V, Opts),
-          invalid_enum_option, Path).
+    (ground(V) ->
+        check(V, memberchk(V, Opts),
+              invalid_enum_option, Path)
+    ;
+        true
+    ).
 
 % LIST(Schema): List of items matching
 % Schema, if bound. Thread Module through.
@@ -436,7 +440,7 @@ game_state_schema(struct(game_state, [
     next_id(integer(1, _)),
     commands(list(any)),
     rev_hints(list(schema(
-        rev_hint_schema)))
+        test_rev_hint_schema)))
 ])).
 
 game_object_schema(struct(game_object, [
@@ -448,7 +452,7 @@ game_object_schema(struct(game_object, [
     collisions(list(any))
 ])).
 
-rev_hint_schema(struct(rev_hint, [
+test_rev_hint_schema(struct(rev_hint, [
     id(integer),
     attrs(list(any))
 ])).

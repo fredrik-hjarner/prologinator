@@ -16,7 +16,7 @@ export const excludePatterns: string[] = [
     "**/.cursor/**",
     "**/.husky/**",
     "**/.vscode/**",
-    "**/internal_docs/**",
+    // "**/internal_docs/**",
     "**/node_modules/**",
     // "**/scripts/**",
     "**/submodules/**",

@@ -1,0 +1,25 @@
+<facts>
+    <fact>
+        Modules have to be explicitly loaded with
+        `:- use_module` in order to be used.
+    </fact>
+    <fact>
+        In `:- use_module(Module, []).` Module must be
+
+        1. A file path (most common):
+        - `'./types/validation'` → relative path
+        - `'/absolute/path/to/module'` → absolute path
+        - `'module'` → relative to current file's directory
+
+        2. A library reference (special case):
+        - `library(lists)` → searches library paths
+        - `library(clpz)` → searches library paths
+    </fact>
+    <fact>
+        `:- use_module(Module).` i.e. use_module/1
+        imports everything that Module exports.
+    </fact>
+    <fact>
+        multifile is such a hassle to use it's broken.
+    </fact>
+</facts>

@@ -13,6 +13,8 @@
     member/2
 ]).
 :- use_module('./types/validation', [action_validation/1]).
+% :- use_module('xod/xod', [validate/2]).
+% :- use_module('./types/validation2').
 
 % ==========================================================
 % execute_action/5
@@ -43,6 +45,7 @@ execute_action(
     ctx_in(Ctx), Action, ObjIn, ObjOut, Commands, RevHints
 ) :-
     action_validation(Action),
+    % validate(Action, action_schema),
     execute_action_impl(
         ctx_in(Ctx),
         Action,
