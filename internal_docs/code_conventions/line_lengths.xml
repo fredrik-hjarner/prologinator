@@ -24,6 +24,8 @@ If an inline comment after code does not fit, then move
 it above, the comment that is, the comment should go above
 whatever line it commented.
 </important>
+Have in my too that I don't want line to be shorter than
+necessary either.
 
 <example>
 <bad>
@@ -269,6 +271,18 @@ if args fit on one line then let them be on one line
         Rest, Status, Score, FinalStatus, FinalScore
     ).
 </good_fix>
+</example>
+
+<example>
+<bad why="would fit on a without newlines. unecessary split.">
+:- use_module('./util/util', [
+    partition/4,
+    flatten/2
+]).
+</bad>
+<good why="fits on a line. good, compressed">
+:- use_module('./util/util', [partition/4, flatten/2]).
+</good>
 </example>
 
 

@@ -9,7 +9,10 @@
     member/2,
     findall/3
 ]).
-:- use_module('../types/accessors', [object_attrs/2]).
+:- use_module('../types/accessors', [
+    obj_attrs/2,
+    obj_attrs_acns_obj/4
+]).
 % Ensure execute_action is loaded so we can call it
 % (via module qualification to avoid circular dependency)
 :- use_module('../execute_action', [execute_action/6]).
@@ -39,7 +42,7 @@ execute_action:execute_action_impl(
         AllCommands,
         AllRevHints
     ),
-    object_attrs(ObjFinal, AttrsOut),
+    obj_attrs(ObjFinal, AttrsOut),
     ( member([], ChildResults) ->
         % Any child despawned, so despawn the whole parallel
         MaybeObjectOut = []
@@ -58,25 +61,19 @@ execute_action:execute_action_impl(
         ),
         ( RemainingActions = [] ->
             % All children finished naturally.
-            MaybeObjectOut = [
-                object(
-                id(ID),
-                type(Type),
-                attrs(AttrsOut),
-                actions(Rest),
-                collisions(Colls)
-            )]
+            obj_attrs_acns_obj(
+                ObjIn, AttrsOut, Rest, NewObj
+            ),
+            MaybeObjectOut = [NewObj]
         ;
             % Some children are still running.
-            MaybeObjectOut = [object(
-                id(ID),
-                type(Type),
-                attrs(AttrsOut),
-                actions([
-                    parallel_running(RemainingActions)|Rest
-                ]),
-                collisions(Colls)
-            )]
+            obj_attrs_acns_obj(
+                ObjIn,
+                AttrsOut,
+                [parallel_running(RemainingActions)|Rest],
+                NewObj
+            ),
+            MaybeObjectOut = [NewObj]
         )
     ).
 

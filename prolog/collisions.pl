@@ -6,6 +6,10 @@
 :- use_module(library(lists), [
     findall/3, member/2, list_to_set/2, append/3
 ]).
+:- use_module('./types/accessors', [
+    obj_id_attrs/3,
+    obj_id_type/3
+]).
 
 % ==========================================================
 % Collision Detection (simplified - grid-based)
@@ -16,18 +20,10 @@ detect_collisions(Objects, NewObjects, RevHints) :-
     findall(
         collision(ID1, ID2),
         (
-            member(
-                object(
-                    id(ID1), _, attrs(A1), _, collisions(_)
-                ),
-                Objects
-            ),
-            member(
-                object(
-                    id(ID2), _, attrs(A2), _, collisions(_)
-                ),
-                Objects
-            ),
+            member(Obj1, Objects),
+            obj_id_attrs(Obj1, ID1, A1),
+            member(Obj2, Objects),
+            obj_id_attrs(Obj2, ID2, A2),
             ID1 @< ID2,
             member(pos(X1, Y1), A1),
             member(pos(X2, Y2), A2),
@@ -50,47 +46,17 @@ handle_collisions(
     findall(
         (ProjID, EnemyID),
         (
-            member(collision(ID1, ID2), Collisions),
-            member(
-                object(
-                    id(ID1), type(proj), _, _, collisions(_)
-                ),
-                Objects
-            ),
-            member(
-                object(
-                    id(ID2),
-                    type(enemy),
-                    _,
-                    _,
-                    collisions(_)
-                ),
-                Objects
-            ),
-            ProjID = ID1, EnemyID = ID2
+            member(collision(ProjID, EnemyID), Collisions),
+            member(Obj1, Objects),
+            obj_id_type(Obj1, ProjID, proj),
+            member(Obj2, Objects),
+            obj_id_type(Obj2, EnemyID, enemy)
         ;
-            member(collision(ID1, ID2), Collisions),
-            member(
-                object(
-                    id(ID1),
-                    type(enemy),
-                    _,
-                    _,
-                    collisions(_)
-                ),
-                Objects
-            ),
-            member(
-                object(
-                    id(ID2),
-                    type(proj),
-                    _,
-                    _,
-                    collisions(_)
-                ),
-                Objects
-            ),
-            ProjID = ID2, EnemyID = ID1
+            member(collision(EnemyID, ProjID), Collisions),
+            member(Obj1, Objects),
+            obj_id_type(Obj1, EnemyID, enemy),
+            member(Obj2, Objects),
+            obj_id_type(Obj2, ProjID, proj)
         ),
         ToRemove
     ),
@@ -110,9 +76,7 @@ handle_collisions(
 
 remove_with_rev_hints([], _, [], []).
 remove_with_rev_hints(
-    [object(
-        id(ID), _, attrs(AttrList), _, collisions(_)
-    )|Rest],
+    [object(id(ID), _, attrs(AttrList), _, _)|Rest],
     ToRemove,
     NewObjs,
     [despawned(ID, AttrList)|RestRevHints]

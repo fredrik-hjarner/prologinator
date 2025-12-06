@@ -13,6 +13,10 @@
     member/2
 ]).
 :- use_module('./types/validation', [action_validation/1]).
+:- use_module('./types/accessors', [
+    obj_acns/2,
+    obj_acns_obj/3
+]).
 % :- use_module('xod/xod', [validate/2]).
 % :- use_module('./types/validation2').
 
@@ -84,30 +88,20 @@ execute_action(
 execute_action_impl(
     ctx_in(_Ctx),
     wait_frames(N),
-    object(
-        id(ID),
-        type(Type),
-        attrs(Attrs),
-        actions([_|Rest]),
-        collisions(Colls)
-    ),
-    [object(
-        id(ID),
-        type(Type),
-        attrs(Attrs),
-        actions(NewActions),
-        collisions(Colls)
-    )],
+    ObjIn,
+    [ObjOut],
     [],
     []
 ) :-
+    obj_acns(ObjIn, [_|Rest]),
     ( N #> 1 ->
         N1 #= N - 1,
         NewActions = [wait_frames(N1)|Rest]
     ;
         % N = 1, wait is done
         NewActions = Rest
-    ).
+    ),
+    obj_acns_obj(ObjIn, NewActions, ObjOut).
 
 % ----------------------------------------------------------
 % Basic Actions: move_to
@@ -182,23 +176,13 @@ execute_action_impl(
 execute_action_impl(
     ctx_in(_Ctx),
     spawn(Type, Pos, Actions),
-    object(
-        id(ID),
-        type(ObjType),
-        attrs(Attrs),
-        actions([_|Rest]),
-        collisions(Colls)
-    ),
-    [object(
-        id(ID),
-        type(ObjType),
-        attrs(Attrs),
-        actions(Rest),
-        collisions(Colls)
-    )],
+    ObjIn,
+    [ObjOut],
     [spawn_request(Type, Pos, Actions)],
     []
-).
+) :-
+    obj_acns(ObjIn, [_|Rest]),
+    obj_acns_obj(ObjIn, Rest, ObjOut).
 
 % ----------------------------------------------------------
 % Compound Actions: loop
@@ -207,25 +191,15 @@ execute_action_impl(
 execute_action_impl(
     ctx_in(_Ctx),
     loop(Actions),
-    object(
-        id(ID),
-        type(Type),
-        attrs(Attrs),
-        actions([_|Rest]),
-        collisions(Colls)
-    ),
-    [object(
-        id(ID),
-        type(Type),
-        attrs(Attrs),
-        actions(NewActions),
-        collisions(Colls)
-    )],
+    ObjIn,
+    [ObjOut],
     [],
     []
 ) :-
+    obj_acns(ObjIn, [_|Rest]),
     append(Actions, [loop(Actions)], Expanded),
-    append(Expanded, Rest, NewActions).
+    append(Expanded, Rest, NewActions),
+    obj_acns_obj(ObjIn, NewActions, ObjOut).
 
 % ----------------------------------------------------------
 % Compound Actions: trigger_state_change
@@ -234,23 +208,13 @@ execute_action_impl(
 execute_action_impl(
     ctx_in(_Ctx),
     trigger_state_change(Change),
-    object(
-        id(ID),
-        type(Type),
-        attrs(Attrs),
-        actions([_|Rest]),
-        Colls
-    ),
-    [object(
-        id(ID),
-        type(Type),
-        attrs(Attrs),
-        actions(Rest),
-        Colls
-    )],
+    ObjIn,
+    [ObjOut],
     [state_change(Change)],
     []
-).
+) :-
+    obj_acns(ObjIn, [_|Rest]),
+    obj_acns_obj(ObjIn, Rest, ObjOut).
 
 % ----------------------------------------------------------
 % Compound Actions: parallel

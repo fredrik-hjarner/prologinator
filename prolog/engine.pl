@@ -31,12 +31,13 @@
     collision_constraint/1
 ]).
 :- use_module('./types/accessors', [
-    context_objects/2,
-    context_set_objects/3,
-    context_commands/2,
-    context_set_commands/3,
-    context_rev_hints/2,
-    context_set_rev_hints/3
+    ctx_objs/2,
+    ctx_objs_ctx/3,
+    ctx_cmds/2,
+    ctx_cmds_ctx/3,
+    ctx_revhints/2,
+    ctx_revhints_ctx/3,
+    obj_acns/2
 ]).
 :- use_module('./types/validation', [
     context_validation/1,
@@ -118,9 +119,7 @@ tick_object(
     ctx_in(Ctx), ObjIn, ObjOut, AllCommands, AllRevHints
 ) :-
     object_validation(ObjIn),
-    ObjIn = object(
-        _ID, _Type, _A, actions([Act|_Rest]), collisions(_C)
-    ),
+    obj_acns(ObjIn, [Act|_Rest]),
     execute_action(
         ctx_in(Ctx), Act, ObjIn, ObjTempList, C1, R1
     ),
@@ -163,8 +162,8 @@ tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
     ),
     
     % Extract objects and rev_hints from returned context
-    context_objects(CtxAfterTick, TempObjs),
-    context_rev_hints(CtxAfterTick, RevHints1),
+    ctx_objs(CtxAfterTick, TempObjs),
+    ctx_revhints(CtxAfterTick, RevHints1),
     
     % 2. Detect collisions (collisions only produce
     % rev_hints, no commands)
@@ -174,7 +173,7 @@ tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
     append(RevHints1, RevHints2, AllRevHints),
     
     % Get commands from context
-    context_commands(CtxAfterTick, AllCommands),
+    ctx_cmds(CtxAfterTick, AllCommands),
     
     % 4. Partition commands
     partition(
@@ -227,9 +226,9 @@ tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
 
 % TODO: It got messy here with context... need to refactor.
 tick_all_objects(ctx_in(CtxIn), ctx_out(CtxOut)) :-
-    context_objects(CtxIn, Objects),
-    context_commands(CtxIn, OldCommands),
-    context_rev_hints(CtxIn, OldRevHints),
+    ctx_objs(CtxIn, Objects),
+    ctx_cmds(CtxIn, OldCommands),
+    ctx_revhints(CtxIn, OldRevHints),
     maplist(
         tick_object(ctx_in(CtxIn)), % predicate with context
         Objects, % "input"
@@ -245,9 +244,9 @@ tick_all_objects(ctx_in(CtxIn), ctx_out(CtxOut)) :-
     append(OldRevHints, NewRevHints, AllRevHints),
     % Flatten list of lists and filter out empty lists
     append(TempObjectLists, FinalObjects),
-    context_set_objects(CtxIn, FinalObjects, CtxTemp),
-    context_set_commands(CtxTemp, AllCommands, CtxTemp2),
-    context_set_rev_hints(CtxTemp2, AllRevHints, CtxOut).
+    ctx_objs_ctx(CtxIn, FinalObjects, CtxTemp),
+    ctx_cmds_ctx(CtxTemp, AllCommands, CtxTemp2),
+    ctx_revhints_ctx(CtxTemp2, AllRevHints, CtxOut).
 
 % ==========================================================
 % Spawn Processing (from Addendum 3)

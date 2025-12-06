@@ -12,6 +12,12 @@
     state_constraint/1,
     object_constraint/1
 ]).
+:- use_module('./types/accessors', [
+    ctx_status/2,
+    ctx_status_ctx/3,
+    obj_attrs/2,
+    obj_type_attrs/3
+]).
 
 % ==========================================================
 % Main Game Loop
@@ -80,10 +86,7 @@ main :-
     game_loop(ctx_in(InitialContext), []).
 
 game_loop(ctx_in(Ctx), History) :-
-    Ctx = ctx(State),
-    State = state(
-        frame(_), objects(_), status(Status), _, _, _, _
-    ),
+    ctx_status(Ctx, Status),
     ( Status = playing ->
         render(ctx_in(Ctx)),
         write('Press: f=forward, r=reverse, q=quit'), nl,
@@ -91,25 +94,7 @@ game_loop(ctx_in(Ctx), History) :-
         get_single_char(Char),
         ( Char = end_of_file ->
             % EOF, quit
-            State = state(
-                frame(F),
-                objects(Objs),
-                _,
-                score(Score),
-                next_id(NextID),
-                commands(Commands),
-                rev_hints(RevHints)
-            ),
-            NewState = state(
-                frame(F),
-                objects(Objs),
-                status(lost),
-                score(Score),
-                next_id(NextID),
-                commands(Commands),
-                rev_hints(RevHints)
-            ),
-            NewCtx = ctx(NewState),
+            ctx_status_ctx(Ctx, lost, NewCtx),
             NewHistory = History
         ;
             handle_input(
@@ -145,26 +130,7 @@ handle_input(
         )
     ;   char_code(Char, 113) ->  % 'q'
         % Quit: set status to lost to exit loop
-        Ctx = ctx(State),
-        State = state(
-            frame(F),
-            objects(Objs),
-            _,
-            score(Score),
-            next_id(NextID),
-            commands(Commands),
-            rev_hints(RevHints)
-        ),
-        NewState = state(
-            frame(F),
-            objects(Objs),
-            status(lost),
-            score(Score),
-            next_id(NextID),
-            commands(Commands),
-            rev_hints(RevHints)
-        ),
-        NewCtx = ctx(NewState),
+        ctx_status_ctx(Ctx, lost, NewCtx),
         NewHistory = History
     ;
         % Unknown input, stay at current state
@@ -216,10 +182,8 @@ render_grid_rows(_, Y) :-
 
 render_grid_row(Objects, Y, X) :-
     X =< 19,
-    ( member(
-        object(_, _, attrs(Attrs), _, collisions(_)),
-        Objects
-    ),
+    ( member(Obj, Objects),
+      obj_attrs(Obj, Attrs),
       member(pos(X, Y), Attrs) ->
         get_symbol(Objects, X, Y, Symbol)
     ;
@@ -233,12 +197,8 @@ render_grid_row(_, _, X) :-
     X > 19.
 
 get_symbol(Objects, X, Y, Symbol) :-
-    member(
-        object(
-            _, type(Type), attrs(Attrs), _, collisions(_)
-        ),
-        Objects
-    ),
+    member(Obj, Objects),
+    obj_type_attrs(Obj, Type, Attrs),
     member(pos(X, Y), Attrs),
     (   Type = tower -> char_code(Symbol, 84)  % 'T'
     ;   Type = enemy -> char_code(Symbol, 69)  % 'E'

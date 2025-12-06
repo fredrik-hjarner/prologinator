@@ -24,7 +24,7 @@
 :- use_module(library(between), [between/3]).
 :- use_module(library(time), [time/1]).
 :- use_module(library(format), [format/2]).
-:- use_module('./accessors', [object_id/2]).
+:- use_module('./accessors', [obj_id/2]).
 
 % ==========================================================
 % Helper Predicates (from Addendums 1 & 2)
@@ -94,7 +94,7 @@ state_constraint(
     bounded_list_of(object_constraint, Objects, 200),
     
     % Extract IDs
-    maplist(object_id, Objects, IDs),
+    maplist(obj_id, Objects, IDs),
     % Enforce ascending order
     % (implicitly ensures uniqueness) - Addendum 4
     ( ground(IDs)
