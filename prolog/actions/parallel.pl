@@ -12,7 +12,7 @@
 :- use_module('../types/accessors', [object_attrs/2]).
 % Ensure execute_action is loaded so we can call it
 % (via module qualification to avoid circular dependency)
-:- use_module('../execute_action', [execute_action/5]).
+:- use_module('../execute_action', [execute_action/6]).
 
 % ==========================================================
 % execute_action_impl clauses for parallel actions

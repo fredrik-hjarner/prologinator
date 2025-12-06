@@ -57,6 +57,7 @@ lint-all:
 	@just lint prolog/types/accessors.pl || exit 1
 	@just lint prolog/execute_action.pl || exit 1
 	@just lint prolog/actions/parallel.pl || exit 1
+	@just lint prolog/collisions.pl || exit 1
 	@just lint prolog/types/validation.pl || exit 1
 	@just lint prolog/macros.pl || exit 1
 	@just lint prolog/test_macros.pl || exit 1
@@ -68,6 +69,7 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/collisions.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/game.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/macros.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/test_macros.pl
