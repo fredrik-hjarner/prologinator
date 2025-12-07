@@ -1,7 +1,8 @@
 % Utility functions
 
-:- module(util, [partition/4]).
+:- module(util, [partition/4, flatten/2]).
 
+:- use_module(library(lists), [append/2]).
 :- meta_predicate(partition(1, ?, ?, ?)).
 
 % ==========================================================
@@ -19,4 +20,15 @@ partition(Pred, [X|Xs], Yes, No) :-
         No = [X|NoRest],
         partition(Pred, Xs, Yes, NoRest)
     ).
+
+% ==========================================================
+% Flatten helper
+% ==========================================================
+% flatten(+ListOfLists, -FlatList)
+% Note: flattening is shallow!
+% Flattens a list of lists into a single list
+% This is an alias for append/2 from library(lists)
+
+flatten(ListOfLists, FlatList) :-
+    append(ListOfLists, FlatList).
 

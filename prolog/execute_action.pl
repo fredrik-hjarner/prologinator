@@ -46,17 +46,22 @@
 
 % Wrapper: validates action then delegates to implementation
 execute_action(
-    ctx_in(Ctx), Action, ObjIn, ObjOut, Commands, RevHints
+    ctx_old(Ctx),
+    action(Action),
+    obj_old(ObjIn),
+    obj_new(ObjOut),
+    cmds_new(Commands),
+    revhints_new(RevHints)
 ) :-
     action_validation(Action),
     % validate(Action, action_schema),
     execute_action_impl(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ).
 
 % ==========================================================
@@ -86,12 +91,12 @@ execute_action(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_in(_Ctx),
-    wait_frames(N),
-    ObjIn,
-    [ObjOut],
-    [],
-    []
+    ctx_old(_Ctx),
+    action(wait_frames(N)),
+    obj_old(ObjIn),
+    obj_new([ObjOut]),
+    cmds_new([]),
+    revhints_new([])
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     ( N #> 1 ->
@@ -108,24 +113,24 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_in(_Ctx),
-    move_to(TargetX, TargetY, Frames),
-    object(
+    ctx_old(_Ctx),
+    action(move_to(TargetX, TargetY, Frames)),
+    obj_old(object(
         id(ID),
         type(Type),
         attrs(Attrs),
         actions([_|Rest]),
         Colls
-    ),
-    [object(
+    )),
+    obj_new([object(
         id(ID),
         type(Type),
         attrs(NewAttrs),
         actions(NewActions),
         Colls
-    )],
-    [],
-    []
+    )]),
+    cmds_new([]),
+    revhints_new([])
 ) :-
     select(pos(CurrentX, CurrentY), Attrs, RestAttrs),
     % Compute step using integer division
@@ -155,18 +160,18 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_in(_Ctx),
-    despawn,
-    object(
+    ctx_old(_Ctx),
+    action(despawn),
+    obj_old(object(
         id(ID),
         type(_Type),
         attrs(Attrs),
         actions(_),
         collisions(_Colls)
-    ),
-    [],
-    [],
-    [despawned(ID, Attrs)]
+    )),
+    obj_new([]),
+    cmds_new([]),
+    revhints_new([despawned(ID, Attrs)])
 ) :- !.
 
 % ----------------------------------------------------------
@@ -174,12 +179,12 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_in(_Ctx),
-    spawn(Type, Pos, Actions),
-    ObjIn,
-    [ObjOut],
-    [spawn_request(Type, Pos, Actions)],
-    []
+    ctx_old(_Ctx),
+    action(spawn(Type, Pos, Actions)),
+    obj_old(ObjIn),
+    obj_new([ObjOut]),
+    cmds_new([spawn_request(Type, Pos, Actions)]),
+    revhints_new([])
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut).
@@ -189,12 +194,12 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_in(_Ctx),
-    loop(Actions),
-    ObjIn,
-    [ObjOut],
-    [],
-    []
+    ctx_old(_Ctx),
+    action(loop(Actions)),
+    obj_old(ObjIn),
+    obj_new([ObjOut]),
+    cmds_new([]),
+    revhints_new([])
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     append(Actions, [loop(Actions)], Expanded),
@@ -206,12 +211,12 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_in(_Ctx),
-    trigger_state_change(Change),
-    ObjIn,
-    [ObjOut],
-    [state_change(Change)],
-    []
+    ctx_old(_Ctx),
+    action(trigger_state_change(Change)),
+    obj_old(ObjIn),
+    obj_new([ObjOut]),
+    cmds_new([state_change(Change)]),
+    revhints_new([])
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut).
@@ -244,18 +249,17 @@ remaining", (
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     ObjOut = [object(
         id(1),
@@ -284,18 +288,17 @@ remaining", (
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     ObjOut = [object(
         id(1),
@@ -323,18 +326,17 @@ test("move_to: single frame, arrives at target", (
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     ObjOut = [object(
         id(1),
@@ -361,18 +363,17 @@ continues with remaining frames", (
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     ObjOut = [object(
         id(1),
@@ -398,18 +399,17 @@ test("move_to: negative target coordinates", (
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     ObjOut = [object(
         id(1),
@@ -448,18 +448,17 @@ coordinates from final position", (
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     % Verify that TargetX was correctly inferred
     TargetX = 5,
@@ -497,18 +496,17 @@ count from remaining frames", (
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     N = 3  % Verify that N was correctly inferred
 )).
@@ -546,18 +544,17 @@ parameters from spawn_request command", (
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     % Verify that Type was correctly inferred
     Type = enemy,
@@ -589,27 +586,26 @@ change from state_change command", (
         actions([]),
         collisions([])
     )],
-    Commands = [state_change(score(10))],
+    Commands = [state_change(game_over(won))],
     RevHints = [],
     Ctx = ctx(state(
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     % Verify that Change was correctly inferred
-    Change = score(10)
+    Change = game_over(won)
 )).
 
 % --------------------------------------------------------
@@ -643,18 +639,17 @@ final action list", (
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     % Verify that Actions were correctly inferred
     Actions = [move_to(5, 5, 1)]
@@ -682,18 +677,17 @@ from despawned rev_hint", (
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     ID = 1,  % Verify that ID was correctly inferred
     % Verify that Attrs were correctly inferred

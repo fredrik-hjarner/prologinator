@@ -112,7 +112,6 @@ state_validation_helper(Term) :-
               frame(Frame),
               objects(Objects),
               status(Status),
-              score(Score),
               next_id(NextID),
               commands(Commands),
               rev_hints(RevHints)
@@ -121,7 +120,6 @@ state_validation_helper(Term) :-
             integer(Frame),
             length(Objects, _),
             game_status_validation(Status),
-            integer(Score),
             integer(NextID),
             length(Commands, _),
             length(RevHints, _),
@@ -302,13 +300,6 @@ state_change_validation(Term) :-
         true
     ).
 
-state_change_validation_helper(score(Delta)) :-
-    ( ground(Delta) ->
-        integer(Delta)
-    ;
-        true
-    ).
-
 state_change_validation_helper(game_over(won)).
 state_change_validation_helper(game_over(lost)).
 
@@ -482,7 +473,6 @@ test("game_state_validation: valid state passes", (
             actions([]), collisions([])
         )]),
         status(playing),
-        score(0),
         next_id(1),
         commands([]),
         rev_hints([])
@@ -510,11 +500,10 @@ multiple objects and commands", (
             )
         ]),
         status(playing),
-        score(100),
         next_id(3),
         commands([
             spawn_request(enemy, pos(0, 0), []),
-            state_change(score(10))
+            spawn_request(enemy, pos(0, 0), [])
         ]),
         rev_hints([
             despawned(1, [pos(10, 10)])
@@ -543,7 +532,7 @@ objects, commands, and rev_hints", (
                 id(1), type(enemy), attrs([pos(10, 5)]),
                 actions([
                     move_to(19, 5, 15),
-                    trigger_state_change(score(10))
+                    wait_frames(1)
                 ]), collisions([])
             ),
             object(
@@ -562,11 +551,9 @@ objects, commands, and rev_hints", (
             )
         ]),
         status(playing),
-        score(250),
         next_id(4),
         commands([
             spawn_request(enemy, pos(0, 0), []),
-            state_change(score(5)),
             spawn_request(proj, pos(10, 10), [
                 move_to(10, 0, 10)
             ])
@@ -618,7 +605,6 @@ test("game_state_validation: invalid status fails", (
         frame(0),
         objects([]),
         status(invalid_status),
-        score(0),
         next_id(1),
         commands([]),
         rev_hints([])
@@ -631,7 +617,6 @@ test("game_state_validation: non-integer frame fails", (
         frame(not_an_int),
         objects([]),
         status(playing),
-        score(0),
         next_id(1),
         commands([]),
         rev_hints([])
@@ -651,7 +636,6 @@ test("game_state_validation: NextID <= max ID fails", (
         frame(0),
         objects([Obj]),
         status(playing),
-        score(0),
         next_id(5),
         commands([]),
         rev_hints([])
@@ -738,7 +722,6 @@ test("game_state_validation: wrong arity throws", (
         frame(0),
         objects([]),
         status(playing),
-        score(0),
         next_id(1),
         commands([])
     ),
@@ -750,7 +733,6 @@ test("game_state_validation: wrong functor throws", (
         frame(0),
         objects([]),
         status(playing),
-        score(0),
         next_id(1),
         commands([]),
         rev_hints([])
@@ -787,7 +769,7 @@ test("spawn_request_validation: wrong functor throws", (
 )).
 
 test("state_change_validation: wrong structure throws", (
-    Cmd = not_state_change(score(10)),
+    Cmd = not_state_change(game_over(won)),
     expect_exception(state_change_validation(Cmd))
 )).
 

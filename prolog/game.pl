@@ -78,7 +78,6 @@ main :-
             )
         ]),
         status(playing),
-        score(0),
         next_id(4),
         commands([]),
         rev_hints([])
@@ -151,7 +150,6 @@ render(ctx_in(Ctx)) :-
         frame(Frame),
         objects(Objects),
         status(Status),
-        score(Score),
         _,
         _,
         _
@@ -160,7 +158,6 @@ render(ctx_in(Ctx)) :-
     % Header
     write('=== Tower Defense ==='), nl,
     write('Frame: '), write(Frame),
-    write(' | Score: '), write(Score),
     write(' | Status: '), write(Status), nl,
     write('================================'), nl, nl,
     

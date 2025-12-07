@@ -6,6 +6,16 @@
 % ensure consistent access to nested structures and make
 % refactoring easier.
 
+% Conventions:
+% For getters the functors start with the "thing" we get
+% from, then comes _ followed by all "stuff" we want to get.
+% The fields come in the order in which they occur on the
+% "thing"! So try to keep that!
+% For setters it's the same, except we add _ followed by the
+% "thing" in the end.
+% Rationale for covention:
+% The functor immediately tells you what to put where.
+
 :- module(accessors, [
     % Context accessors
     ctx_objs/2,
@@ -14,6 +24,8 @@
     ctx_cmds_ctx/3,
     ctx_revhints/2,
     ctx_revhints_ctx/3,
+    ctx_objs_cmds_revhints/4,
+    ctx_objs_cmds_revhints_ctx/5,
     ctx_status/2,
     ctx_status_ctx/3,
     % State accessors
@@ -36,60 +48,78 @@
 
 % Get objects from context
 ctx_objs(
-    ctx(state(_, objects(Objects), _, _, _, _, _)), Objects
+    ctx(state(_, objects(Objects), _, _, _, _)), Objects
 ).
 
 % Set objects in context
 ctx_objs_ctx(
-    ctx(state(F, _, Status, Score, NextID, Commands,
-              RevHints)),
+    ctx(state(F, _, Status, NextID, Commands, RevHints)),
     NewObjects,
-    ctx(state(F, objects(NewObjects), Status, Score,
+    ctx(state(F, objects(NewObjects), Status,
               NextID, Commands, RevHints))
 ).
 
 % Get commands from context
 ctx_cmds(
-    ctx(state(_, _, _, _, _, commands(Commands), _)),
+    ctx(state(_, _, _, _, commands(Commands), _)),
     Commands
 ).
 
 % Set commands in context
 ctx_cmds_ctx(
-    ctx(state(F, Objects, Status, Score, NextID, _,
-              RevHints)),
+    ctx(state(F, Objects, Status, NextID, _, RevHints)),
     NewCommands,
-    ctx(state(F, Objects, Status, Score, NextID,
+    ctx(state(F, Objects, Status, NextID,
               commands(NewCommands), RevHints))
 ).
 
 % Get rev_hints from context
 ctx_revhints(
-    ctx(state(_, _, _, _, _, _, rev_hints(RevHints))),
+    ctx(state(_, _, _, _, _, rev_hints(RevHints))),
     RevHints
 ).
 
 % Set rev_hints in context
 ctx_revhints_ctx(
-    ctx(state(F, Objects, Status, Score, NextID,
-              Commands, _)),
+    ctx(state(F, Objects, Status, NextID, Commands, _)),
     NewRevHints,
-    ctx(state(F, Objects, Status, Score, NextID,
+    ctx(state(F, Objects, Status, NextID,
               Commands, rev_hints(NewRevHints)))
+).
+
+% Get objects, commands, and rev_hints from context
+% (bulk getter)
+ctx_objs_cmds_revhints(
+    ctx(state(_, objects(Objects), _, _, commands(Commands),
+              rev_hints(RevHints))),
+    Objects,
+    Commands,
+    RevHints
+).
+
+% Set objects, commands, and rev_hints in context
+% (bulk setter)
+ctx_objs_cmds_revhints_ctx(
+    ctx(state(F, _, Status, NextID, _, _)),
+    NewObjects,
+    NewCommands,
+    NewRevHints,
+    ctx(state(F, objects(NewObjects), Status, NextID,
+              commands(NewCommands),
+              rev_hints(NewRevHints)))
 ).
 
 % Get status from context
 ctx_status(
-    ctx(state(_, _, status(Status), _, _, _, _)),
+    ctx(state(_, _, status(Status), _, _, _)),
     Status
 ).
 
 % Set status in context
 ctx_status_ctx(
-    ctx(state(F, Objects, _, Score, NextID,
-              Commands, RevHints)),
+    ctx(state(F, Objects, _, NextID, Commands, RevHints)),
     NewStatus,
-    ctx(state(F, Objects, status(NewStatus), Score, NextID,
+    ctx(state(F, Objects, status(NewStatus), NextID,
               Commands, RevHints))
 ).
 
@@ -99,9 +129,9 @@ ctx_status_ctx(
 
 % Set status in state
 state_status_state(
-    state(F, Objects, _, Score, NextID, Commands, RevHints),
+    state(F, Objects, _, NextID, Commands, RevHints),
     NewStatus,
-    state(F, Objects, status(NewStatus), Score, NextID,
+    state(F, Objects, status(NewStatus), NextID,
           Commands, RevHints)
 ).
 

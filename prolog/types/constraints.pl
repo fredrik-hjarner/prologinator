@@ -83,7 +83,6 @@ state_constraint(
       frame(Frame),
       objects(Objects),
       status(Status),
-      score(Score),
       next_id(NextID),
       commands(Commands),
       rev_hints(RevHints)
@@ -109,7 +108,6 @@ state_constraint(
     NextID #> MaxID,
     
     game_status_constraint(Status),
-    Score #>= 0,
     bounded_list_of(command_constraint, Commands, 100),
     % TODO: next line causes extreme performance problems.
     bounded_list_of(rev_hint_constraint, RevHints, 200).
@@ -242,10 +240,6 @@ command_constraint(state_change(Change)) :-
 % ==========================================================
 % state_change_constraint/1 Constraint
 % ==========================================================
-
-state_change_constraint(score(Delta)) :-
-    % Score delta: bounded (allow negative for penalties)
-    Delta in 0..1000.
 
 state_change_constraint(game_over(won)).
 state_change_constraint(game_over(lost)).

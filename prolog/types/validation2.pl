@@ -8,7 +8,6 @@
     game_status_schema/1,
     pos_schema/1,
     % State change schemas
-    score_change_schema/1,
     game_over_schema/1,
     state_change_content_schema/1,
     % Action schemas
@@ -38,7 +37,6 @@
     frame_schema/1,
     objects_schema/1,
     status_schema/1,
-    score_schema/1,
     next_id_schema/1,
     commands_schema/1,
     rev_hints_schema/1,
@@ -74,21 +72,13 @@ pos_schema(struct(pos, [
 % State Change Schemas
 % ==========================================================
 
-% Score change: score(Delta) where Delta is integer
-score_change_schema(struct(score, [
-    delta(integer)
-])).
-
 % Game over: game_over(won) or game_over(lost)
 game_over_schema(struct(game_over, [
     status(enum([won, lost]))
 ])).
 
-% Change content: union of score_change or game_over
-state_change_content_schema(union([
-    schema(score_change_schema),
-    schema(game_over_schema)
-])).
+% Change content: game_over
+state_change_content_schema(schema(game_over_schema)).
 
 % ==========================================================
 % Action Schemas
@@ -136,7 +126,7 @@ loop_schema(struct(loop, [
     actions(list(schema(action_schema)))
 ])).
 
-% Trigger state change: trigger_state_change(Change) where Change is score or game_over
+% Trigger state change: trigger_state_change(Change) where Change is game_over
 trigger_state_change_schema(struct(trigger_state_change, [
     change(schema(state_change_content_schema))
 ])).
@@ -168,7 +158,7 @@ spawn_request_schema(struct(spawn_request, [
     actions(list(schema(action_schema)))
 ])).
 
-% State change command: state_change(Change) where Change is score or game_over
+% State change command: state_change(Change) where Change is game_over
 state_change_schema(struct(state_change, [
     change(schema(state_change_content_schema))
 ])).
@@ -227,12 +217,11 @@ object_schema(struct(object, [
 % ==========================================================
 
 % State: state(frame(Frame), objects(Objects), status(Status), 
-%              score(Score), next_id(NextID), commands(Commands), rev_hints(RevHints))
+%              next_id(NextID), commands(Commands), rev_hints(RevHints))
 % Each argument is a wrapped term like frame(Frame), so we validate:
 % - frame(Frame) where Frame is integer >= 0
 % - objects(Objects) where Objects is list of objects
 % - status(Status) where Status is playing/won/lost
-% - score(Score) where Score is integer >= 0
 % - next_id(NextID) where NextID is integer >= 1
 % - commands(Commands) where Commands is list
 % - rev_hints(RevHints) where RevHints is list
@@ -254,11 +243,6 @@ status_schema(struct(status, [
     value(schema(game_status_schema))
 ])).
 
-% For score(Score), we validate that it's score/1 and Score is integer
-score_schema(struct(score, [
-    value(integer(0, _))
-])).
-
 % For next_id(NextID), we validate that it's next_id/1 and NextID is integer
 next_id_schema(struct(next_id, [
     value(integer(1, _))
@@ -274,12 +258,11 @@ rev_hints_schema(struct(rev_hints, [
     value(list(schema(rev_hint_schema)))
 ])).
 
-% State schema: validates state/7 with wrapped arguments
+% State schema: validates state/6 with wrapped arguments
 state_schema(struct(state, [
     frame(schema(frame_schema)),
     objects(schema(objects_schema)),
     status(schema(status_schema)),
-    score(schema(score_schema)),
     next_id(schema(next_id_schema)),
     commands(schema(commands_schema)),
     rev_hints(schema(rev_hints_schema))
@@ -305,7 +288,6 @@ test("game_state_validation: valid state passes", (
             actions([]), collisions([])
         )]),
         status(playing),
-        score(0),
         next_id(1),
         commands([]),
         rev_hints([])
@@ -333,11 +315,10 @@ multiple objects and commands", (
             )
         ]),
         status(playing),
-        score(100),
         next_id(3),
         commands([
             spawn_request(enemy, pos(0, 0), []),
-            state_change(score(10))
+            spawn_request(enemy, pos(0, 0), [])
         ]),
         rev_hints([
             despawned(1, [pos(10, 10)])
@@ -366,7 +347,7 @@ objects, commands, and rev_hints", (
                 id(1), type(enemy), attrs([pos(10, 5)]),
                 actions([
                     move_to(19, 5, 15),
-                    trigger_state_change(score(10))
+                    wait_frames(1)
                 ]), collisions([])
             ),
             object(
@@ -385,11 +366,9 @@ objects, commands, and rev_hints", (
             )
         ]),
         status(playing),
-        score(250),
         next_id(4),
         commands([
             spawn_request(enemy, pos(0, 0), []),
-            state_change(score(5)),
             spawn_request(proj, pos(10, 10), [
                 move_to(10, 0, 10)
             ])
@@ -441,7 +420,6 @@ test("game_state_validation: invalid status fails", (
         frame(0),
         objects([]),
         status(invalid_status),
-        score(0),
         next_id(1),
         commands([]),
         rev_hints([])
@@ -454,7 +432,6 @@ test("game_state_validation: non-integer frame fails", (
         frame(not_an_int),
         objects([]),
         status(playing),
-        score(0),
         next_id(1),
         commands([]),
         rev_hints([])
@@ -475,7 +452,6 @@ test("game_state_validation: non-integer frame fails", (
 %         frame(0),
 %         objects([Obj]),
 %         status(playing),
-%         score(0),
 %         next_id(5),
 %         commands([]),
 %         rev_hints([])
@@ -562,7 +538,6 @@ test("game_state_validation: wrong arity throws", (
         frame(0),
         objects([]),
         status(playing),
-        score(0),
         next_id(1),
         commands([])
     ),
@@ -574,7 +549,6 @@ test("game_state_validation: wrong functor throws", (
         frame(0),
         objects([]),
         status(playing),
-        score(0),
         next_id(1),
         commands([]),
         rev_hints([])
@@ -611,7 +585,7 @@ test("spawn_request_validation: wrong functor throws", (
 )).
 
 test("state_change_validation: wrong structure throws", (
-    Cmd = not_state_change(score(10)),
+    Cmd = not_state_change(game_over(won)),
     expect_exception(validate(Cmd, validation2:state_change_schema))
 )).
 

@@ -22,19 +22,19 @@
 % ==========================================================
 
 execute_action:execute_action_impl(
-    ctx_in(Ctx),
-    parallel(ChildActions),
-    ObjIn,
-    MaybeObjectOut,
-    AllCommands, % output
-    AllRevHints % output
+    ctx_old(Ctx),
+    action(parallel(ChildActions)),
+    obj_old(ObjIn),
+    obj_new(MaybeObjectOut),
+    cmds_new(AllCommands),
+    revhints_new(AllRevHints)
 ) :-
     ObjIn = object(
         id(ID), type(Type), _,
         actions([_|Rest]), collisions(Colls)
     ),
     tick_parallel_children(
-        ctx_in(Ctx),
+        ctx_old(Ctx),
         ChildActions, % list of actions that run in parallel
         ObjIn,
         ObjFinal,
@@ -78,17 +78,20 @@ execute_action:execute_action_impl(
     ).
 
 execute_action:execute_action_impl(
-    ctx_in(Ctx),
-    parallel_running(Children),
-    Obj, NewObj, Commands, RevHints
+    ctx_old(Ctx),
+    action(parallel_running(Children)),
+    obj_old(Obj),
+    obj_new(NewObj),
+    cmds_new(Commands),
+    revhints_new(RevHints)
 ) :-
     execute_action:execute_action(
-        ctx_in(Ctx),
-        parallel(Children),
-        Obj,
-        NewObj,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(parallel(Children)),
+        obj_old(Obj),
+        obj_new(NewObj),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ).
 
 % ==========================================================
@@ -104,11 +107,11 @@ execute_action:execute_action_impl(
 %     ?AllRevHints).
 
 tick_parallel_children(
-    ctx_in(_Ctx), [], ObjIn, ObjIn, [], [], []
+    ctx_old(_Ctx), [], ObjIn, ObjIn, [], [], []
 ).
 
 tick_parallel_children(
-    ctx_in(Ctx),
+    ctx_old(Ctx),
     [Child|RestChildren],
     ObjIn,
     ObjFinal,
@@ -129,7 +132,12 @@ tick_parallel_children(
 
     % 2. Execute the action
     execute_action:execute_action(
-        ctx_in(Ctx), Child, ChildObjIn, ResultList, C1, R1
+        ctx_old(Ctx),
+        action(Child),
+        obj_old(ChildObjIn),
+        obj_new(ResultList),
+        cmds_new(C1),
+        revhints_new(R1)
     ),
 
     % 3. Determine attributes for the NEXT child.
@@ -152,7 +160,7 @@ tick_parallel_children(
 
     % 5. Recurse
     tick_parallel_children(
-        ctx_in(Ctx),
+        ctx_old(Ctx),
         RestChildren,
         NextObjIn,
         ObjFinal,
@@ -201,18 +209,17 @@ wait_frames values from parallel_running state", (
         frame(0),
         [],
         status(playing),
-        score(0),
         next_id(1),
         [],
         []
     )),
     execute_action:execute_action(
-        ctx_in(Ctx),
-        Action,
-        ObjIn,
-        ObjOut,
-        Commands,
-        RevHints
+        ctx_old(Ctx),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut),
+        cmds_new(Commands),
+        revhints_new(RevHints)
     ),
     N1 = 3,  % Verify that N1 was correctly inferred
     N2 = 4   % Verify that N2 was correctly inferred
