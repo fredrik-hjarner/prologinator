@@ -20,6 +20,10 @@
         imports everything that Module exports.
     </fact>
     <fact>
+        use_module/3 can be used if module name and file
+        differs!
+    </fact>
+    <fact>
         multifile is such a hassle to use it's broken.
     </fact>
 </facts>

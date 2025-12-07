@@ -7,7 +7,7 @@ game:
 
 # Run tests for a module (verbose output)
 # Usage: just test prolog/execute_action
-# Usage: just test prolog/engine
+# Usage: just test prolog/engine_test (for test files with _test.pl suffix)
 # Usage: just test some/other/path/my_module
 # The MODULE argument should be the file path (without .pl extension)
 # The module name will be extracted from the last path component
@@ -33,9 +33,9 @@ test-all:
     @echo "\nTesting execute_action..."
     @just test prolog/execute_action || exit 1
     @echo "\nTesting parallel..."
-    @just test prolog/actions/parallel || exit 1
+    @just test prolog/actions/parallel_test || exit 1
     @echo "\nTesting engine..."
-    @just test prolog/engine || exit 1
+    @just test prolog/engine_test || exit 1
     @echo "\nTesting validation..."
     @just test prolog/types/validation || exit 1
     @echo "\nTesting validation2..."
@@ -49,9 +49,9 @@ test-all-verbose:
     @echo "\nTesting execute_action..."
     @just test-verbose prolog/execute_action || exit 1
     @echo "\nTesting parallel..."
-    @just test-verbose prolog/actions/parallel || exit 1
+    @just test-verbose prolog/actions/parallel_test || exit 1
     @echo "\nTesting engine..."
-    @just test-verbose prolog/engine || exit 1
+    @just test-verbose prolog/engine_test || exit 1
     @echo "\nTesting validation..."
     @just test-verbose prolog/types/validation || exit 1
     @echo "\nTesting validation2..."
@@ -68,25 +68,29 @@ lint FILE:
 
 # Check all Prolog files for syntax errors
 lint-all:
-	@echo "Linting prolog files..."
-	@just lint prolog/engine.pl || exit 1
-	@just lint prolog/game.pl || exit 1
-	@just lint prolog/types/constraints.pl || exit 1
-	@just lint prolog/types/accessors.pl || exit 1
-	@just lint prolog/execute_action.pl || exit 1
-	@just lint prolog/actions/parallel.pl || exit 1
-	@just lint prolog/collisions.pl || exit 1
-	@just lint prolog/types/validation.pl || exit 1
-	@just lint prolog/macros.pl || exit 1
-	@just lint prolog/test_macros.pl || exit 1
-	@just lint prolog/xod/xod.pl || exit 1
-	@echo "All files passed linting!"
+    @echo "Linting prolog files..."
+    @just lint prolog/engine.pl || exit 1
+    @just lint prolog/engine_test.pl || exit 1
+    @just lint prolog/game.pl || exit 1
+    @just lint prolog/types/constraints.pl || exit 1
+    @just lint prolog/types/accessors.pl || exit 1
+    @just lint prolog/execute_action.pl || exit 1
+    @just lint prolog/actions/parallel.pl || exit 1
+    @just lint prolog/actions/parallel_test.pl || exit 1
+    @just lint prolog/collisions.pl || exit 1
+    @just lint prolog/types/validation.pl || exit 1
+    @just lint prolog/macros.pl || exit 1
+    @just lint prolog/test_macros.pl || exit 1
+    @just lint prolog/xod/xod.pl || exit 1
+    @echo "All files passed linting!"
 
 # lint the max length of files.
 lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/collisions.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/game.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/macros.pl
