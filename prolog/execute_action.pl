@@ -13,8 +13,13 @@
 ]).
 :- use_module('./types/validation', [action_validation/1]).
 :- use_module('./types/accessors').
+
 % :- use_module('xod/xod', [validate/2]).
 % :- use_module('./types/validation2').
+
+% execute_action_impl/5 clauses are intentionally separated
+% by other code
+:- discontiguous(execute_action_impl/5).
 
 % ==========================================================
 % execute_action/5
@@ -146,9 +151,10 @@ execute_action_impl(
     ctx_revhints_ctx(CtxIn, NewRevs, CtxOut).
 
 % ----------------------------------------------------------
-% Compound Actions: spawn (from Addendum 3 - FINAL version)
+% Compound Actions: spawn
 % ----------------------------------------------------------
 
+% IMMEDIATELY spawns the object into the context
 execute_action_impl(
     ctx_old(CtxIn),
     ctx_new(CtxOut),
@@ -158,12 +164,24 @@ execute_action_impl(
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),
-    % Accumulate command
-    ctx_cmds(CtxIn, Cmds),
-    append(
-        Cmds, [spawn_request(Type, Pos, Actions)], NewCmds
+    
+    % 1. Generate ID
+    ctx_nextid(CtxIn, ID),
+    NextID #= ID + 1,
+    ctx_nextid_ctx(CtxIn, NextID, CtxTemp1),
+    
+    % 2. Create Object
+    NewObj = object(
+        id(ID), type(Type), attrs([Pos]),
+        actions(Actions), collisions([])
     ),
-    ctx_cmds_ctx(CtxIn, NewCmds, CtxOut).
+    
+    % 3. Append to Context
+    % Since ID is increasing, appending to end keeps the
+    % list sorted.
+    ctx_objs(CtxTemp1, CurrentSpawns),
+    append(CurrentSpawns, [NewObj], NewSpawns),
+    ctx_objs_ctx(CtxTemp1, NewSpawns, CtxOut).
 
 % ----------------------------------------------------------
 % Compound Actions: loop
@@ -185,6 +203,7 @@ execute_action_impl(
 % Compound Actions: trigger_state_change
 % ----------------------------------------------------------
 
+% IMMEDIATELY updates status in context
 execute_action_impl(
     ctx_old(CtxIn),
     ctx_new(CtxOut),
@@ -194,10 +213,15 @@ execute_action_impl(
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),
-    % Accumulate command
-    ctx_cmds(CtxIn, Cmds),
-    append(Cmds, [state_change(Change)], NewCmds),
-    ctx_cmds_ctx(CtxIn, NewCmds, CtxOut).
+    
+    ctx_status(CtxIn, CurrentStatus),
+    update_status(Change, CurrentStatus, NewStatus),
+    ctx_status_ctx(CtxIn, NewStatus, CtxOut).
+
+update_status(game_over(lost), _, lost).
+update_status(game_over(won), lost, lost).
+update_status(game_over(won), _, won).
+% update_status(_, S, S). % fallback
 
 % ----------------------------------------------------------
 % Compound Actions: parallel
@@ -345,3 +369,4 @@ tick_parallel_children(
     
     % 6. Build output
     ChildResult = ResultList.
+

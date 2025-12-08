@@ -1,6 +1,7 @@
 :- module(execute_action_test, []).
 :- use_module('./execute_action', [execute_action/5]).
 :- use_module('./types/accessors').
+:- use_module(library(lists), [member/2]).
 % ==========================================================
 % Tests
 % ==========================================================
@@ -27,8 +28,6 @@ count from remaining frames", (
         actions([wait_frames(2)]),
         collisions([])
     )],
-    Commands = [],
-    RevHints = [],
     Ctx = ctx(state(
         frame(0),
         objects([]),
@@ -347,7 +346,7 @@ coordinates from final position", (
 % --------------------------------------------------------
 
 test("spawn: backward test - can infer spawn \
-parameters from spawn_request command", (
+parameters from spawned object", (
     % Type, Pos, and Actions are unknown - should be
     % inferred
     Action = spawn(Type, Pos, Actions),
@@ -367,11 +366,25 @@ parameters from spawn_request command", (
         actions([]),
         collisions([])
     )],
-    Commands = [spawn_request(
-        enemy, pos(10, 5), [move_to(0, 0, 10)]
-    )],
+    Commands = [],
     RevHints = [],
-    Ctx = ctx(state(
+    % For backward execution, context already has the
+    % spawned object
+    CtxOut = ctx(state(
+        frame(0),
+        objects([
+            object(
+                id(1), type(enemy), attrs([pos(10, 5)]),
+                actions([move_to(0, 0, 10)]),
+                collisions([])
+            )
+        ]),
+        status(playing),
+        next_id(2),
+        commands([]),
+        rev_hints([])
+    )),
+    CtxIn = ctx(state(
         frame(0),
         objects([]),
         status(playing),
@@ -380,14 +393,14 @@ parameters from spawn_request command", (
         rev_hints([])
     )),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
+        ctx_old(CtxIn),
+        ctx_new(CtxOut),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
-    ctx_revhints(CtxNew, RevHints),
+    ctx_cmds(CtxOut, Commands),
+    ctx_revhints(CtxOut, RevHints),
     % Verify that Type was correctly inferred
     Type = enemy,
     % Verify that Pos was correctly inferred
@@ -400,8 +413,125 @@ parameters from spawn_request command", (
 % Tests: trigger_state_change
 % --------------------------------------------------------
 
+test("trigger_state_change: forward test - updates status \
+to won", (
+    Action = trigger_state_change(game_over(won)),
+    ObjIn = object(
+        id(1),
+        type(static),
+        attrs([]),
+        actions([trigger_state_change(game_over(won))]),
+        collisions([])
+    ),
+    CtxIn = ctx(state(
+        frame(0),
+        objects([]),
+        status(playing),
+        next_id(1),
+        commands([]),
+        rev_hints([])
+    )),
+    execute_action(
+        ctx_old(CtxIn),
+        ctx_new(CtxOut),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut)
+    ),
+    ctx_cmds(CtxOut, Commands),
+    ctx_revhints(CtxOut, RevHints),
+    ObjOut = [object(
+        id(1),
+        type(static),
+        attrs([]),
+        actions([]),
+        collisions([])
+    )],
+    ctx_status(CtxOut, won),
+    Commands = [],
+    RevHints = []
+)).
+
+test("trigger_state_change: forward test - updates status \
+to lost", (
+    Action = trigger_state_change(game_over(lost)),
+    ObjIn = object(
+        id(1),
+        type(static),
+        attrs([]),
+        actions([trigger_state_change(game_over(lost))]),
+        collisions([])
+    ),
+    CtxIn = ctx(state(
+        frame(0),
+        objects([]),
+        status(playing),
+        next_id(1),
+        commands([]),
+        rev_hints([])
+    )),
+    execute_action(
+        ctx_old(CtxIn),
+        ctx_new(CtxOut),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut)
+    ),
+    ctx_cmds(CtxOut, Commands),
+    ctx_revhints(CtxOut, RevHints),
+    ObjOut = [object(
+        id(1),
+        type(static),
+        attrs([]),
+        actions([]),
+        collisions([])
+    )],
+    ctx_status(CtxOut, lost),
+    Commands = [],
+    RevHints = []
+)).
+
+test("trigger_state_change: forward test - won cannot \
+override lost", (
+    Action = trigger_state_change(game_over(won)),
+    ObjIn = object(
+        id(1),
+        type(static),
+        attrs([]),
+        actions([trigger_state_change(game_over(won))]),
+        collisions([])
+    ),
+    CtxIn = ctx(state(
+        frame(0),
+        objects([]),
+        status(lost),
+        next_id(1),
+        commands([]),
+        rev_hints([])
+    )),
+    execute_action(
+        ctx_old(CtxIn),
+        ctx_new(CtxOut),
+        action(Action),
+        obj_old(ObjIn),
+        obj_new(ObjOut)
+    ),
+    ctx_cmds(CtxOut, Commands),
+    ctx_revhints(CtxOut, RevHints),
+    ObjOut = [object(
+        id(1),
+        type(static),
+        attrs([]),
+        actions([]),
+        collisions([])
+    )],
+    ctx_status(CtxOut, lost),
+    Commands = [],
+    RevHints = []
+)).
+
 test("trigger_state_change: backward test - can infer \
-change from state_change command", (
+change from updated status", (
     % Change is unknown - should be inferred
     Action = trigger_state_change(Change),
     ObjIn = object(
@@ -418,9 +548,11 @@ change from state_change command", (
         actions([]),
         collisions([])
     )],
-    Commands = [state_change(game_over(won))],
+    Commands = [],
     RevHints = [],
-    Ctx = ctx(state(
+    % For backward execution, context already has the
+    % updated status
+    CtxIn = ctx(state(
         frame(0),
         objects([]),
         status(playing),
@@ -428,15 +560,23 @@ change from state_change command", (
         commands([]),
         rev_hints([])
     )),
+    CtxOut = ctx(state(
+        frame(0),
+        objects([]),
+        status(won),
+        next_id(1),
+        commands([]),
+        rev_hints([])
+    )),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
+        ctx_old(CtxIn),
+        ctx_new(CtxOut),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
-    ctx_revhints(CtxNew, RevHints),
+    ctx_cmds(CtxOut, Commands),
+    ctx_revhints(CtxOut, RevHints),
     % Verify that Change was correctly inferred
     Change = game_over(won)
 )).

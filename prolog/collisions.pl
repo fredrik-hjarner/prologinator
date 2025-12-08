@@ -6,10 +6,7 @@
 :- use_module(library(lists), [
     findall/3, member/2, list_to_set/2, append/3
 ]).
-:- use_module('./types/accessors', [
-    obj_id_attrs/3,
-    obj_id_type/3
-]).
+:- use_module('./types/accessors').
 
 % ==========================================================
 % Collision Detection (simplified - grid-based)
@@ -76,20 +73,22 @@ handle_collisions(
 
 remove_with_rev_hints([], _, [], []).
 remove_with_rev_hints(
-    [object(id(ID), _, attrs(AttrList), _, _)|Rest],
+    [Obj|Rest],
     ToRemove,
     NewObjs,
-    [despawned(ID, AttrList)|RestRevHints]
+    RevHints
 ) :-
-    member(ID, ToRemove),
-    !,
-    remove_with_rev_hints(
-        Rest, ToRemove, NewObjs, RestRevHints
-    ).
-remove_with_rev_hints(
-    [Obj|Rest], ToRemove, [Obj|NewObjs], RevHints
-) :-
-    remove_with_rev_hints(
-        Rest, ToRemove, NewObjs, RevHints
+    obj_id(Obj, ID),
+    ( member(ID, ToRemove) ->
+        obj_attrs(Obj, Attrs),
+        RevHints = [despawned(ID, Attrs)|RestRevHints],
+        remove_with_rev_hints(
+            Rest, ToRemove, NewObjs, RestRevHints
+        )
+    ;
+        NewObjs = [Obj|RestObjs],
+        remove_with_rev_hints(
+            Rest, ToRemove, RestObjs, RevHints
+        )
     ).
 

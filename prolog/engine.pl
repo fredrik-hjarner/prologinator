@@ -3,13 +3,8 @@
 :- use_module(library(clpz)).
 :- use_module(library(lists), [
     append/3,
-    select/3,
-    member/2,
-    maplist/5,
-    list_to_set/2,
-    length/2
+    member/2
 ]).
-:- use_module('./third_party/exclude', [exclude/3]).
 :- use_module('./execute_action', [execute_action/5]).
 :- use_module('./types/accessors'). % import all. so many...
 :- use_module('./types/validation', [
@@ -17,7 +12,6 @@
     state_validation/1,
     object_validation/1
 ]).
-:- use_module('./util/util', [partition/4, flatten/2]).
 :- use_module('./collisions', [detect_collisions/3]).
 
 % ==========================================================
@@ -102,29 +96,19 @@ tick_object(
 tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
     context_validation(CtxIn),
     
-    % The Pipeline:
-    % 1. Tick Physics (Moves objects, generates raw
-    % commands/hints)
+    % 1. Tick Physics & Logic
+    % Iterates by ID, allowing new spawns to be picked up
+    % immediately.
     tick_all_objects(ctx_in(CtxIn), ctx_out(CtxPhys)),
     context_validation(CtxPhys),
     
-    % 2. Resolve Collisions (Updates objects, adds
-    % collision hints)
+    % 2. Resolve Collisions
+    % Removes objects, adds collision hints.
     resolve_collisions(CtxPhys, CtxColl),
     context_validation(CtxColl),
     
-    % 3. Resolve Spawns (Consumes spawn commands, updates
-    % objects & ID)
-    resolve_spawns(CtxColl, CtxSpawn),
-    context_validation(CtxSpawn),
-    
-    % 4. Resolve Status (Consumes state commands, updates
-    % status)
-    resolve_status(CtxSpawn, CtxFinal),
-    context_validation(CtxFinal),
-    
-    % 5. Increment Frame
-    increment_frame(CtxFinal, CtxOut).
+    % 3. Increment Frame
+    increment_frame(CtxColl, CtxOut).
 
 % ==========================================================
 % Pipeline Stages
@@ -140,120 +124,77 @@ resolve_collisions(CtxIn, CtxOut) :-
         CtxOut
     ).
 
-resolve_spawns(CtxIn, CtxOut) :-
-    ctx_objs_nextid_cmds(
-        CtxIn, CurrentObjs, NextID, AllCmds
-    ),
-    
-    partition(
-        is_spawn_request, AllCmds, SpawnReqs, OtherCmds
-    ),
-    
-    process_spawn_requests(
-        SpawnReqs, NextID, NewObjs, NewNextID
-    ),
-    append(CurrentObjs, NewObjs, FinalObjs),
-    
-    % Update context: New Objects, New ID, Remaining
-    % Commands
-    ctx_objs_nextid_cmds_ctx(
-        CtxIn,
-        FinalObjs, NewNextID, OtherCmds,
-        CtxOut
-    ).
-
-resolve_status(CtxIn, CtxOut) :-
-    ctx_status_cmds(CtxIn, Status, Cmds),
-    
-    partition(
-        is_state_change, Cmds, StatusCmds, RemainingCmds
-    ),
-    
-    apply_state_changes(StatusCmds, Status, NewStatus),
-    
-    ctx_status_cmds_ctx(
-        CtxIn,
-        NewStatus, RemainingCmds,
-        CtxOut
-    ).
-
 increment_frame(CtxIn, CtxOut) :-
     ctx_frame(CtxIn, F),
     F1 #= F + 1,
     ctx_frame_ctx(CtxIn, F1, CtxOut).
 
 % ==========================================================
-% Tick Helpers
+% Tick Logic (The ID Cursor)
 % ==========================================================
 
-% Replaces maplist/flatten/append with a threaded fold
 tick_all_objects(ctx_in(CtxIn), ctx_out(CtxOut)) :-
-    ctx_objs(CtxIn, Objects),
-    tick_objects_loop(
-        Objects, CtxIn, FinalObjects, CtxTemp
-    ),
-    % Update objects in the resulting context
-    ctx_objs_ctx(CtxTemp, FinalObjects, CtxOut).
+    % Start the loop with ID -1 (assuming IDs start at 0
+    % or 1)
+    tick_objects_loop(-1, CtxIn, CtxOut).
 
-% Custom recursive loop to thread Context and build
-% Object list
-tick_objects_loop([], Ctx, [], Ctx).
-tick_objects_loop([Obj|Rest], CtxIn, FinalObjs, CtxOut) :-
-    tick_object(
-        ctx_old(CtxIn),
-        ctx_new(CtxTemp),
-        obj_old(Obj),
-        obj_new(ObjResultList)
-    ),
-    tick_objects_loop(Rest, CtxTemp, RestObjs, CtxOut),
-    append(ObjResultList, RestObjs, FinalObjs).
-
-% ==========================================================
-% Spawn Processing (from Addendum 3)
-% ==========================================================
-is_spawn_request(spawn_request(_, _, _)).
-
-process_spawn_requests([], ID, [], ID).
-process_spawn_requests(
-    [spawn_request(Type, Pos, Acts)|Rest],
-    IDIn,
-    [object(
-        id(ObjID),
-        type(Type),
-        attrs([Pos]),
-        actions(Acts),
-        collisions([])
-    )|RestObjs],
-    IDOut
-) :-
-    % Generate ID: just use the integer directly
-    ObjID = IDIn,
-    
-    IDIn1 #= IDIn + 1,
-    
-    process_spawn_requests(Rest, IDIn1, RestObjs, IDOut).
-
-% ==========================================================
-% State Change Processing
-% ==========================================================
-is_state_change(state_change(_)).
-
-apply_state_changes([], Status, Status).
-apply_state_changes(
-    [state_change(game_over(lost))|_],
-    _, lost
-) :- !.
-apply_state_changes(
-    [state_change(game_over(won))|Rest],
-    Status, FinalStatus
-) :-
-    ( Status = lost ->
-        FinalStatus = lost
+% The loop finds the next object with ID > LastID
+tick_objects_loop(LastID, CtxIn, CtxOut) :-
+    ( find_next_object(CtxIn, LastID, TargetObj) ->
+        % Found an object to tick
+        obj_id(TargetObj, TargetID),
+        
+        tick_object(
+            ctx_old(CtxIn),
+            ctx_new(CtxTemp), % Contains spawns/side-effects
+            obj_old(TargetObj),
+            obj_new(ObjResultList)
+        ),
+        
+        % Update the context with the result of this
+        % specific object (Replace TargetObj with
+        % ObjResultList in CtxTemp)
+        update_object_in_context(
+            CtxTemp, TargetID, ObjResultList, CtxNext
+        ),
+        
+        % Recurse using the current TargetID as the new
+        % floor
+        tick_objects_loop(TargetID, CtxNext, CtxOut)
     ;
-        apply_state_changes(Rest, won, FinalStatus)
+        % No more objects with ID > LastID
+        CtxOut = CtxIn
     ).
-apply_state_changes(
-    [_|Rest], Status, FinalStatus
+
+% Helper: Finds the first object in context with ID > MinID
+% Since the list is sorted, this is effectively finding
+% the next one.
+find_next_object(Ctx, MinID, Obj) :-
+    ctx_objs(Ctx, Objects),
+    member(Obj, Objects),
+    obj_id(Obj, ID),
+    ID > MinID,
+    !. % Take the first one we find (lowest ID > MinID)
+
+% Helper: Replaces the object with TargetID with the
+% NewList (which is [Obj] or [])
+update_object_in_context(
+    CtxIn, TargetID, NewList, CtxOut
 ) :-
-    apply_state_changes(Rest, Status, FinalStatus).
+    ctx_objs(CtxIn, Objects),
+    replace_by_id(Objects, TargetID, NewList, NewObjects),
+    ctx_objs_ctx(CtxIn, NewObjects, CtxOut).
+
+% replace_by_id(+CurrentList, +TargetID, +ReplacementList,
+% -NewList)
+replace_by_id([], _, _, []).
+replace_by_id([Obj|Rest], TargetID, Replacement, Result) :-
+    obj_id(Obj, ID),
+    ( ID = TargetID ->
+        append(Replacement, Rest, Result)
+    ;
+        Result = [Obj|NewRest],
+        replace_by_id(Rest, TargetID, Replacement, NewRest)
+    ).
+
 

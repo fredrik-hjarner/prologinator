@@ -1,3 +1,8 @@
+# Make xod:validate/2 into xod:validate/3 with debug msg
+
+Yup. It's very hard to see what's wrong and where.
+I prolly need more debug messages etc.
+
 # Rename object to obj
 
 yup shorter.
