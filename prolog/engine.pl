@@ -1,10 +1,12 @@
-:- module(engine, [tick/2, tick_object/4, yields/1]).
+:- module(engine, [tick/2, tick_object/4, yields/2]).
 
 :- use_module(library(clpz)).
 :- use_module(library(lists), [
     append/3,
     member/2
 ]).
+:- use_module(library(reif), [if_/3, (=)/3]).
+:- use_module(library(dif), [dif/2]).
 :- use_module('./execute_action', [execute_action/5]).
 :- use_module('./types/accessors'). % import all. so many...
 :- use_module('./types/validation', [
@@ -15,25 +17,44 @@
 :- use_module('./collisions', [detect_collisions/3]).
 
 % ==========================================================
-% Yielding Actions
+% Yielding Actions (Reified)
 % ==========================================================
 % Bidirectional: works forward (check if action yields) and
 % backward (generate yielding actions)
-% Modes: yields(?Action) - can be called with Action bound
-% or unbound
-% :- pred yields(?Action) # "Checks if an action yields \
-% control, or generates yielding actions.".
+% Modes: yields(?Action, ?T) - can be called with Action
+% bound or unbound, T is true or false
+% :- pred yields(?Action, ?T) # "Reified: T=true if action
+% yields, T=false otherwise. Can generate yielding actions
+% when Action is unbound and T=true.".
 
 % yields tells whether an action "yields" or not.
-% THis is how it works now: AFTER an action has been
+% This is how it works now: AFTER an action has been
 % executed, we check if it yields. If it does yield then
-% we DONT executa the next action. However it it does NOT
+% we DONT execute the next action. However it it does NOT
 % yield then we execute the next action etc until EITHER
 % the game object cease to exist or we come to a yielding
 % action.
-yields(wait(N)) :- N #> 0.
-yields(move_to(_, _, Frames)) :- Frames #> 0.
-yields(parallel_running(_)).
+% Reified version: always takes a truth value T.
+% Fully relational: pattern matching + CLP constraints.
+
+% wait(N) yields when N > 0
+yields(wait(N), true) :- N #> 0.
+yields(wait(N), false) :- N #=< 0.
+
+% move_to(_, _, Frames) yields when Frames > 0
+yields(move_to(_, _, Frames), true) :- Frames #> 0.
+yields(move_to(_, _, Frames), false) :- Frames #=< 0.
+
+% parallel_running(_) always yields
+yields(parallel_running(_), true).
+
+% Non-yielding actions: despawn, spawn, loop,
+% trigger_state_change, parallel
+yields(despawn, false).
+yields(spawn(_, _, _), false).
+yields(loop(_), false).
+yields(trigger_state_change(_), false).
+yields(parallel(_), false).
 
 % ==========================================================
 % Execution Model: tick_object
@@ -72,21 +93,24 @@ tick_object(
         obj_old(ObjOld),
         obj_new(ObjTempList)
     ),
-    ( ObjTempList = [] ->
-        ObjNew = [],
-        CtxNew = CtxTemp
-    ; yields(Act) ->
-        ObjNew = ObjTempList,
-        CtxNew = CtxTemp
-    ;
-        % Action finished immediately (did not yield),
-        % recurse
-        ObjTempList = [ObjTemp],
-        tick_object(
-            ctx_old(CtxTemp),
-            ctx_new(CtxNew),
-            obj_old(ObjTemp),
-            obj_new(ObjNew)
+    if_(=(ObjTempList, []),
+        ( ObjNew = [],
+          CtxNew = CtxTemp
+        ),
+        if_(yields(Act),
+            ( ObjNew = ObjTempList,
+              CtxNew = CtxTemp
+            ),
+            ( % Action finished immediately (did not yield),
+              % recurse
+              ObjTempList = [ObjTemp],
+              tick_object(
+                  ctx_old(CtxTemp),
+                  ctx_new(CtxNew),
+                  obj_old(ObjTemp),
+                  obj_new(ObjNew)
+              )
+            )
         )
     ).
 

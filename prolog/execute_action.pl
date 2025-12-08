@@ -80,14 +80,15 @@ execute_action_impl(
     obj_new([ObjOut])
 ) :-
     obj_acns(ObjIn, [_|Rest]),
-    ( N #> 1 ->
-        N1 #= N - 1,
-        NewActions = [wait(N1)|Rest]
-    ;
-        % N = 1, wait is done
-        NewActions = Rest
-    ),
+    wait_continue(N, Rest, NewActions),
     obj_acns_obj(ObjIn, NewActions, ObjOut).
+
+% Helper: Continue or finish wait action based on remaining
+% frames
+wait_continue(N, Rest, [wait(N1)|Rest]) :-
+    N #> 1,
+    N1 #= N - 1.
+wait_continue(N, Rest, Rest) :- N #=< 1.
 
 % ----------------------------------------------------------
 % Basic Actions: move_to
@@ -294,6 +295,18 @@ execute_action_impl(
     ).
 
 % ==========================================================
+% Helper: Extract attrs from result list (pattern matching)
+% ==========================================================
+% If result is a single object, use its attrs.
+% If result is empty (despawned), use the old attrs.
+get_attrs_from_result(
+    [object(_, _, attrs(AttrsNext), _, _)],
+    _AttrsIn,
+    AttrsNext
+).
+get_attrs_from_result([], AttrsIn, AttrsIn).
+
+% ==========================================================
 % tick_parallel_children/6
 % ==========================================================
 
@@ -344,12 +357,7 @@ tick_parallel_children(
     %    attributes to the next sibling so it can at least
     %    attempt to run (e.g., to generate its own
     %    commands/hints).
-    ( ResultList = [object(_, _, attrs(AttrsNext), _, _)] ->
-        true
-    ;
-        ResultList = [],
-        AttrsNext = AttrsIn
-    ),
+    get_attrs_from_result(ResultList, AttrsIn, AttrsNext),
 
     % 4. Build object for next child
     NextObjIn = object(
