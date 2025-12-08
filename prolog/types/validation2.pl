@@ -12,7 +12,7 @@
     state_change_content_schema/1,
     % Action schemas
     action_schema/1,
-    wait_frames_schema/1,
+    wait_schema/1,
     move_to_schema/1,
     despawn_schema/1,
     spawn_action_schema/1,
@@ -89,7 +89,7 @@ state_change_content_schema(schema(game_over_schema)).
 % not a compound term, so it should be matched before struct schemas
 action_schema(union([
     schema(despawn_schema),
-    schema(wait_frames_schema),
+    schema(wait_schema),
     schema(move_to_schema),
     schema(spawn_action_schema),
     schema(loop_schema),
@@ -98,8 +98,8 @@ action_schema(union([
     schema(parallel_running_schema)
 ])).
 
-% Wait frames: wait_frames(N) where N is integer
-wait_frames_schema(struct(wait_frames, [
+% Wait frames: wait(N) where N is integer
+wait_schema(struct(wait, [
     frames(integer)
 ])).
 
@@ -302,7 +302,7 @@ multiple objects and commands", (
         objects([
             object(
                 id(0), type(tower), attrs([pos(10, 19)]),
-                actions([wait_frames(3)]), collisions([])
+                actions([wait(3)]), collisions([])
             ),
             object(
                 id(1), type(enemy), attrs([pos(5, 5)]),
@@ -336,7 +336,7 @@ objects, commands, and rev_hints", (
                 id(0), type(tower), attrs([pos(5, 19)]),
                 actions([
                     loop([
-                        wait_frames(3),
+                        wait(3),
                         spawn(proj, pos(5, 19), [
                             move_to(5, 0, 20)
                         ])
@@ -347,7 +347,7 @@ objects, commands, and rev_hints", (
                 id(1), type(enemy), attrs([pos(10, 5)]),
                 actions([
                     move_to(19, 5, 15),
-                    wait_frames(1)
+                    wait(1)
                 ]), collisions([])
             ),
             object(
@@ -359,7 +359,7 @@ objects, commands, and rev_hints", (
                 id(3), type(static), attrs([]),
                 actions([
                     parallel([
-                        wait_frames(5),
+                        wait(5),
                         spawn(enemy, pos(0, 10), [])
                     ])
                 ]), collisions([])
@@ -499,9 +499,9 @@ test("pos_validation: non-integer coords fail via action", (
     expect_exception(validate(Action2, validation2:action_schema))
 )).
 
-test("action_validation: invalid wait_frames fails", (
+test("action_validation: invalid wait fails", (
     expect_exception(
-        validate(wait_frames(not_int), validation2:action_schema)
+        validate(wait(not_int), validation2:action_schema)
     )
 )).
 
@@ -661,8 +661,8 @@ test("action_validation: trigger_state_change with unbound change passes", (
     var(Change)
 )).
 
-test("action_validation: wait_frames with unbound N passes", (
-    Action = wait_frames(N),
+test("action_validation: wait with unbound N passes", (
+    Action = wait(N),
     % N is unbound - should pass
     validate(Action, validation2:action_schema),
     % Verify it's still unbound after validation

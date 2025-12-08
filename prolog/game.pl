@@ -35,7 +35,7 @@ main :-
                 id(0), type(tower), attrs([pos(5, 19)]),
                 actions([
                     loop([
-                        wait_frames(3),
+                        wait(3),
                         spawn(proj, pos(5, 19), [
                             move_to(5, 0, 20)
                         ])
@@ -46,7 +46,7 @@ main :-
                 id(1), type(tower), attrs([pos(10, 19)]),
                 actions([
                     loop([
-                        wait_frames(3),
+                        wait(3),
                         spawn(proj, pos(10, 19), [
                             move_to(10, 0, 20)
                         ])
@@ -57,7 +57,7 @@ main :-
                 id(2), type(tower), attrs([pos(15, 19)]),
                 actions([
                     loop([
-                        wait_frames(3),
+                        wait(3),
                         spawn(proj, pos(15, 19), [
                             move_to(15, 0, 20)
                         ])
@@ -69,7 +69,7 @@ main :-
                 id(3), type(static), attrs([]),
                 actions([
                     loop([
-                        wait_frames(5),
+                        wait(5),
                         spawn(enemy, pos(0, 10), [
                             move_to(19, 10, 30)
                         ])

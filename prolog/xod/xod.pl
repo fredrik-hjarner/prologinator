@@ -245,7 +245,7 @@ validates_against(V, schema(SchemaName),
 % Tries each schema in order until one
 % matches. If V is unbound, pass. If bound,
 % try each; throw if none match.
-% Example: union([wait_frames_schema,
+% Example: union([wait_schema,
 %                 move_to_schema, ...])
 validates_against(V, union(Schemas),
                   Path, Module) :-

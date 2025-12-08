@@ -7,25 +7,25 @@
 % ==========================================================
 
 % --------------------------------------------------------
-% Tests: wait_frames
+% Tests: wait
 % --------------------------------------------------------
 
-test("wait_frames: backward test - can infer initial frame \
+test("wait: backward test - can infer initial frame \
 count from remaining frames", (
     % N is unknown - should be inferred
-    Action = wait_frames(N),
+    Action = wait(N),
     ObjIn = object(
         id(1),
         type(static),
         attrs([]),
-        actions([wait_frames(N)]),
+        actions([wait(N)]),
         collisions([])
     ),
     ObjOut = [object(
         id(1),
         type(static),
         attrs([]),
-        actions([wait_frames(2)]),
+        actions([wait(2)]),
         collisions([])
     )],
     Ctx = ctx(state(
@@ -53,15 +53,15 @@ count from remaining frames", (
 % --------------------------------------------------------
 
 test("parallel: backward test - can infer original \
-wait_frames values from parallel_running state", (
+wait values from parallel_running state", (
     % N1 and N2 are unknown - should be inferred
-    Action = parallel([wait_frames(N1), wait_frames(N2)]),
+    Action = parallel([wait(N1), wait(N2)]),
     ObjIn = object(
         id(1),
         type(static),
         attrs([]),
         actions([
-            parallel([wait_frames(N1), wait_frames(N2)])
+            parallel([wait(N1), wait(N2)])
         ]),
         collisions([])
     ),
@@ -71,8 +71,8 @@ wait_frames values from parallel_running state", (
         attrs([]),
         actions([
             parallel_running([
-                wait_frames(2),
-                wait_frames(3)
+                wait(2),
+                wait(3)
             ])
         ]),
         collisions([])

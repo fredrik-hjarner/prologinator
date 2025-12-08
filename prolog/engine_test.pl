@@ -8,14 +8,14 @@
 % Tests for yields/1
 % ==========================================================
 
-test("yields: wait_frames with positive number should \
+test("yields: wait with positive number should \
 yield", (
-    A = wait_frames(5),
+    A = wait(5),
     yields(A)
 )).
 
-test("yields: wait_frames with zero should not yield", (
-    A = wait_frames(0),
+test("yields: wait with zero should not yield", (
+    A = wait(0),
     \+ yields(A)
 )).
 
@@ -27,7 +27,7 @@ test("yields: move_to with positive frames should yield", (
 test("yields: can generate yielding actions \
 bidirectionally", (
     yields(A),
-    ( A = wait_frames(_)
+    ( A = wait(_)
     ; A = move_to(_, _, _)
     ; A = parallel_running(_) )
 )).
@@ -70,13 +70,13 @@ object", (
     )]
 )).
 
-test("tick_object: yielding action (wait_frames) stops \
+test("tick_object: yielding action (wait) stops \
 after one execution", (
     ObjIn = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
-        actions([wait_frames(5)]),
+        actions([wait(5)]),
         collisions([])
     ),
     Ctx = ctx(state(
@@ -99,18 +99,18 @@ after one execution", (
         id(1),
         type(static),
         attrs([pos(0, 0)]),
-        actions([wait_frames(4)]),
+        actions([wait(4)]),
         collisions([])
     )]
 )).
 
-test("tick_object: wait_frames(0) is removed and execution \
+test("tick_object: wait(0) is removed and execution \
 continues until empty", (
     ObjIn = object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
-        actions([wait_frames(0)]),
+        actions([wait(0)]),
         collisions([])
     ),
     Ctx = ctx(state(
@@ -176,14 +176,14 @@ state", (
 )).
 
 test("tick: processes object with yielding action \
-(wait_frames)", (
+(wait)", (
     CtxIn = ctx(state(
         frame(0),
         objects([object(
             id(0),
             type(static),
             attrs([pos(0, 0)]),
-            actions([wait_frames(3)]),
+            actions([wait(3)]),
             collisions([])
         )]),
         status(playing),
@@ -198,7 +198,7 @@ test("tick: processes object with yielding action \
             id(0),
             type(static),
             attrs([pos(0, 0)]),
-            actions([wait_frames(2)]),
+            actions([wait(2)]),
             collisions([])
         )]),
         status(playing),
@@ -324,7 +324,7 @@ freeze (first collision)", (
                 id(0), type(tower), attrs([pos(5, 19)]),
                 actions([
                     loop([
-                        wait_frames(3),
+                        wait(3),
                         spawn(proj, pos(5, 19), [
                             move_to(5, 0, 20)
                         ])
@@ -335,7 +335,7 @@ freeze (first collision)", (
                 id(1), type(tower), attrs([pos(10, 19)]),
                 actions([
                     loop([
-                        wait_frames(3),
+                        wait(3),
                         spawn(proj, pos(10, 19), [
                             move_to(10, 0, 20)
                         ])
@@ -346,7 +346,7 @@ freeze (first collision)", (
                 id(2), type(tower), attrs([pos(15, 19)]),
                 actions([
                     loop([
-                        wait_frames(3),
+                        wait(3),
                         spawn(proj, pos(15, 19), [
                             move_to(15, 0, 20)
                         ])
@@ -357,7 +357,7 @@ freeze (first collision)", (
                 id(3), type(static), attrs([]),
                 actions([
                     loop([
-                        wait_frames(5),
+                        wait(5),
                         spawn(enemy, pos(0, 10), [
                             move_to(19, 10, 30)
                         ])

@@ -69,20 +69,20 @@ execute_action(
 % ==========================================================
 % Internal implementation (no validation)
 % ----------------------------------------------------------
-% Basic Actions: wait_frames
+% Basic Actions: wait
 % ----------------------------------------------------------
 
 execute_action_impl(
     ctx_old(Ctx),
     ctx_new(Ctx), % Context unchanged
-    action(wait_frames(N)),
+    action(wait(N)),
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     ( N #> 1 ->
         N1 #= N - 1,
-        NewActions = [wait_frames(N1)|Rest]
+        NewActions = [wait(N1)|Rest]
     ;
         % N = 1, wait is done
         NewActions = Rest

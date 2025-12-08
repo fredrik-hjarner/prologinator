@@ -394,7 +394,7 @@ action_validation(Term) :-
 
 action_validation_helper(Term) :-
     ( ground(Term) ->
-        ( Term = wait_frames(N) ->
+        ( Term = wait(N) ->
             % Structure matches, validate content
             ( ground(N) ->
                 integer(N)
@@ -487,7 +487,7 @@ multiple objects and commands", (
         objects([
             object(
                 id(0), type(tower), attrs([pos(10, 19)]),
-                actions([wait_frames(3)]), collisions([])
+                actions([wait(3)]), collisions([])
             ),
             object(
                 id(1), type(enemy), attrs([pos(5, 5)]),
@@ -521,7 +521,7 @@ objects, commands, and rev_hints", (
                 id(0), type(tower), attrs([pos(5, 19)]),
                 actions([
                     loop([
-                        wait_frames(3),
+                        wait(3),
                         spawn(proj, pos(5, 19), [
                             move_to(5, 0, 20)
                         ])
@@ -532,7 +532,7 @@ objects, commands, and rev_hints", (
                 id(1), type(enemy), attrs([pos(10, 5)]),
                 actions([
                     move_to(19, 5, 15),
-                    wait_frames(1)
+                    wait(1)
                 ]), collisions([])
             ),
             object(
@@ -544,7 +544,7 @@ objects, commands, and rev_hints", (
                 id(3), type(static), attrs([]),
                 actions([
                     parallel([
-                        wait_frames(5),
+                        wait(5),
                         spawn(enemy, pos(0, 10), [])
                     ])
                 ]), collisions([])
@@ -683,9 +683,9 @@ test("pos_validation: non-integer coords fail via action", (
     expect_exception(action_validation(Action2))
 )).
 
-test("action_validation: invalid wait_frames fails", (
+test("action_validation: invalid wait fails", (
     expect_exception(
-        action_validation(wait_frames(not_int))
+        action_validation(wait(not_int))
     )
 )).
 

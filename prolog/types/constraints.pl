@@ -174,7 +174,7 @@ attr_constraint(A) :- attribute_constraint(A).
 action_constraint(A) :- action_constraint(A, 10).
 
 % Internal: tracks depth
-action_constraint(wait_frames(N), _) :- 
+action_constraint(wait(N), _) :- 
     N #>= 0.
 
 action_constraint(move_to(X, Y, Frames), _) :-

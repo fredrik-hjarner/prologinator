@@ -31,7 +31,7 @@
 % yield then we execute the next action etc until EITHER
 % the game object cease to exist or we come to a yielding
 % action.
-yields(wait_frames(N)) :- N #> 0.
+yields(wait(N)) :- N #> 0.
 yields(move_to(_, _, Frames)) :- Frames #> 0.
 yields(parallel_running(_)).
 
