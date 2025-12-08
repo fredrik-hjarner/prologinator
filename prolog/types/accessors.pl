@@ -18,6 +18,8 @@
 
 :- module(accessors, [
     % Context accessors
+    ctx_frame/2,
+    ctx_frame_ctx/3,
     ctx_objs/2,
     ctx_objs_ctx/3,
     ctx_cmds/2,
@@ -28,6 +30,12 @@
     ctx_objs_cmds_revhints_ctx/5,
     ctx_status/2,
     ctx_status_ctx/3,
+    ctx_status_cmds/3,
+    ctx_status_cmds_ctx/4,
+    ctx_nextid/2,
+    ctx_nextid_ctx/3,
+    ctx_objs_nextid_cmds/4,
+    ctx_objs_nextid_cmds_ctx/5,
     % State accessors
     state_status_state/3,
     % Object accessors
@@ -45,6 +53,20 @@
 % ==========================================================
 % Context Accessors
 % ==========================================================
+
+% Get frame from context
+ctx_frame(
+    ctx(state(frame(F), _, _, _, _, _)), F
+).
+
+% Set frame in context
+ctx_frame_ctx(
+    ctx(state(_, Objects, Status, NextID, Commands,
+              RevHints)),
+    NewFrame,
+    ctx(state(frame(NewFrame), Objects, Status, NextID,
+              Commands, RevHints))
+).
 
 % Get objects from context
 ctx_objs(
@@ -121,6 +143,59 @@ ctx_status_ctx(
     NewStatus,
     ctx(state(F, Objects, status(NewStatus), NextID,
               Commands, RevHints))
+).
+
+% Get status and commands from context
+% (bulk getter - order matches state structure)
+ctx_status_cmds(
+    ctx(state(_, _, status(Status), _,
+              commands(Commands), _)),
+    Status,
+    Commands
+).
+
+% Set status and commands in context
+% (bulk setter - order matches state structure)
+ctx_status_cmds_ctx(
+    ctx(state(F, Objects, _, NextID, _, RevHints)),
+    NewStatus,
+    NewCommands,
+    ctx(state(F, Objects, status(NewStatus), NextID,
+              commands(NewCommands), RevHints))
+).
+
+% Get next_id from context
+ctx_nextid(
+    ctx(state(_, _, _, next_id(NID), _, _)), NID
+).
+
+% Set next_id in context
+ctx_nextid_ctx(
+    ctx(state(F, Objs, Status, _, Cmds, Revs)),
+    NewNID,
+    ctx(state(F, Objs, Status, next_id(NewNID), Cmds, Revs))
+).
+
+% Get objects, next_id, and commands from context
+% (bulk getter - order matches state structure)
+ctx_objs_nextid_cmds(
+    ctx(state(_, objects(Objects), _, next_id(NextID),
+              commands(Commands), _)),
+    Objects,
+    NextID,
+    Commands
+).
+
+% Set objects, next_id, and commands in context
+% (bulk setter - order matches state structure)
+ctx_objs_nextid_cmds_ctx(
+    ctx(state(F, _, Status, _, _, Revs)),
+    NewObjects,
+    NewNextID,
+    NewCommands,
+    ctx(state(F, objects(NewObjects), Status,
+              next_id(NewNextID),
+              commands(NewCommands), Revs))
 ).
 
 % ==========================================================

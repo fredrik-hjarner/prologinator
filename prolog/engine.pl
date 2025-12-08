@@ -11,28 +11,7 @@
 ]).
 :- use_module('./third_party/exclude', [exclude/3]).
 :- use_module('./execute_action', [execute_action/7]).
-:- use_module('./types/constraints', [
-    state_constraint/1,
-    object_constraint/1,
-    game_status_constraint/1,
-    command_constraint/1,
-    rev_hint_constraint/1,
-    action_constraint/1,
-    pos_constraint/1,
-    attr_constraint/1,
-    collision_constraint/1
-]).
-:- use_module('./types/accessors', [
-    ctx_objs/2,
-    ctx_objs_ctx/3,
-    ctx_cmds/2,
-    ctx_cmds_ctx/3,
-    ctx_revhints/2,
-    ctx_revhints_ctx/3,
-    ctx_objs_cmds_revhints/4,
-    ctx_objs_cmds_revhints_ctx/5,
-    obj_acns/2
-]).
+:- use_module('./types/accessors'). % import all. so many...
 :- use_module('./types/validation', [
     context_validation/1,
     state_validation/1,
@@ -133,80 +112,87 @@ tick_object(
 % Main Tick Function
 % ==========================================================
 tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
-    % game_state_constraint(CtxIn),
     context_validation(CtxIn),
-    CtxIn = ctx(state(
-        frame(F),
-        _,
-        status(Status),
-        next_id(NextID),
-        _,
-        _
-    )),
     
-    % 1. Tick all objects (updates objects, commands, and
-    % rev_hints in context)
-    tick_all_objects(
-        ctx_in(CtxIn),
-        ctx_out(CtxAfterTick)
+    % The Pipeline:
+    % 1. Tick Physics (Moves objects, generates raw
+    % commands/hints)
+    tick_all_objects(ctx_in(CtxIn), ctx_out(CtxPhys)),
+    context_validation(CtxPhys),
+    
+    % 2. Resolve Collisions (Updates objects, adds
+    % collision hints)
+    resolve_collisions(CtxPhys, CtxColl),
+    context_validation(CtxColl),
+    
+    % 3. Resolve Spawns (Consumes spawn commands, updates
+    % objects & ID)
+    resolve_spawns(CtxColl, CtxSpawn),
+    context_validation(CtxSpawn),
+    
+    % 4. Resolve Status (Consumes state commands, updates
+    % status)
+    resolve_status(CtxSpawn, CtxFinal),
+    context_validation(CtxFinal),
+    
+    % 5. Increment Frame
+    increment_frame(CtxFinal, CtxOut).
+
+% ==========================================================
+% Pipeline Stages
+% ==========================================================
+
+resolve_collisions(CtxIn, CtxOut) :-
+    ctx_objs_cmds_revhints(CtxIn, Objs, Cmds, Revs1),
+    detect_collisions(Objs, NewObjs, Revs2),
+    append(Revs1, Revs2, AllRevs),
+    ctx_objs_cmds_revhints_ctx(
+        CtxIn,
+        NewObjs, Cmds, AllRevs,
+        CtxOut
+    ).
+
+resolve_spawns(CtxIn, CtxOut) :-
+    ctx_objs_nextid_cmds(
+        CtxIn, CurrentObjs, NextID, AllCmds
     ),
     
-    % Extract objects and rev_hints from returned context
-    ctx_objs(CtxAfterTick, TempObjs),
-    ctx_revhints(CtxAfterTick, RevHints1),
-    
-    % 2. Detect collisions (collisions only produce
-    % rev_hints, no commands)
-    detect_collisions(TempObjs, NewObjs, RevHints2),
-    
-    % 3. Combine rev_hints
-    append(RevHints1, RevHints2, AllRevHints),
-    
-    % Get commands from context
-    ctx_cmds(CtxAfterTick, AllCommands),
-    
-    % 4. Partition commands
     partition(
-        is_spawn_request,
-        AllCommands,
-        SpawnReqs,
-        OtherCommands
-    ),
-    partition(
-        is_state_change,
-        OtherCommands,
-        StateChanges,
-        _
+        is_spawn_request, AllCmds, SpawnReqs, OtherCmds
     ),
     
-    % 5. Process spawns with ID assignment
     process_spawn_requests(
-        SpawnReqs,
-        NextID,
-        SpawnedObjs,
-        NewNextID
+        SpawnReqs, NextID, NewObjs, NewNextID
+    ),
+    append(CurrentObjs, NewObjs, FinalObjs),
+    
+    % Update context: New Objects, New ID, Remaining
+    % Commands
+    ctx_objs_nextid_cmds_ctx(
+        CtxIn,
+        FinalObjs, NewNextID, OtherCmds,
+        CtxOut
+    ).
+
+resolve_status(CtxIn, CtxOut) :-
+    ctx_status_cmds(CtxIn, Status, Cmds),
+    
+    partition(
+        is_state_change, Cmds, StatusCmds, RemainingCmds
     ),
     
-    % 6. Add spawned objects
-    append(NewObjs, SpawnedObjs, FinalObjs),
+    apply_state_changes(StatusCmds, Status, NewStatus),
     
-    % 7. Apply state changes
-    apply_state_changes(StateChanges, Status, NewStatus),
-    
+    ctx_status_cmds_ctx(
+        CtxIn,
+        NewStatus, RemainingCmds,
+        CtxOut
+    ).
+
+increment_frame(CtxIn, CtxOut) :-
+    ctx_frame(CtxIn, F),
     F1 #= F + 1,
-    
-    % 8. Build final context with updated state
-    CtxOut = ctx(state(
-        frame(F1),
-        objects(FinalObjs),
-        status(NewStatus),
-        next_id(NewNextID),
-        commands([]),
-        rev_hints(AllRevHints)
-    )).
-    % NOTE: placing this at the top caused cpu to go bananas
-    %       so there are some performance problems with it..
-    % game_state_constraint(StateOut).
+    ctx_frame_ctx(CtxIn, F1, CtxOut).
 
 % ==========================================================
 % Tick Helpers
