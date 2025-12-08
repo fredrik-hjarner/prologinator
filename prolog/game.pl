@@ -30,48 +30,74 @@ main :-
     InitialContext = ctx(state(
         frame(0),
         objects([
-            % Towers at bottom row (y=19)
+            % Tower 1: Burst fire (3 shots in quick
+            %   succession)
             object(
                 id(0), type(tower), attrs([x(5), y(19)]),
                 actions([
                     loop([
-                        wait(3),
-                        spawn(proj, 5, 19, [
-                            move_to(5, 0, 20)
+                        wait(5),
+                        repeat(3, [
+                            spawn(proj, 5, 19, [
+                                move_delta(20, 0, -1)
+                            ]),
+                            wait(1)
                         ])
                     ])
                 ]), collisions([])
             ),
+            % Tower 2: Diagonal shots
             object(
                 id(1), type(tower), attrs([x(10), y(19)]),
                 actions([
                     loop([
-                        wait(3),
+                        wait(4),
                         spawn(proj, 10, 19, [
-                            move_to(10, 0, 20)
+                            move_delta(15, 1, -1)
+                        ]),
+                        wait(2),
+                        spawn(proj, 10, 19, [
+                            move_delta(15, -1, -1)
                         ])
                     ])
                 ]), collisions([])
             ),
+            % Tower 3: Rapid fire burst
             object(
                 id(2), type(tower), attrs([x(15), y(19)]),
                 actions([
                     loop([
-                        wait(3),
-                        spawn(proj, 15, 19, [
-                            move_to(15, 0, 20)
+                        wait(6),
+                        repeat(5, [
+                            spawn(proj, 15, 19, [
+                                move_delta(25, 0, -1)
+                            ]),
+                            wait(1)
                         ])
                     ])
                 ]), collisions([])
             ),
-            % Enemy spawner
+            % Enemy spawner: Creates enemies with varied
+            %   patterns
             object(
                 id(3), type(static), attrs([]),
                 actions([
                     loop([
-                        wait(5),
+                        wait(8),
                         spawn(enemy, 0, 10, [
-                            move_to(19, 10, 30)
+                            move_delta(30, 1, 0)
+                        ]),
+                        wait(3),
+                        spawn(enemy, 0, 5, [
+                            % Zigzag pattern
+                            repeat(3, [
+                                move_delta(5, 2, 0),
+                                move_delta(5, 2, 1)
+                            ])
+                        ]),
+                        wait(2),
+                        spawn(enemy, 0, 15, [
+                            move_delta(25, 1, -1)
                         ])
                     ])
                 ]), collisions([])
