@@ -1,4 +1,4 @@
-:- module(engine, [tick/2, tick_object/5, yields/1]).
+:- module(engine, [tick/2, tick_object/6, yields/1]).
 
 :- use_module(library(clpz)).
 :- use_module(library(lists), [
@@ -10,7 +10,7 @@
     length/2
 ]).
 :- use_module('./third_party/exclude', [exclude/3]).
-:- use_module('./execute_action', [execute_action/6]).
+:- use_module('./execute_action', [execute_action/7]).
 :- use_module('./types/constraints', [
     state_constraint/1,
     object_constraint/1,
@@ -74,7 +74,8 @@ yields(parallel_running(_)).
 % -AllRevHints).
 
 tick_object(
-    ctx_old(_),
+    ctx_old(Ctx),
+    ctx_new(Ctx),
     obj_old(Obj),
     obj_new([Obj]),
     cmds_new([]),
@@ -87,6 +88,7 @@ tick_object(
 % It's empty list when the object have been removed.
 tick_object(
     ctx_old(CtxOld),
+    ctx_new(CtxNew),
     obj_old(ObjOld),
     obj_new(ObjNew),
     cmds_new(CmdsNew),
@@ -96,6 +98,7 @@ tick_object(
     obj_acns(ObjOld, [Act|_Rest]),
     execute_action(
         ctx_old(CtxOld),
+        ctx_new(CtxTemp),
         action(Act),
         obj_old(ObjOld),
         obj_new(ObjTempList),
@@ -105,15 +108,18 @@ tick_object(
     ( ObjTempList = [] ->
         ObjNew = [],
         CmdsNew = C1,
-        RevHintsNew = R1
+        RevHintsNew = R1,
+        CtxNew = CtxTemp
     ; yields(Act) ->
         ObjNew = ObjTempList,
         CmdsNew = C1,
-        RevHintsNew = R1
+        RevHintsNew = R1,
+        CtxNew = CtxTemp
     ;
         ObjTempList = [ObjTemp],
         tick_object(
-            ctx_old(CtxOld),
+            ctx_old(CtxTemp),
+            ctx_new(CtxNew),
             obj_old(ObjTemp),
             obj_new(ObjNew),
             cmds_new(C2),
@@ -207,9 +213,12 @@ tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
 % ==========================================================
 
 % Helper predicate for maplist - wraps tick_object
-tick_object_with_ctx(Ctx, ObjOld, ObjNew, Cmds, RevHints) :-
+tick_object_with_ctx(
+    CtxOld, CtxNew, ObjOld, ObjNew, Cmds, RevHints
+) :-
     tick_object(
-        ctx_old(Ctx),
+        ctx_old(CtxOld),
+        ctx_new(CtxNew),
         obj_old(ObjOld),
         obj_new(ObjNew),
         cmds_new(Cmds),
@@ -222,7 +231,7 @@ tick_all_objects(ctx_in(CtxIn), ctx_out(CtxOut)) :-
         CtxIn, Objects, OldCommands, OldRevHints
     ),
     maplist(
-        tick_object_with_ctx(CtxIn),
+        tick_object_with_ctx(CtxIn, _CtxTemp),
         Objects, % "input"
         TempObjectLists, % collected output (list of lists)
         CommandLists, % collected "output"

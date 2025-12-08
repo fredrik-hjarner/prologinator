@@ -1,5 +1,5 @@
 :- module(execute_action_test, []).
-:- use_module('./execute_action', [execute_action/6]).
+:- use_module('./execute_action', [execute_action/7]).
 
 % ==========================================================
 % Tests
@@ -39,6 +39,7 @@ count from remaining frames", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -89,6 +90,7 @@ wait_frames values from parallel_running state", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -123,6 +125,7 @@ remaining", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -162,6 +165,7 @@ remaining", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -200,6 +204,7 @@ test("move_to: single frame, arrives at target", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -237,6 +242,7 @@ continues with remaining frames", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -273,6 +279,7 @@ test("move_to: negative target coordinates", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -322,6 +329,7 @@ coordinates from final position", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -373,6 +381,7 @@ parameters from spawn_request command", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -421,6 +430,7 @@ change from state_change command", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -468,6 +478,7 @@ final action list", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -506,6 +517,7 @@ from despawned rev_hint", (
     )),
     execute_action(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),

@@ -2,7 +2,7 @@
 % Handles execution of all game actions
 
 :- module(execute_action, [
-    execute_action/6
+    execute_action/7
 ]).
 
 :- use_module(library(clpz)).
@@ -49,7 +49,8 @@
 
 % Wrapper: validates action then delegates to implementation
 execute_action(
-    ctx_old(Ctx),
+    ctx_old(CtxOld),
+    ctx_new(CtxNew),
     action(Action),
     obj_old(ObjIn),
     obj_new(ObjOut),
@@ -59,7 +60,8 @@ execute_action(
     action_validation(Action),
     % validate(Action, action_schema),
     execute_action_impl(
-        ctx_old(Ctx),
+        ctx_old(CtxOld),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
         obj_new(ObjOut),
@@ -76,7 +78,8 @@ execute_action(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_old(_Ctx),
+    ctx_old(Ctx),
+    ctx_new(Ctx),
     action(wait_frames(N)),
     obj_old(ObjIn),
     obj_new([ObjOut]),
@@ -98,7 +101,8 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_old(_Ctx),
+    ctx_old(Ctx),
+    ctx_new(Ctx),
     action(move_to(TargetX, TargetY, Frames)),
     obj_old(object(
         id(ID),
@@ -145,7 +149,8 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_old(_Ctx),
+    ctx_old(Ctx),
+    ctx_new(Ctx),
     action(despawn),
     obj_old(object(
         id(ID),
@@ -164,7 +169,8 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_old(_Ctx),
+    ctx_old(Ctx),
+    ctx_new(Ctx),
     action(spawn(Type, Pos, Actions)),
     obj_old(ObjIn),
     obj_new([ObjOut]),
@@ -179,7 +185,8 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_old(_Ctx),
+    ctx_old(Ctx),
+    ctx_new(Ctx),
     action(loop(Actions)),
     obj_old(ObjIn),
     obj_new([ObjOut]),
@@ -196,7 +203,8 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_old(_Ctx),
+    ctx_old(Ctx),
+    ctx_new(Ctx),
     action(trigger_state_change(Change)),
     obj_old(ObjIn),
     obj_new([ObjOut]),
@@ -211,7 +219,8 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_old(Ctx),
+    ctx_old(CtxOld),
+    ctx_new(CtxNew),
     action(parallel(ChildActions)),
     obj_old(ObjIn),
     obj_new(MaybeObjectOut),
@@ -219,11 +228,11 @@ execute_action_impl(
     revhints_new(AllRevHints)
 ) :-
     ObjIn = object(
-        id(ID), type(Type), _,
-        actions([_|Rest]), collisions(Colls)
+        _, _, _, actions([_|Rest]), _
     ),
     tick_parallel_children(
-        ctx_old(Ctx),
+        ctx_old(CtxOld),
+        ctx_new(CtxNew),
         ChildActions, % list of actions that run in parallel
         ObjIn,
         ObjFinal,
@@ -267,7 +276,8 @@ execute_action_impl(
     ).
 
 execute_action_impl(
-    ctx_old(Ctx),
+    ctx_old(CtxOld),
+    ctx_new(CtxNew),
     action(parallel_running(Children)),
     obj_old(Obj),
     obj_new(NewObj),
@@ -275,7 +285,8 @@ execute_action_impl(
     revhints_new(RevHints)
 ) :-
     execute_action(
-        ctx_old(Ctx),
+        ctx_old(CtxOld),
+        ctx_new(CtxNew),
         action(parallel(Children)),
         obj_old(Obj),
         obj_new(NewObj),
@@ -296,11 +307,14 @@ execute_action_impl(
 %     ?AllRevHints).
 
 tick_parallel_children(
-    ctx_old(_Ctx), [], ObjIn, ObjIn, [], [], []
+    ctx_old(Ctx),
+    ctx_new(Ctx),
+    [], ObjIn, ObjIn, [], [], []
 ).
 
 tick_parallel_children(
-    ctx_old(Ctx),
+    ctx_old(CtxOld),
+    ctx_new(CtxNew),
     [Child|RestChildren],
     ObjIn,
     ObjFinal,
@@ -321,7 +335,8 @@ tick_parallel_children(
 
     % 2. Execute the action
     execute_action(
-        ctx_old(Ctx),
+        ctx_old(CtxOld),
+        ctx_new(CtxTemp),
         action(Child),
         obj_old(ChildObjIn),
         obj_new(ResultList),
@@ -349,7 +364,8 @@ tick_parallel_children(
 
     % 5. Recurse
     tick_parallel_children(
-        ctx_old(Ctx),
+        ctx_old(CtxTemp),
+        ctx_new(CtxNew),
         RestChildren,
         NextObjIn,
         ObjFinal,

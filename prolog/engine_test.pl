@@ -54,6 +54,7 @@ object", (
     )),
     tick_object(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         obj_old(ObjIn),
         obj_new(ObjOut),
         cmds_new(Commands),
@@ -89,6 +90,7 @@ after one execution", (
     )),
     tick_object(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         obj_old(ObjIn),
         obj_new(ObjOut),
         cmds_new(Commands),
@@ -124,6 +126,7 @@ continues until empty", (
     )),
     tick_object(
         ctx_old(Ctx),
+        ctx_new(_CtxNew),
         obj_old(ObjIn),
         obj_new(ObjOut),
         cmds_new(Commands),
@@ -397,3 +400,5 @@ run_ticks(ctx_in(CtxIn), N, ctx_out(CtxOut)) :-
     tick(ctx_in(CtxIn), ctx_out(CtxNext)),
     N1 is N - 1,
     run_ticks(ctx_in(CtxNext), N1, ctx_out(CtxOut)).
+
+:- discontiguous(test/2).
