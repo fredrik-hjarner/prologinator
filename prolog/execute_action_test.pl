@@ -1,6 +1,6 @@
 :- module(execute_action_test, []).
-:- use_module('./execute_action', [execute_action/7]).
-
+:- use_module('./execute_action', [execute_action/5]).
+:- use_module('./types/accessors').
 % ==========================================================
 % Tests
 % ==========================================================
@@ -31,21 +31,21 @@ count from remaining frames", (
     RevHints = [],
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, []),
+    ctx_revhints(CtxNew, []),
     N = 3  % Verify that N was correctly inferred
 )).
 
@@ -82,21 +82,21 @@ wait_frames values from parallel_running state", (
     RevHints = [],
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, Commands),
+    ctx_revhints(CtxNew, RevHints),
     N1 = 3,  % Verify that N1 was correctly inferred
     N2 = 4   % Verify that N2 was correctly inferred
 )).
@@ -117,21 +117,21 @@ remaining", (
     ),
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, Commands),
+    ctx_revhints(CtxNew, RevHints),
     ObjOut = [object(
         id(1),
         type(static),
@@ -157,21 +157,21 @@ remaining", (
     ),
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, Commands),
+    ctx_revhints(CtxNew, RevHints),
     ObjOut = [object(
         id(1),
         type(static),
@@ -196,21 +196,21 @@ test("move_to: single frame, arrives at target", (
     ),
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, Commands),
+    ctx_revhints(CtxNew, RevHints),
     ObjOut = [object(
         id(1),
         type(static),
@@ -234,21 +234,21 @@ continues with remaining frames", (
     ),
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, Commands),
+    ctx_revhints(CtxNew, RevHints),
     ObjOut = [object(
         id(1),
         type(static),
@@ -271,21 +271,21 @@ test("move_to: negative target coordinates", (
     ),
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, Commands),
+    ctx_revhints(CtxNew, RevHints),
     ObjOut = [object(
         id(1),
         type(static),
@@ -321,21 +321,21 @@ coordinates from final position", (
     RevHints = [],
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, Commands),
+    ctx_revhints(CtxNew, RevHints),
     % Verify that TargetX was correctly inferred
     TargetX = 5,
     % Verify that TargetY was correctly inferred
@@ -373,21 +373,21 @@ parameters from spawn_request command", (
     RevHints = [],
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, Commands),
+    ctx_revhints(CtxNew, RevHints),
     % Verify that Type was correctly inferred
     Type = enemy,
     % Verify that Pos was correctly inferred
@@ -422,21 +422,21 @@ change from state_change command", (
     RevHints = [],
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, Commands),
+    ctx_revhints(CtxNew, RevHints),
     % Verify that Change was correctly inferred
     Change = game_over(won)
 )).
@@ -470,21 +470,21 @@ final action list", (
     RevHints = [],
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, Commands),
+    ctx_revhints(CtxNew, RevHints),
     % Verify that Actions were correctly inferred
     Actions = [move_to(5, 5, 1)]
 )).
@@ -509,21 +509,21 @@ from despawned rev_hint", (
     RevHints = [despawned(1, [pos(10, 20)])],
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     execute_action(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, Commands),
+    ctx_revhints(CtxNew, RevHints),
     ID = 1,  % Verify that ID was correctly inferred
     % Verify that Attrs were correctly inferred
     Attrs = [pos(10, 20)]

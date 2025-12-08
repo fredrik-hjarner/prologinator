@@ -1,9 +1,7 @@
 % Action Execution Module
 % Handles execution of all game actions
 
-:- module(execute_action, [
-    execute_action/7
-]).
+:- module(execute_action, [execute_action/5]).
 
 :- use_module(library(clpz)).
 :- use_module(library(lists), [
@@ -14,12 +12,7 @@
     findall/3
 ]).
 :- use_module('./types/validation', [action_validation/1]).
-:- use_module('./types/accessors', [
-    obj_acns/2,
-    obj_acns_obj/3,
-    obj_attrs/2,
-    obj_attrs_acns_obj/4
-]).
+:- use_module('./types/accessors').
 % :- use_module('xod/xod', [validate/2]).
 % :- use_module('./types/validation2').
 
@@ -48,14 +41,13 @@
 %     +Commands, +RevHints).
 
 % Wrapper: validates action then delegates to implementation
+% Now threads Context directly to accumulate side effects.
 execute_action(
     ctx_old(CtxOld),
     ctx_new(CtxNew),
     action(Action),
     obj_old(ObjIn),
-    obj_new(ObjOut),
-    cmds_new(Commands),
-    revhints_new(RevHints)
+    obj_new(ObjOut)
 ) :-
     action_validation(Action),
     % validate(Action, action_schema),
@@ -64,9 +56,7 @@ execute_action(
         ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ).
 
 % ==========================================================
@@ -79,12 +69,10 @@ execute_action(
 
 execute_action_impl(
     ctx_old(Ctx),
-    ctx_new(Ctx),
+    ctx_new(Ctx), % Context unchanged
     action(wait_frames(N)),
     obj_old(ObjIn),
-    obj_new([ObjOut]),
-    cmds_new([]),
-    revhints_new([])
+    obj_new([ObjOut])
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     ( N #> 1 ->
@@ -102,7 +90,7 @@ execute_action_impl(
 
 execute_action_impl(
     ctx_old(Ctx),
-    ctx_new(Ctx),
+    ctx_new(Ctx), % Context unchanged
     action(move_to(TargetX, TargetY, Frames)),
     obj_old(object(
         id(ID),
@@ -117,9 +105,7 @@ execute_action_impl(
         attrs(NewAttrs),
         actions(NewActions),
         Colls
-    )]),
-    cmds_new([]),
-    revhints_new([])
+    )])
 ) :-
     select(pos(CurrentX, CurrentY), Attrs, RestAttrs),
     % Compute step using integer division
@@ -149,36 +135,35 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx),
+    ctx_old(CtxIn),
+    ctx_new(CtxOut),
     action(despawn),
-    obj_old(object(
-        id(ID),
-        type(_Type),
-        attrs(Attrs),
-        actions(_),
-        collisions(_Colls)
-    )),
-    obj_new([]),
-    cmds_new([]),
-    revhints_new([despawned(ID, Attrs)])
-) :- !.
+    obj_old(object(id(ID), _, attrs(Attrs), _, _)),
+    obj_new([])
+) :-
+    ctx_revhints(CtxIn, Revs),
+    append(Revs, [despawned(ID, Attrs)], NewRevs),
+    ctx_revhints_ctx(CtxIn, NewRevs, CtxOut).
 
 % ----------------------------------------------------------
 % Compound Actions: spawn (from Addendum 3 - FINAL version)
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx),
+    ctx_old(CtxIn),
+    ctx_new(CtxOut),
     action(spawn(Type, Pos, Actions)),
     obj_old(ObjIn),
-    obj_new([ObjOut]),
-    cmds_new([spawn_request(Type, Pos, Actions)]),
-    revhints_new([])
+    obj_new([ObjOut])
 ) :-
     obj_acns(ObjIn, [_|Rest]),
-    obj_acns_obj(ObjIn, Rest, ObjOut).
+    obj_acns_obj(ObjIn, Rest, ObjOut),
+    % Accumulate command
+    ctx_cmds(CtxIn, Cmds),
+    append(
+        Cmds, [spawn_request(Type, Pos, Actions)], NewCmds
+    ),
+    ctx_cmds_ctx(CtxIn, NewCmds, CtxOut).
 
 % ----------------------------------------------------------
 % Compound Actions: loop
@@ -189,9 +174,7 @@ execute_action_impl(
     ctx_new(Ctx),
     action(loop(Actions)),
     obj_old(ObjIn),
-    obj_new([ObjOut]),
-    cmds_new([]),
-    revhints_new([])
+    obj_new([ObjOut])
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     append(Actions, [loop(Actions)], Expanded),
@@ -203,16 +186,18 @@ execute_action_impl(
 % ----------------------------------------------------------
 
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx),
+    ctx_old(CtxIn),
+    ctx_new(CtxOut),
     action(trigger_state_change(Change)),
     obj_old(ObjIn),
-    obj_new([ObjOut]),
-    cmds_new([state_change(Change)]),
-    revhints_new([])
+    obj_new([ObjOut])
 ) :-
     obj_acns(ObjIn, [_|Rest]),
-    obj_acns_obj(ObjIn, Rest, ObjOut).
+    obj_acns_obj(ObjIn, Rest, ObjOut),
+    % Accumulate command
+    ctx_cmds(CtxIn, Cmds),
+    append(Cmds, [state_change(Change)], NewCmds),
+    ctx_cmds_ctx(CtxIn, NewCmds, CtxOut).
 
 % ----------------------------------------------------------
 % Compound Actions: parallel
@@ -223,22 +208,16 @@ execute_action_impl(
     ctx_new(CtxNew),
     action(parallel(ChildActions)),
     obj_old(ObjIn),
-    obj_new(MaybeObjectOut),
-    cmds_new(AllCommands),
-    revhints_new(AllRevHints)
+    obj_new(MaybeObjectOut)
 ) :-
-    ObjIn = object(
-        _, _, _, actions([_|Rest]), _
-    ),
+    ObjIn = object(_, _, _, actions([_|Rest]), _),
     tick_parallel_children(
         ctx_old(CtxOld),
         ctx_new(CtxNew),
         ChildActions, % list of actions that run in parallel
         ObjIn,
         ObjFinal,
-        ChildResults,
-        AllCommands,
-        AllRevHints
+        ChildResults
     ),
     obj_attrs(ObjFinal, AttrsOut),
     ( member([], ChildResults) ->
@@ -280,18 +259,14 @@ execute_action_impl(
     ctx_new(CtxNew),
     action(parallel_running(Children)),
     obj_old(Obj),
-    obj_new(NewObj),
-    cmds_new(Commands),
-    revhints_new(RevHints)
+    obj_new(NewObj)
 ) :-
     execute_action(
         ctx_old(CtxOld),
         ctx_new(CtxNew),
         action(parallel(Children)),
         obj_old(Obj),
-        obj_new(NewObj),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(NewObj)
     ).
 
 % ==========================================================
@@ -309,7 +284,7 @@ execute_action_impl(
 tick_parallel_children(
     ctx_old(Ctx),
     ctx_new(Ctx),
-    [], ObjIn, ObjIn, [], [], []
+    [], ObjIn, ObjIn, []
 ).
 
 tick_parallel_children(
@@ -318,13 +293,11 @@ tick_parallel_children(
     [Child|RestChildren],
     ObjIn,
     ObjFinal,
-    [ChildResult|RestResults],
-    AllCommands,
-    AllRevHints
+    [ChildResult|RestResults]
 ) :-
     ObjIn = object(
-        id(ID), type(Type), attrs(AttrsIn),
-        actions(_), collisions(Colls)
+        id(ID), type(Type), attrs(AttrsIn), actions(_),
+        collisions(Colls)
     ),
 
     % 1. Construct input object for this child action
@@ -339,9 +312,7 @@ tick_parallel_children(
         ctx_new(CtxTemp),
         action(Child),
         obj_old(ChildObjIn),
-        obj_new(ResultList),
-        cmds_new(C1),
-        revhints_new(R1)
+        obj_new(ResultList)
     ),
 
     % 3. Determine attributes for the NEXT child.
@@ -358,8 +329,8 @@ tick_parallel_children(
 
     % 4. Build object for next child
     NextObjIn = object(
-        id(ID), type(Type), attrs(AttrsNext),
-        actions(_), collisions(Colls)
+        id(ID), type(Type), attrs(AttrsNext), actions(_),
+        collisions(Colls)
     ),
 
     % 5. Recurse
@@ -369,12 +340,8 @@ tick_parallel_children(
         RestChildren,
         NextObjIn,
         ObjFinal,
-        RestResults,
-        C2,
-        R2
+        RestResults
     ),
     
     % 6. Build output
-    ChildResult = ResultList,
-    append(C1, C2, AllCommands),
-    append(R1, R2, AllRevHints).
+    ChildResult = ResultList.

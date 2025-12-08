@@ -1,6 +1,7 @@
 :- module(engine_test, []).
 % use_module/1 imports ALL the exported stuff.
 :- use_module('./engine').
+:- use_module('./types/accessors').
 :- use_module(library(lists), [member/2, length/2]).
 
 % ==========================================================
@@ -46,29 +47,27 @@ object", (
     ),
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     tick_object(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, []),
+    ctx_revhints(CtxNew, []),
     ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
         actions([]),
         collisions([])
-    )],
-    Commands = [],
-    RevHints = []
+    )]
 )).
 
 test("tick_object: yielding action (wait_frames) stops \
@@ -82,29 +81,27 @@ after one execution", (
     ),
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     tick_object(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, []),
+    ctx_revhints(CtxNew, []),
     ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
         actions([wait_frames(4)]),
         collisions([])
-    )],
-    Commands = [],
-    RevHints = []
+    )]
 )).
 
 test("tick_object: wait_frames(0) is removed and execution \
@@ -118,29 +115,27 @@ continues until empty", (
     ),
     Ctx = ctx(state(
         frame(0),
-        [],
+        objects([]),
         status(playing),
         next_id(1),
-        [],
-        []
+        commands([]),
+        rev_hints([])
     )),
     tick_object(
         ctx_old(Ctx),
-        ctx_new(_CtxNew),
+        ctx_new(CtxNew),
         obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        obj_new(ObjOut)
     ),
+    ctx_cmds(CtxNew, []),
+    ctx_revhints(CtxNew, []),
     ObjOut = [object(
         id(1),
         type(static),
         attrs([pos(0, 0)]),
         actions([]),
         collisions([])
-    )],
-    Commands = [],
-    RevHints = []
+    )]
 )).
 
 % ==========================================================
