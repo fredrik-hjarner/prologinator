@@ -43,10 +43,12 @@
     obj_attrs/2,
     obj_acns/2,
     obj_type/2,
+    obj_collisions/2,
     obj_id_attrs/3,
     obj_id_type/3,
     obj_type_attrs/3,
     obj_acns_obj/3,
+    obj_attrs_obj/3,
     obj_attrs_acns_obj/4
 ]).
 
@@ -226,6 +228,11 @@ obj_acns(object(_, _, _, actions(Actions), _), Actions).
 % Extract type from object
 obj_type(object(_, type(Type), _, _, _), Type).
 
+% Extract collisions from object
+obj_collisions(
+    object(_, _, _, _, collisions(Colls)), Colls
+).
+
 % Extract ID and attrs from object
 obj_id_attrs(
     object(id(ID), _, attrs(Attrs), _, _), ID, Attrs
@@ -246,6 +253,15 @@ obj_acns_obj(
     NewActions,
     object(id(ID), type(Type), attrs(Attrs),
            actions(NewActions), collisions(Colls))
+).
+
+% Set attrs in object
+obj_attrs_obj(
+    object(id(ID), type(Type), _, actions(Actions),
+           collisions(Colls)),
+    NewAttrs,
+    object(id(ID), type(Type), attrs(NewAttrs),
+           actions(Actions), collisions(Colls))
 ).
 
 % Set attrs and actions in object

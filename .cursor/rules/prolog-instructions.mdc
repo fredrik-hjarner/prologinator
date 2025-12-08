@@ -1,0 +1,29 @@
+---
+description: Some rules for Prolog files
+globs: "*.pl"
+alwaysApply: false
+---
+
+# Commands
+
+- `just lint-len` to lint the length of the lines
+- `just lint-all` to lint all the files
+- `just test-all` to test all the files
+- `just test-all-verbose` to test all the files with verbose output
+- `just lint` to lint a single file
+- `just test` to test a single file
+- `just test-verbose` to test a single file with verbose output
+
+# Banned Tokens in Prolog Files
+
+Instead of the banned tokens, use CLP(Z) constraints:
+
+- Instead of `is`: Use CLP(Z) constraints like `#=` for equality
+- Instead of `<`: Use `#<` from CLP(Z)
+- Instead of `>`: Use `#>` from CLP(Z)
+- Instead of `=<`: Use `#=<` from CLP(Z)
+- Instead of `>=`: Use `#>=` from CLP(Z)
+
+# Max 60 characters per line
+
+Yes.

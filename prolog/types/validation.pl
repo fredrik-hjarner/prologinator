@@ -250,10 +250,10 @@ command_validation(Term) :-
 
 spawn_request_validation(Term) :-
     ( ground(Term) ->
-        ( Term = spawn_request(Type, Pos, Acts) ->
+        ( Term = spawn_request(Type, _X, _Y, Acts) ->
             % Structure matches, validate content
             object_type_validation(Type),
-            pos_validation(Pos),
+            % X and Y: no validation needed
             length(Acts, _)
         ;
             % Structure doesn't match - throw
@@ -409,12 +409,25 @@ action_validation_helper(Term) :-
         ; Term = despawn ->
             % Structure matches, no content to validate
             true
-        ; Term = spawn(Type, Pos, Acts) ->
+        ; Term = noop ->
+            % Structure matches, no content to validate
+            true
+        ; Term = spawn(Type, _X, _Y, Acts) ->
             % Structure matches, validate content
             object_type_validation(Type),
-            pos_validation(Pos),
+            % X and Y: no validation needed
             length(Acts, _)
+        ; Term = set_attr(_Name, _Value) ->
+            % Structure matches, no content validation
+            true
         ; Term = loop(Acts) ->
+            % Structure matches, validate content
+            ( ground(Acts) ->
+                length(Acts, _)
+            ;
+                true
+            )
+        ; Term = list(Acts) ->
             % Structure matches, validate content
             ( ground(Acts) ->
                 length(Acts, _)
@@ -428,17 +441,52 @@ action_validation_helper(Term) :-
             ;
                 true
             )
-        ; Term = parallel(Children) ->
+        ; Term = parallel_all(Children) ->
             % Structure matches, validate content
             ( ground(Children) ->
                 length(Children, _)
             ;
                 true
             )
-        ; Term = parallel_running(Children) ->
+        ; Term = parallel_all_running(Children) ->
             % Structure matches, validate content
             ( ground(Children) ->
                 length(Children, _)
+            ;
+                true
+            )
+        ; Term = parallel_race(Children) ->
+            % Structure matches, validate
+            %   content
+            ( ground(Children) ->
+                length(Children, _)
+            ;
+                true
+            )
+        ; Term = parallel_race_running(Children) ->
+            % Structure matches, validate
+            %   content
+            ( ground(Children) ->
+                length(Children, _)
+            ;
+                true
+            )
+        ; Term = repeat(Times, Acts) ->
+            % Structure matches, validate content
+            ( ground(Times) ->
+                integer(Times)
+            ;
+                true
+            ),
+            ( ground(Acts) ->
+                length(Acts, _)
+            ;
+                true
+            )
+        ; Term = move_delta(Frames, _DX, _DY) ->
+            % Structure matches, validate content
+            ( ground(Frames) ->
+                integer(Frames)
             ;
                 true
             )
@@ -469,7 +517,7 @@ test("game_state_validation: valid state passes", (
     State = state(
         frame(0),
         objects([object(
-            id(0), type(static), attrs([pos(0, 0)]),
+            id(0), type(static), attrs([x(0), y(0)]),
             actions([]), collisions([])
         )]),
         status(playing),
@@ -486,27 +534,27 @@ multiple objects and commands", (
         frame(5),
         objects([
             object(
-                id(0), type(tower), attrs([pos(10, 19)]),
+                id(0), type(tower), attrs([x(10), y(19)]),
                 actions([wait(3)]), collisions([])
             ),
             object(
-                id(1), type(enemy), attrs([pos(5, 5)]),
+                id(1), type(enemy), attrs([x(5), y(5)]),
                 actions([move_to(10, 10, 5)]),
                 collisions([])
             ),
             object(
-                id(2), type(proj), attrs([pos(15, 15)]),
+                id(2), type(proj), attrs([x(15), y(15)]),
                 actions([]), collisions([])
             )
         ]),
         status(playing),
         next_id(3),
         commands([
-            spawn_request(enemy, pos(0, 0), []),
-            spawn_request(enemy, pos(0, 0), [])
+            spawn_request(enemy, 0, 0, []),
+            spawn_request(enemy, 0, 0, [])
         ]),
         rev_hints([
-            despawned(1, [pos(10, 10)])
+            despawned(1, [x(10), y(10)])
         ])
     ),
     state_validation(State)
@@ -518,34 +566,34 @@ objects, commands, and rev_hints", (
         frame(42),
         objects([
             object(
-                id(0), type(tower), attrs([pos(5, 19)]),
+                id(0), type(tower), attrs([x(5), y(19)]),
                 actions([
                     loop([
                         wait(3),
-                        spawn(proj, pos(5, 19), [
+                        spawn(proj, 5, 19, [
                             move_to(5, 0, 20)
                         ])
                     ])
                 ]), collisions([])
             ),
             object(
-                id(1), type(enemy), attrs([pos(10, 5)]),
+                id(1), type(enemy), attrs([x(10), y(5)]),
                 actions([
                     move_to(19, 5, 15),
                     wait(1)
                 ]), collisions([])
             ),
             object(
-                id(2), type(proj), attrs([pos(15, 10)]),
+                id(2), type(proj), attrs([x(15), y(10)]),
                 actions([move_to(15, 0, 10)]),
                 collisions([])
             ),
             object(
                 id(3), type(static), attrs([]),
                 actions([
-                    parallel([
+                    parallel_all([
                         wait(5),
-                        spawn(enemy, pos(0, 10), [])
+                        spawn(enemy, 0, 10, [])
                     ])
                 ]), collisions([])
             )
@@ -553,14 +601,14 @@ objects, commands, and rev_hints", (
         status(playing),
         next_id(4),
         commands([
-            spawn_request(enemy, pos(0, 0), []),
-            spawn_request(proj, pos(10, 10), [
+            spawn_request(enemy, 0, 0, []),
+            spawn_request(proj, 10, 10, [
                 move_to(10, 0, 10)
             ])
         ]),
         rev_hints([
-            despawned(1, [pos(19, 5)]),
-            despawned(2, [pos(15, 0)])
+            despawned(1, [x(19), y(5)]),
+            despawned(2, [x(15), y(0)])
         ])
     )),
     context_validation(Ctx)
@@ -667,7 +715,7 @@ test("object_validation: invalid object type fails", (
 )).
 
 test("command_validation: invalid spawn type fails", (
-    Cmd = spawn_request(invalid_type, pos(0, 0), []),
+    Cmd = spawn_request(invalid_type, 0, 0, []),
     expect_exception(command_validation(Cmd))
 )).
 
@@ -676,11 +724,13 @@ test("command_validation: invalid pos in spawn fails", (
     expect_exception(command_validation(Cmd))
 )).
 
-test("pos_validation: non-integer coords fail via action", (
-    Action1 = spawn(static, pos(not_int, 10), []),
-    expect_exception(action_validation(Action1)),
-    Action2 = spawn(static, pos(10, not_int), []),
-    expect_exception(action_validation(Action2))
+test("action_validation: spawn with non-integer coords \
+passes (no validation)", (
+    % X and Y are not validated, so these should pass
+    Action1 = spawn(static, not_int, 10, []),
+    action_validation(Action1),
+    Action2 = spawn(static, 10, not_int, []),
+    action_validation(Action2)
 )).
 
 test("action_validation: invalid wait fails", (
@@ -699,7 +749,7 @@ test("action_validation: invalid move_to fails", (
 )).
 
 test("action_validation: invalid spawn action fails", (
-    Action1 = spawn(invalid_type, pos(0, 0), []),
+    Action1 = spawn(invalid_type, 0, 0, []),
     expect_exception(action_validation(Action1)),
     Action2 = spawn(static, not_a_pos, []),
     expect_exception(action_validation(Action2))
@@ -759,12 +809,12 @@ test("object_validation: wrong functor throws", (
 )).
 
 test("spawn_request_validation: wrong arity throws", (
-    Cmd = spawn_request(enemy, pos(0, 0)),
+    Cmd = spawn_request(enemy, 0, 0),
     expect_exception(spawn_request_validation(Cmd))
 )).
 
 test("spawn_request_validation: wrong functor throws", (
-    Cmd = not_spawn_request(enemy, pos(0, 0), []),
+    Cmd = not_spawn_request(enemy, 0, 0, []),
     expect_exception(spawn_request_validation(Cmd))
 )).
 
@@ -804,6 +854,59 @@ test("action_validation: move_to wrong arity throws", (
 )).
 
 test("action_validation: spawn wrong arity throws", (
-    Action = spawn(enemy, pos(0, 0)),
+    Action = spawn(enemy, 0, 0),
     expect_exception(action_validation(Action))
+)).
+
+test("action_validation: set_attr passes", (
+    action_validation(set_attr(hp, 100))
+)).
+
+test("action_validation: set_attr invalid arity fails", (
+    Action = set_attr(hp),
+    expect_exception(action_validation(Action))
+)).
+
+test("action_validation: noop passes", (
+    action_validation(noop)
+)).
+
+test("action_validation: noop invalid arity fails", (
+    Action = noop(something),
+    expect_exception(action_validation(Action))
+)).
+
+test("action_validation: list passes", (
+    action_validation(list([wait(1), move_to(0, 0, 5)]))
+)).
+
+test("action_validation: list invalid arity fails", (
+    Action = list([wait(1)], extra_arg),
+    expect_exception(action_validation(Action))
+)).
+
+test("action_validation: parallel_race passes", (
+    action_validation(
+        parallel_race([wait(1), noop])
+    )
+)).
+
+test("action_validation: parallel_race with \
+move_to passes", (
+    action_validation(
+        parallel_race([
+            move_to(10, 20, 5),
+            move_to(50, 60, 10)
+        ])
+    )
+)).
+
+test("action_validation: parallel_race wrong \
+arity fails", (
+    Action = parallel_race(
+        [wait(1)], extra_arg
+    ),
+    expect_exception(action_validation(
+        Action
+    ))
 )).

@@ -29,7 +29,7 @@ bidirectionally", (
     yields(A, true),
     ( A = wait(_)
     ; A = move_to(_, _, _)
-    ; A = parallel_running(_) )
+    ; A = parallel_all_running(_) )
 )).
 
 % ==========================================================
@@ -41,7 +41,7 @@ object", (
     ObjIn = object(
         id(1),
         type(static),
-        attrs([pos(0, 0)]),
+        attrs([x(0), y(0)]),
         actions([]),
         collisions([])
     ),
@@ -64,7 +64,7 @@ object", (
     ObjOut = [object(
         id(1),
         type(static),
-        attrs([pos(0, 0)]),
+        attrs([x(0), y(0)]),
         actions([]),
         collisions([])
     )]
@@ -75,7 +75,7 @@ after one execution", (
     ObjIn = object(
         id(1),
         type(static),
-        attrs([pos(0, 0)]),
+        attrs([x(0), y(0)]),
         actions([wait(5)]),
         collisions([])
     ),
@@ -98,7 +98,7 @@ after one execution", (
     ObjOut = [object(
         id(1),
         type(static),
-        attrs([pos(0, 0)]),
+        attrs([x(0), y(0)]),
         actions([wait(4)]),
         collisions([])
     )]
@@ -109,7 +109,7 @@ continues until empty", (
     ObjIn = object(
         id(1),
         type(static),
-        attrs([pos(0, 0)]),
+        attrs([x(0), y(0)]),
         actions([wait(0)]),
         collisions([])
     ),
@@ -132,7 +132,7 @@ continues until empty", (
     ObjOut = [object(
         id(1),
         type(static),
-        attrs([pos(0, 0)]),
+        attrs([x(0), y(0)]),
         actions([]),
         collisions([])
     )]
@@ -149,7 +149,7 @@ state", (
         objects([object(
             id(0),
             type(static),
-            attrs([pos(0, 0)]),
+            attrs([x(0), y(0)]),
             actions([]),
             collisions([])
         )]),
@@ -164,7 +164,7 @@ state", (
         objects([object(
             id(0),
             type(static),
-            attrs([pos(0, 0)]),
+            attrs([x(0), y(0)]),
             actions([]),
             collisions([])
         )]),
@@ -182,7 +182,7 @@ test("tick: processes object with yielding action \
         objects([object(
             id(0),
             type(static),
-            attrs([pos(0, 0)]),
+            attrs([x(0), y(0)]),
             actions([wait(3)]),
             collisions([])
         )]),
@@ -197,7 +197,7 @@ test("tick: processes object with yielding action \
         objects([object(
             id(0),
             type(static),
-            attrs([pos(0, 0)]),
+            attrs([x(0), y(0)]),
             actions([wait(2)]),
             collisions([])
         )]),
@@ -215,9 +215,9 @@ object", (
         objects([object(
             id(0),
             type(static),
-            attrs([pos(0, 0)]),
+            attrs([x(0), y(0)]),
             actions([
-                spawn(enemy, pos(5, 5), [])
+                spawn(enemy, 5, 5, [])
             ]),
             collisions([])
         )]),
@@ -239,7 +239,7 @@ object", (
         object(
             id(0),
             type(static),
-            attrs([pos(0, 0)]),
+            attrs([x(0), y(0)]),
             actions([]),
             collisions([])
         ),
@@ -249,7 +249,7 @@ object", (
         object(
             id(_NewID),
             type(enemy),
-            attrs([pos(5, 5)]),
+            attrs([x(5), y(5)]),
             actions([]),
             collisions([])
         ),
@@ -271,7 +271,7 @@ test("collision: simple enemy-projectile collision", (
         frame(0),
         objects([
             object(
-                id(0), type(enemy), attrs([pos(5, 10)]),
+                id(0), type(enemy), attrs([x(5), y(10)]),
                 actions([
                     % Moving right, arrives at (10, 10) in 1
                     % frame
@@ -279,7 +279,7 @@ test("collision: simple enemy-projectile collision", (
                 ]), collisions([])
             ),
             object(
-                id(1), type(proj), attrs([pos(5, 10)]),
+                id(1), type(proj), attrs([x(5), y(10)]),
                 actions([
                     % Moving to same target, arrives at
                     % (10, 10) in 1 frame
@@ -321,33 +321,33 @@ freeze (first collision)", (
         frame(0),
         objects([
             object(
-                id(0), type(tower), attrs([pos(5, 19)]),
+                id(0), type(tower), attrs([x(5), y(19)]),
                 actions([
                     loop([
                         wait(3),
-                        spawn(proj, pos(5, 19), [
+                        spawn(proj, 5, 19, [
                             move_to(5, 0, 20)
                         ])
                     ])
                 ]), collisions([])
             ),
             object(
-                id(1), type(tower), attrs([pos(10, 19)]),
+                id(1), type(tower), attrs([x(10), y(19)]),
                 actions([
                     loop([
                         wait(3),
-                        spawn(proj, pos(10, 19), [
+                        spawn(proj, 10, 19, [
                             move_to(10, 0, 20)
                         ])
                     ])
                 ]), collisions([])
             ),
             object(
-                id(2), type(tower), attrs([pos(15, 19)]),
+                id(2), type(tower), attrs([x(15), y(19)]),
                 actions([
                     loop([
                         wait(3),
-                        spawn(proj, pos(15, 19), [
+                        spawn(proj, 15, 19, [
                             move_to(15, 0, 20)
                         ])
                     ])
@@ -358,7 +358,7 @@ freeze (first collision)", (
                 actions([
                     loop([
                         wait(5),
-                        spawn(enemy, pos(0, 10), [
+                        spawn(enemy, 0, 10, [
                             move_to(19, 10, 30)
                         ])
                     ])

@@ -32,33 +32,33 @@ main :-
         objects([
             % Towers at bottom row (y=19)
             object(
-                id(0), type(tower), attrs([pos(5, 19)]),
+                id(0), type(tower), attrs([x(5), y(19)]),
                 actions([
                     loop([
                         wait(3),
-                        spawn(proj, pos(5, 19), [
+                        spawn(proj, 5, 19, [
                             move_to(5, 0, 20)
                         ])
                     ])
                 ]), collisions([])
             ),
             object(
-                id(1), type(tower), attrs([pos(10, 19)]),
+                id(1), type(tower), attrs([x(10), y(19)]),
                 actions([
                     loop([
                         wait(3),
-                        spawn(proj, pos(10, 19), [
+                        spawn(proj, 10, 19, [
                             move_to(10, 0, 20)
                         ])
                     ])
                 ]), collisions([])
             ),
             object(
-                id(2), type(tower), attrs([pos(15, 19)]),
+                id(2), type(tower), attrs([x(15), y(19)]),
                 actions([
                     loop([
                         wait(3),
-                        spawn(proj, pos(15, 19), [
+                        spawn(proj, 15, 19, [
                             move_to(15, 0, 20)
                         ])
                     ])
@@ -70,7 +70,7 @@ main :-
                 actions([
                     loop([
                         wait(5),
-                        spawn(enemy, pos(0, 10), [
+                        spawn(enemy, 0, 10, [
                             move_to(19, 10, 30)
                         ])
                     ])
@@ -181,7 +181,8 @@ render_grid_row(Objects, Y, X) :-
     X =< 19,
     ( member(Obj, Objects),
       obj_attrs(Obj, Attrs),
-      member(pos(X, Y), Attrs) ->
+      member(x(X), Attrs),
+      member(y(Y), Attrs) ->
         get_symbol(Objects, X, Y, Symbol)
     ;
         char_code(Symbol, 46)  % '.'
@@ -196,7 +197,8 @@ render_grid_row(_, _, X) :-
 get_symbol(Objects, X, Y, Symbol) :-
     member(Obj, Objects),
     obj_type_attrs(Obj, Type, Attrs),
-    member(pos(X, Y), Attrs),
+    member(x(X), Attrs),
+    member(y(Y), Attrs),
     (   Type = tower -> char_code(Symbol, 84)  % 'T'
     ;   Type = enemy -> char_code(Symbol, 69)  % 'E'
     ;   Type = proj -> char_code(Symbol, 42)   % '*'

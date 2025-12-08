@@ -18,8 +18,9 @@
     spawn_action_schema/1,
     loop_schema/1,
     trigger_state_change_schema/1,
-    parallel_schema/1,
-    parallel_running_schema/1,
+    parallel_all_schema/1,
+    parallel_all_running_schema/1,
+    parallel_race_running_schema/1,
     % Command schemas
     command_schema/1,
     spawn_request_schema/1,
@@ -94,8 +95,9 @@ action_schema(union([
     schema(spawn_action_schema),
     schema(loop_schema),
     schema(trigger_state_change_schema),
-    schema(parallel_schema),
-    schema(parallel_running_schema)
+    schema(parallel_all_schema),
+    schema(parallel_all_running_schema),
+    schema(parallel_race_running_schema)
 ])).
 
 % Wait frames: wait(N) where N is integer
@@ -131,13 +133,18 @@ trigger_state_change_schema(struct(trigger_state_change, [
     change(schema(state_change_content_schema))
 ])).
 
-% Parallel: parallel(Children) where Children is list of actions
-parallel_schema(struct(parallel, [
+% Parallel: parallel_all(Children) where Children is list of actions
+parallel_all_schema(struct(parallel_all, [
     children(list(schema(action_schema)))
 ])).
 
-% Parallel running: parallel_running(Children)
-parallel_running_schema(struct(parallel_running, [
+% Parallel all running: parallel_all_running(Children)
+parallel_all_running_schema(struct(parallel_all_running, [
+    children(list(schema(action_schema)))
+])).
+
+% Parallel race running: parallel_race_running(Children)
+parallel_race_running_schema(struct(parallel_race_running, [
     children(list(schema(action_schema)))
 ])).
 
@@ -358,7 +365,7 @@ objects, commands, and rev_hints", (
             object(
                 id(3), type(static), attrs([]),
                 actions([
-                    parallel([
+                    parallel_all([
                         wait(5),
                         spawn(enemy, pos(0, 10), [])
                     ])

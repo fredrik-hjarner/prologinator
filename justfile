@@ -65,17 +65,29 @@ lint FILE:
 # Check all Prolog files for syntax errors
 lint-all:
     @echo "Linting prolog files..."
+    @echo "Linting engine.pl..."
     @just lint prolog/engine.pl || exit 1
+    @echo "Linting engine_test.pl..."
     @just lint prolog/engine_test.pl || exit 1
+    @echo "Linting game.pl..."
     @just lint prolog/game.pl || exit 1
+    @echo "Linting types/constraints.pl..."
     @just lint prolog/types/constraints.pl || exit 1
+    @echo "Linting types/accessors.pl..."
     @just lint prolog/types/accessors.pl || exit 1
+    @echo "Linting execute_action.pl..."
     @just lint prolog/execute_action.pl || exit 1
+    @echo "Linting execute_action_test.pl..."
     @just lint prolog/execute_action_test.pl || exit 1
+    @echo "Linting collisions.pl..."
     @just lint prolog/collisions.pl || exit 1
+    @echo "Linting types/validation.pl..."
     @just lint prolog/types/validation.pl || exit 1
+    @echo "Linting macros.pl..."
     @just lint prolog/macros.pl || exit 1
+    @echo "Linting test_macros.pl..."
     @just lint prolog/test_macros.pl || exit 1
+    @echo "Linting xod/xod.pl..."
     @just lint prolog/xod/xod.pl || exit 1
     @echo "All files passed linting!"
 

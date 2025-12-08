@@ -22,8 +22,10 @@ detect_collisions(Objects, NewObjects, RevHints) :-
             member(Obj2, Objects),
             obj_id_attrs(Obj2, ID2, A2),
             ID1 @< ID2,
-            member(pos(X1, Y1), A1),
-            member(pos(X2, Y2), A2),
+            member(x(X1), A1),
+            member(y(Y1), A1),
+            member(x(X2), A2),
+            member(y(Y2), A2),
             collides_at(X1, Y1, X2, Y2)
         ),
         Collisions

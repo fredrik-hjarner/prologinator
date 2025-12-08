@@ -137,7 +137,7 @@ object_constraint(
     ID #>= 0,
     ID #=< 1000,
     object_type_constraint(Type),
-    bounded_list_of(attribute_constraint, Attrs, 50),
+    is_list(Attrs),
     bounded_list_of(action_constraint, Actions, 100).
     % Skip collision constraints - feature not
     % implemented yet
@@ -156,11 +156,10 @@ object_type_constraint(tower).  % Used in game.pl
 % ==========================================================
 % attribute_constraint/1 Constraint
 % ==========================================================
+% Attributes are completely free-form - no validation needed
+% Users can store anything: x(100), hp(50), color(red), etc.
 
-attribute_constraint(pos(X, Y)) :-
-    % Coordinates: bounded integers
-    X in -10..200,
-    Y in -10..200.
+attribute_constraint(_).  % Accept any attribute
 
 % Alias for compatibility (attr_constraint/1 exported)
 attr_constraint(A) :- attribute_constraint(A).
@@ -184,11 +183,11 @@ action_constraint(move_to(X, Y, Frames), _) :-
 
 action_constraint(despawn, _).
 
-action_constraint(spawn(Type, Pos, Acts), DepthLeft) :-
+action_constraint(spawn(Type, X, Y, Acts), DepthLeft) :-
     DepthLeft #> 0,
     DepthLeft1 #= DepthLeft - 1,
     object_type_constraint(Type),
-    pos_constraint(Pos),
+    % X and Y: no constraints, just ground terms
     bounded_list_of_depth(
         action_constraint, Acts, 100, DepthLeft1
     ).
@@ -203,14 +202,32 @@ action_constraint(loop(Acts), DepthLeft) :-
 action_constraint(trigger_state_change(Change), _) :-
     state_change_constraint(Change).
 
-action_constraint(parallel(Children), DepthLeft) :-
+action_constraint(parallel_all(Children), DepthLeft) :-
     DepthLeft #> 0,
     DepthLeft1 #= DepthLeft - 1,
     bounded_list_of_depth(
         action_constraint, Children, 100, DepthLeft1
     ).
 
-action_constraint(parallel_running(Children), DepthLeft) :-
+action_constraint(parallel_race(Children), DepthLeft) :-
+    DepthLeft #> 0,
+    DepthLeft1 #= DepthLeft - 1,
+    bounded_list_of_depth(
+        action_constraint, Children, 100, DepthLeft1
+    ).
+
+action_constraint(
+    parallel_all_running(Children), DepthLeft
+) :-
+    DepthLeft #> 0,
+    DepthLeft1 #= DepthLeft - 1,
+    bounded_list_of_depth(
+        action_constraint, Children, 100, DepthLeft1
+    ).
+
+action_constraint(
+    parallel_race_running(Children), DepthLeft
+) :-
     DepthLeft #> 0,
     DepthLeft1 #= DepthLeft - 1,
     bounded_list_of_depth(
@@ -220,18 +237,17 @@ action_constraint(parallel_running(Children), DepthLeft) :-
 % ==========================================================
 % pos_constraint/1 Constraint
 % ==========================================================
-
-pos_constraint(pos(X, Y)) :-
-    X in 0..200,
-    Y in 0..200.
+% DEPRECATED: spawn now uses separate X, Y arguments
+% Kept for backward compatibility if needed elsewhere
+pos_constraint(_).  % Accept any position structure
 
 % ==========================================================
 % command_constraint/1 Constraint (Addendum 1)
 % ==========================================================
 
-command_constraint(spawn_request(Type, Pos, Acts)) :-
+command_constraint(spawn_request(Type, X, Y, Acts)) :-
     object_type_constraint(Type),
-    pos_constraint(Pos),
+    % X and Y: no constraints
     bounded_list_of(action_constraint, Acts, 100).
 
 command_constraint(state_change(Change)) :-
@@ -251,8 +267,8 @@ state_change_constraint(game_over(lost)).
 rev_hint_constraint(despawned(ID, Attrs)) :-
     % Object ID: non-negative integer
     ID #>= 0,
-    % Saved attributes at despawn time
-    bounded_list_of(attribute_constraint, Attrs, 50).
+    % Saved attributes at despawn time - no constraint
+    is_list(Attrs).
 
 % ==========================================================
 % collision_constraint/1 Constraint

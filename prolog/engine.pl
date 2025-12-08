@@ -45,16 +45,35 @@ yields(wait(N), false) :- N #=< 0.
 yields(move_to(_, _, Frames), true) :- Frames #> 0.
 yields(move_to(_, _, Frames), false) :- Frames #=< 0.
 
-% parallel_running(_) always yields
-yields(parallel_running(_), true).
+% parallel_all_running(_) always yields
+yields(parallel_all_running(_), true).
+% parallel_race_running(_) always yields
+yields(parallel_race_running(_), true).
 
 % Non-yielding actions: despawn, spawn, loop,
-% trigger_state_change, parallel
+% trigger_state_change, parallel_all, noop, list, set_attr,
+% repeat
 yields(despawn, false).
-yields(spawn(_, _, _), false).
+yields(spawn(_, _, _, _), false).
 yields(loop(_), false).
 yields(trigger_state_change(_), false).
-yields(parallel(_), false).
+yields(parallel_all(_), false).
+% parallel_race(_) always yields false
+%   (will be unwrapped immediately if
+%   any child finishes)
+yields(parallel_race(_), false).
+yields(noop, false).
+yields(list(_), false).
+yields(set_attr(_, _), false).
+% repeat(Times, Actions) does NOT yield
+%   (expands immediately into action list)
+yields(repeat(_, _), false).
+
+% move_delta(Frames, _, _) yields when Frames > 0
+yields(move_delta(Frames, _, _), true) :-
+    Frames #> 0.
+yields(move_delta(Frames, _, _), false) :-
+    Frames #=< 0.
 
 % ==========================================================
 % Execution Model: tick_object

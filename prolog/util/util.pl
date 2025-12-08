@@ -1,8 +1,14 @@
 % Utility functions
 
-:- module(util, [partition/4, flatten/2]).
+:- module(util, [
+    partition/4,
+    flatten/2,
+    select_many/3,
+    err_write/1,
+    err_format/2
+]).
 
-:- use_module(library(lists), [append/2]).
+:- use_module(library(lists), [append/2, select/3]).
 :- meta_predicate(partition(1, ?, ?, ?)).
 
 % ==========================================================
@@ -31,4 +37,40 @@ partition(Pred, [X|Xs], Yes, No) :-
 
 flatten(ListOfLists, FlatList) :-
     append(ListOfLists, FlatList).
+
+% ==========================================================
+% Select Many helper
+% ==========================================================
+% select_many(+Patterns, +List, -Remaining)
+% Selects multiple items from List matching Patterns,
+% returning Remaining list without those items.
+% Patterns is a list of terms to match (e.g., [x(X), y(Y)])
+%
+% Example:
+%   select_many([x(CurrX), y(CurrY)], [x(5), y(10), z(3)], Remaining)
+%   binds CurrX=5, CurrY=10, Remaining=[z(3)]
+
+select_many([], List, List).
+select_many([Pattern|Patterns], List, Remaining) :-
+    select(Pattern, List, ListWithoutPattern),
+    select_many(Patterns, ListWithoutPattern, Remaining).
+
+% ==========================================================
+% Error Output Helpers
+% ==========================================================
+% err_write(+Message)
+% Writes Message and then fails. Useful for error messages
+%   in test assertions.
+%
+% err_format(+Format, +Args)
+% Formats message using Format and Args, then fails.
+%   Useful for error messages in test assertions.
+
+err_write(Msg) :-
+    write(Msg),
+    fail.
+
+err_format(Fmt, Args) :-
+    format(Fmt, Args),
+    fail.
 
