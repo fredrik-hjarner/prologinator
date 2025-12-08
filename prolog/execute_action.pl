@@ -10,12 +10,15 @@
     append/2,
     append/3,
     select/3,
-    member/2
+    member/2,
+    findall/3
 ]).
 :- use_module('./types/validation', [action_validation/1]).
 :- use_module('./types/accessors', [
     obj_acns/2,
-    obj_acns_obj/3
+    obj_acns_obj/3,
+    obj_attrs/2,
+    obj_attrs_acns_obj/4
 ]).
 % :- use_module('xod/xod', [validate/2]).
 % :- use_module('./types/validation2').
@@ -68,24 +71,6 @@ execute_action(
 % execute_action_impl/5
 % ==========================================================
 % Internal implementation (no validation)
-% Multifile: some clauses are defined in parallel.pl
-
-:- multifile(execute_action_impl/6).
-
-% Load parallel.pl after this module loads to make multifile
-% clauses available. This is necessary because:
-% 1. parallel.pl defines execute_action:execute_action_impl
-%    clauses
-% 2. Tests load execute_action.pl directly, so parallel.pl
-%    won't be loaded automatically
-% 3. We use initialization (runs after file loads) instead
-%    of use_module to avoid circular dependency (parallel.pl
-%    imports execute_action)
-% 4. parallel.pl uses module qualification
-%    (execute_action:execute_action) to call execute_action,
-%    avoiding the need to import it
-:- initialization(use_module('./actions/parallel', [])).
-
 % ----------------------------------------------------------
 % Basic Actions: wait_frames
 % ----------------------------------------------------------
@@ -224,472 +209,156 @@ execute_action_impl(
 % ----------------------------------------------------------
 % Compound Actions: parallel
 % ----------------------------------------------------------
-% Note: parallel and parallel_running actions are handled
-% in prolog/actions/parallel.pl via multifile clauses
+
+execute_action_impl(
+    ctx_old(Ctx),
+    action(parallel(ChildActions)),
+    obj_old(ObjIn),
+    obj_new(MaybeObjectOut),
+    cmds_new(AllCommands),
+    revhints_new(AllRevHints)
+) :-
+    ObjIn = object(
+        id(ID), type(Type), _,
+        actions([_|Rest]), collisions(Colls)
+    ),
+    tick_parallel_children(
+        ctx_old(Ctx),
+        ChildActions, % list of actions that run in parallel
+        ObjIn,
+        ObjFinal,
+        ChildResults,
+        AllCommands,
+        AllRevHints
+    ),
+    obj_attrs(ObjFinal, AttrsOut),
+    ( member([], ChildResults) ->
+        % Any child despawned, so despawn the whole parallel
+        MaybeObjectOut = []
+    ;
+        % All children are alive. Filter out "Done" ones.
+        % Look inside objects returned in ChildResults.
+        findall( % pick out
+            Action,
+            (
+                member([ChildObj], ChildResults),
+                ChildObj = object(
+                    _, _, _, actions([Action|_]), _
+                )
+            ),
+            RemainingActions
+        ),
+        ( RemainingActions = [] ->
+            % All children finished naturally.
+            obj_attrs_acns_obj(
+                ObjIn, AttrsOut, Rest, NewObj
+            ),
+            MaybeObjectOut = [NewObj]
+        ;
+            % Some children are still running.
+            obj_attrs_acns_obj(
+                ObjIn,
+                AttrsOut,
+                [parallel_running(RemainingActions)|Rest],
+                NewObj
+            ),
+            MaybeObjectOut = [NewObj]
+        )
+    ).
+
+execute_action_impl(
+    ctx_old(Ctx),
+    action(parallel_running(Children)),
+    obj_old(Obj),
+    obj_new(NewObj),
+    cmds_new(Commands),
+    revhints_new(RevHints)
+) :-
+    execute_action(
+        ctx_old(Ctx),
+        action(parallel(Children)),
+        obj_old(Obj),
+        obj_new(NewObj),
+        cmds_new(Commands),
+        revhints_new(RevHints)
+    ).
 
 % ==========================================================
-% Tests
+% tick_parallel_children/6
 % ==========================================================
 
-% --------------------------------------------------------
-% Tests: move_to
-% ----------------------------------------------------------
+% :- pred tick_parallel_children(
+%     ?Children, % actions_list
+%     ?ObjIn, % game_object
+%     ?ObjFinal, % game_object with final attrs
+%     ?UpdatedChildren, % list of result lists
+%     ?AllCommands,
+%     ?AllRevHints).
 
-test("move_to: positive direction, multiple frames \
-remaining", (
-    Action = move_to(10, 20, 3),
+tick_parallel_children(
+    ctx_old(_Ctx), [], ObjIn, ObjIn, [], [], []
+).
+
+tick_parallel_children(
+    ctx_old(Ctx),
+    [Child|RestChildren],
+    ObjIn,
+    ObjFinal,
+    [ChildResult|RestResults],
+    AllCommands,
+    AllRevHints
+) :-
     ObjIn = object(
-        id(1),
-        type(static),
-        attrs([pos(0, 0)]),
-        actions([move_to(10, 20, 3)]),
-        []
+        id(ID), type(Type), attrs(AttrsIn),
+        actions(_), collisions(Colls)
     ),
-    Ctx = ctx(state(
-        frame(0),
-        [],
-        status(playing),
-        next_id(1),
-        [],
-        []
-    )),
+
+    % 1. Construct input object for this child action
+    ChildObjIn = object(
+        id(ID), type(Type), attrs(AttrsIn),
+        actions([Child]), collisions(Colls)
+    ),
+
+    % 2. Execute the action
     execute_action(
         ctx_old(Ctx),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        action(Child),
+        obj_old(ChildObjIn),
+        obj_new(ResultList),
+        cmds_new(C1),
+        revhints_new(R1)
     ),
-    ObjOut = [object(
-        id(1),
-        type(static),
-        attrs([pos(NewX, NewY)|_]),
-        actions([move_to(10, 20, 2)|_]),
-        []
-    )],
-    NewX = 3,
-    NewY = 6,
-    Commands = [],
-    RevHints = []
-)).
 
-test("move_to: negative direction, multiple frames \
-remaining", (
-    Action = move_to(0, 0, 3),
-    ObjIn = object(
-        id(1),
-        type(static),
-        attrs([pos(10, 20)]),
-        actions([move_to(0, 0, 3)]),
-        []
+    % 3. Determine attributes for the NEXT child.
+    %    If this child killed the object, we pass the OLD
+    %    attributes to the next sibling so it can at least
+    %    attempt to run (e.g., to generate its own
+    %    commands/hints).
+    ( ResultList = [object(_, _, attrs(AttrsNext), _, _)] ->
+        true
+    ;
+        ResultList = [],
+        AttrsNext = AttrsIn
     ),
-    Ctx = ctx(state(
-        frame(0),
-        [],
-        status(playing),
-        next_id(1),
-        [],
-        []
-    )),
-    execute_action(
+
+    % 4. Build object for next child
+    NextObjIn = object(
+        id(ID), type(Type), attrs(AttrsNext),
+        actions(_), collisions(Colls)
+    ),
+
+    % 5. Recurse
+    tick_parallel_children(
         ctx_old(Ctx),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
+        RestChildren,
+        NextObjIn,
+        ObjFinal,
+        RestResults,
+        C2,
+        R2
     ),
-    ObjOut = [object(
-        id(1),
-        type(static),
-        attrs([pos(NewX, NewY)|_]),
-        actions([move_to(0, 0, 2)|_]),
-        []
-    )],
-    NewX = 7,
-    NewY = 14,
-    Commands = [],
-    RevHints = []
-)).
-
-test("move_to: single frame, arrives at target", (
-    Action = move_to(5, 5, 1),
-    ObjIn = object(
-        id(1),
-        type(static),
-        attrs([pos(0, 0)]),
-        actions([move_to(5, 5, 1)]),
-        []
-    ),
-    Ctx = ctx(state(
-        frame(0),
-        [],
-        status(playing),
-        next_id(1),
-        [],
-        []
-    )),
-    execute_action(
-        ctx_old(Ctx),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
-    ),
-    ObjOut = [object(
-        id(1),
-        type(static),
-        attrs([pos(5, 5)|_]),
-        actions([]),
-        []
-    )],
-    Commands = [],
-    RevHints = []
-)).
-
-test("move_to: already at target, stays at position and \
-continues with remaining frames", (
-    Action = move_to(10, 20, 3),
-    ObjIn = object(
-        id(1),
-        type(static),
-        attrs([pos(10, 20)]),
-        actions([move_to(10, 20, 3)]),
-        []
-    ),
-    Ctx = ctx(state(
-        frame(0),
-        [],
-        status(playing),
-        next_id(1),
-        [],
-        []
-    )),
-    execute_action(
-        ctx_old(Ctx),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
-    ),
-    ObjOut = [object(
-        id(1),
-        type(static),
-        attrs([pos(10, 20)|_]),
-        actions([move_to(10, 20, 2)|_]),
-        []
-    )],
-    Commands = [],
-    RevHints = []
-)).
-
-test("move_to: negative target coordinates", (
-    Action = move_to(-5, -10, 2),
-    ObjIn = object(
-        id(1),
-        type(static),
-        attrs([pos(0, 0)]),
-        actions([move_to(-5, -10, 2)]),
-        []
-    ),
-    Ctx = ctx(state(
-        frame(0),
-        [],
-        status(playing),
-        next_id(1),
-        [],
-        []
-    )),
-    execute_action(
-        ctx_old(Ctx),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
-    ),
-    ObjOut = [object(
-        id(1),
-        type(static),
-        attrs([pos(NewX, NewY)|_]),
-        actions([move_to(-5, -10, 1)|_]),
-        []
-    )],
-    NewX = -2,
-    NewY = -5,
-    Commands = [],
-    RevHints = []
-)).
-
-test("move_to: backward test - can infer target \
-coordinates from final position", (
-    % TargetX and TargetY are unknown - should be inferred
-    Action = move_to(TargetX, TargetY, 1),
-    ObjIn = object(
-        id(1),
-        type(static),
-        attrs([pos(0, 0)]),
-        actions([move_to(TargetX, TargetY, 1)]),
-        []
-    ),
-    ObjOut = [object(
-        id(1),
-        type(static),
-        attrs([pos(5, 5)|_]),
-        actions([]),
-        []
-    )],
-    Commands = [],
-    RevHints = [],
-    Ctx = ctx(state(
-        frame(0),
-        [],
-        status(playing),
-        next_id(1),
-        [],
-        []
-    )),
-    execute_action(
-        ctx_old(Ctx),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
-    ),
-    % Verify that TargetX was correctly inferred
-    TargetX = 5,
-    % Verify that TargetY was correctly inferred
-    TargetY = 5
-)).
-
-% --------------------------------------------------------
-% Tests: wait_frames
-% --------------------------------------------------------
-
-% Scryer Prolog test format - backward test: infer N from
-% output
-test("wait_frames: backward test - can infer initial frame \
-count from remaining frames", (
-    % N is unknown - should be inferred
-    Action = wait_frames(N),
-    ObjIn = object(
-        id(1),
-        type(static),
-        attrs([]),
-        actions([wait_frames(N)]),
-        collisions([])
-    ),
-    ObjOut = [object(
-        id(1),
-        type(static),
-        attrs([]),
-        actions([wait_frames(2)]),
-        collisions([])
-    )],
-    Commands = [],
-    RevHints = [],
-    Ctx = ctx(state(
-        frame(0),
-        [],
-        status(playing),
-        next_id(1),
-        [],
-        []
-    )),
-    execute_action(
-        ctx_old(Ctx),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
-    ),
-    N = 3  % Verify that N was correctly inferred
-)).
-
-% --------------------------------------------------------
-% Tests: spawn
-% --------------------------------------------------------
-
-test("spawn: backward test - can infer spawn \
-parameters from spawn_request command", (
-    % Type, Pos, and Actions are unknown - should be
-    % inferred
-    Action = spawn(Type, Pos, Actions),
-    ObjIn = object(
-        id(1),
-        type(static),
-        attrs([]),
-        actions([
-            spawn(Type, Pos, Actions)
-        ]),
-        collisions([])
-    ),
-    ObjOut = [object(
-        id(1),
-        type(static),
-        attrs([]),
-        actions([]),
-        collisions([])
-    )],
-    Commands = [spawn_request(
-        enemy, pos(10, 5), [move_to(0, 0, 10)]
-    )],
-    RevHints = [],
-    Ctx = ctx(state(
-        frame(0),
-        [],
-        status(playing),
-        next_id(1),
-        [],
-        []
-    )),
-    execute_action(
-        ctx_old(Ctx),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
-    ),
-    % Verify that Type was correctly inferred
-    Type = enemy,
-    % Verify that Pos was correctly inferred
-    Pos = pos(10, 5),
-    % Verify that Actions were correctly inferred
-    Actions = [move_to(0, 0, 10)]
-)).
-
-% --------------------------------------------------------
-% Tests: trigger_state_change
-% --------------------------------------------------------
-
-test("trigger_state_change: backward test - can infer \
-change from state_change command", (
-    % Change is unknown - should be inferred
-    Action = trigger_state_change(Change),
-    ObjIn = object(
-        id(1),
-        type(static),
-        attrs([]),
-        actions([trigger_state_change(Change)]),
-        collisions([])
-    ),
-    ObjOut = [object(
-        id(1),
-        type(static),
-        attrs([]),
-        actions([]),
-        collisions([])
-    )],
-    Commands = [state_change(game_over(won))],
-    RevHints = [],
-    Ctx = ctx(state(
-        frame(0),
-        [],
-        status(playing),
-        next_id(1),
-        [],
-        []
-    )),
-    execute_action(
-        ctx_old(Ctx),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
-    ),
-    % Verify that Change was correctly inferred
-    Change = game_over(won)
-)).
-
-% --------------------------------------------------------
-% Tests: loop
-% --------------------------------------------------------
-
-test("loop: backward test - can infer looped actions from \
-final action list", (
-    % Actions is unknown - should be inferred
-    Action = loop(Actions),
-    ObjIn = object(
-        id(1),
-        type(static),
-        attrs([]),
-        actions([loop(Actions)]),
-        collisions([])
-    ),
-    ObjOut = [object(
-        id(1),
-        type(static),
-        attrs([]),
-        actions([
-            move_to(5, 5, 1),
-            loop([move_to(5, 5, 1)])
-        ]),
-        collisions([])
-    )],
-    Commands = [],
-    RevHints = [],
-    Ctx = ctx(state(
-        frame(0),
-        [],
-        status(playing),
-        next_id(1),
-        [],
-        []
-    )),
-    execute_action(
-        ctx_old(Ctx),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
-    ),
-    % Verify that Actions were correctly inferred
-    Actions = [move_to(5, 5, 1)]
-)).
-
-% ==========================================================
-% Tests: despawn
-% ==========================================================
-
-test("despawn: backward test - can infer ID and attributes \
-from despawned rev_hint", (
-    Action = despawn,
-    % ID and Attrs are unknown - should be inferred
-    ObjIn = object(
-        id(ID),
-        type(static),
-        attrs(Attrs),
-        actions([]),
-        collisions([])
-    ),
-    ObjOut = [],
-    Commands = [],
-    RevHints = [despawned(1, [pos(10, 20)])],
-    Ctx = ctx(state(
-        frame(0),
-        [],
-        status(playing),
-        next_id(1),
-        [],
-        []
-    )),
-    execute_action(
-        ctx_old(Ctx),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut),
-        cmds_new(Commands),
-        revhints_new(RevHints)
-    ),
-    ID = 1,  % Verify that ID was correctly inferred
-    % Verify that Attrs were correctly inferred
-    Attrs = [pos(10, 20)]
-)).
+    
+    % 6. Build output
+    ChildResult = ResultList,
+    append(C1, C2, AllCommands),
+    append(R1, R2, AllRevHints).

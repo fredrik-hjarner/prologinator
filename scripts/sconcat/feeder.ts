@@ -7,7 +7,7 @@ import { Glob } from "bun";
 // Array of glob patterns to include (e.g., ["**/*.pl", "**/*.ts"])
 export const includePatterns: string[] = [
     "**/*.pl",
-    "**/*.ts"
+    // "**/*.ts"
 ];
 
 // Array of glob patterns to exclude (e.g., ["**/node_modules/**", "**/*.test.ts"])
@@ -16,7 +16,7 @@ export const excludePatterns: string[] = [
     "**/.cursor/**",
     "**/.husky/**",
     "**/.vscode/**",
-    // "**/internal_docs/**",
+    "**/internal_docs/**",
     "**/node_modules/**",
     // "**/scripts/**",
     "**/submodules/**",

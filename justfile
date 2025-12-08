@@ -31,9 +31,7 @@ test-quiet MODULE:
 
 test-all:
     @echo "\nTesting execute_action..."
-    @just test prolog/execute_action || exit 1
-    @echo "\nTesting parallel..."
-    @just test prolog/actions/parallel_test || exit 1
+    @just test prolog/execute_action_test || exit 1
     @echo "\nTesting engine..."
     @just test prolog/engine_test || exit 1
     @echo "\nTesting validation..."
@@ -47,9 +45,7 @@ test-all:
 
 test-all-verbose:
     @echo "\nTesting execute_action..."
-    @just test-verbose prolog/execute_action || exit 1
-    @echo "\nTesting parallel..."
-    @just test-verbose prolog/actions/parallel_test || exit 1
+    @just test-verbose prolog/execute_action_test || exit 1
     @echo "\nTesting engine..."
     @just test-verbose prolog/engine_test || exit 1
     @echo "\nTesting validation..."
@@ -75,8 +71,7 @@ lint-all:
     @just lint prolog/types/constraints.pl || exit 1
     @just lint prolog/types/accessors.pl || exit 1
     @just lint prolog/execute_action.pl || exit 1
-    @just lint prolog/actions/parallel.pl || exit 1
-    @just lint prolog/actions/parallel_test.pl || exit 1
+    @just lint prolog/execute_action_test.pl || exit 1
     @just lint prolog/collisions.pl || exit 1
     @just lint prolog/types/validation.pl || exit 1
     @just lint prolog/macros.pl || exit 1
@@ -89,8 +84,7 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel_test.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/collisions.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/game.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/macros.pl
@@ -99,6 +93,12 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/constraints.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/validation.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/xod/xod.pl
+
+# Run sconcat script to concatenate files
+# Usage: just sconcat [output_file]
+# If output_file is not provided, defaults to concat.xml
+sconcat OUTPUT_FILE="concat.xml":
+	bun scripts/sconcat/sconcat.ts {{OUTPUT_FILE}}
 
 # Run CI pipeline: lint-all then test-all
 # Fails if any step fails

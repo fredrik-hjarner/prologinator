@@ -125,10 +125,8 @@ function renderInterface(
         const cursor = isCurrent ? '▶' : ' ';
         const prefix = `${cursor} [${marker}]`;
         
-        // Truncate long paths
-        const displayPath = relPath.length > 50 
-            ? '...' + relPath.slice(-47) 
-            : relPath;
+        // Display full path
+        const displayPath = relPath;
         
         // Highlight current line
         const line = `${prefix} ${displayPath}`;
