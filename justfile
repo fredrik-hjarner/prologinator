@@ -118,3 +118,6 @@ ci:
     just lint-len
     just lint-all
     just test-all
+
+aider:
+    aider --no-gitignore

@@ -23,6 +23,31 @@
 :- discontiguous(execute_action_impl/5).
 
 % ==========================================================
+% Custom Actions: Runtime Expansion
+% ==========================================================
+
+% Dynamic predicate to store user-defined action definitions
+:- dynamic(user_action/2).
+
+% Check if an action is a built-in action
+is_builtin(wait(_)).
+is_builtin(move_to(_, _, _)).
+is_builtin(move_delta(_, _, _)).
+is_builtin(despawn).
+is_builtin(spawn(_, _, _, _)).
+is_builtin(set_attr(_, _)).
+is_builtin(loop(_)).
+is_builtin(list(_)).
+is_builtin(repeat(_, _)).
+is_builtin(noop).
+is_builtin(parallel_all(_)).
+is_builtin(parallel_race(_)).
+is_builtin(parallel_all_running(_)).
+is_builtin(parallel_race_running(_)).
+is_builtin(trigger_state_change(_)).
+is_builtin(define_action(_, _)).
+
+% ==========================================================
 % execute_action/5
 % ==========================================================
 
@@ -48,6 +73,7 @@
 
 % Wrapper: validates action then delegates to implementation
 % Now threads Context directly to accumulate side effects.
+% Also handles user-defined actions via runtime expansion.
 execute_action(
     ctx_old(CtxOld),
     ctx_new(CtxNew),
@@ -57,12 +83,36 @@ execute_action(
 ) :-
     action_validation(Action),
     % validate(Action, action_schema),
-    execute_action_impl(
-        ctx_old(CtxOld),
-        ctx_new(CtxNew),
-        action(Action),
-        obj_old(ObjIn),
-        obj_new(ObjOut)
+    ( is_builtin(Action) ->
+        % It's a built-in action - execute normally
+        execute_action_impl(
+            ctx_old(CtxOld),
+            ctx_new(CtxNew),
+            action(Action),
+            obj_old(ObjIn),
+            obj_new(ObjOut)
+        )
+    ; user_action(Template0, Body0),
+      % Copy template and body to avoid modifying stored
+      % versions
+      copy_term(
+          Template0-Body0, Template-Body
+      ),
+      Action = Template ->
+        % It's a user-defined action!
+        % Unify Action with Template (this binds variables
+        % in Body)
+        % Body now has the correct bindings, use it directly
+        execute_action(
+            ctx_old(CtxOld),
+            ctx_new(CtxNew),
+            action(Body),
+            obj_old(ObjIn),
+            obj_new(ObjOut)
+        )
+    ;
+        % Unknown action
+        throw(unknown_action(Action))
     ).
 
 % ==========================================================
@@ -164,6 +214,27 @@ execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
+    obj_acns(ObjIn, [_|Rest]),
+    obj_acns_obj(ObjIn, Rest, ObjOut).
+
+% ----------------------------------------------------------
+% Basic Actions: define_action
+% ----------------------------------------------------------
+
+% Defines a custom action macro at runtime. Stores the
+% Signature->Body mapping in user_action/2. When Signature
+% is called later, execute_action/5 will expand it with
+% parameter substitution and execute the Body.
+execute_action_impl(
+    ctx_old(Ctx),
+    ctx_new(Ctx),  % Context unchanged
+    action(define_action(Signature, Body)),
+    obj_old(ObjIn),
+    obj_new([ObjOut])
+) :-
+    % Store the macro definition
+    assertz(user_action(Signature, Body)),
+    % Remove this action from queue
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut).
 

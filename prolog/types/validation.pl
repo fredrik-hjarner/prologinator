@@ -389,6 +389,34 @@ action_validation(Term) :-
     ).
 
 % ==========================================================
+% Helper: Check if term has a built-in action functor
+% ==========================================================
+% This checks the functor name, not the arity, to catch
+% invalid built-in actions with wrong arity
+
+is_builtin_functor(Term) :-
+    callable(Term),
+    functor(Term, Name, _Arity),
+    builtin_action_name(Name).
+
+builtin_action_name(wait).
+builtin_action_name(move_to).
+builtin_action_name(move_delta).
+builtin_action_name(despawn).
+builtin_action_name(spawn).
+builtin_action_name(set_attr).
+builtin_action_name(loop).
+builtin_action_name(list).
+builtin_action_name(repeat).
+builtin_action_name(noop).
+builtin_action_name(parallel_all).
+builtin_action_name(parallel_race).
+builtin_action_name(parallel_all_running).
+builtin_action_name(parallel_race_running).
+builtin_action_name(trigger_state_change).
+builtin_action_name(define_action).
+
+% ==========================================================
 % action_validation_helper/1
 % ==========================================================
 
@@ -490,6 +518,33 @@ action_validation_helper(Term) :-
             ;
                 true
             )
+        ; Term = define_action(Signature, Body) ->
+            % Structure matches, validate content
+            % Signature should be callable (a term)
+            % TODO: I think highest levet should always be
+            %       ground
+            % callable(Signature),
+            % Body should be a list of actions or a single
+            %action
+            ( ground(Signature), ground(Body) ->
+                ( is_list(Body) ->
+                    true
+                ; callable(Body) ->
+                    true
+                ;
+                    true  % Allow other structures for
+                    % flexibility
+                )
+            ;
+                true
+            )
+        ; \+ is_builtin_functor(Term),
+          callable(Term) ->
+            % User-defined action - allow any callable term
+            % that is NOT a built-in action functor
+            % (validation of actual expansion happens at
+            % runtime)
+            true
         ;
             % No pattern matched - throw
             format_(
@@ -844,7 +899,11 @@ test("rev_hint_validation: wrong functor throws", (
 )).
 
 test("action_validation: wrong structure throws", (
-    Action = not_an_action(1, 2, 3),
+    % User-defined actions are now allowed (they're callable
+    % and not built-in functors), so this passes validation.
+    % It will fail at runtime if not defined.
+    % Instead, test that a non-callable term fails:
+    Action = 123,
     expect_exception(action_validation(Action))
 )).
 

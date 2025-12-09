@@ -52,7 +52,7 @@ yields(parallel_race_running(_), true).
 
 % Non-yielding actions: despawn, spawn, loop,
 % trigger_state_change, parallel_all, noop, list, set_attr,
-% repeat
+% repeat, define_action
 yields(despawn, false).
 yields(spawn(_, _, _, _), false).
 yields(loop(_), false).
@@ -68,6 +68,9 @@ yields(set_attr(_, _), false).
 % repeat(Times, Actions) does NOT yield
 %   (expands immediately into action list)
 yields(repeat(_, _), false).
+% define_action(_, _) does NOT yield
+%   (expands immediately, stores definition)
+yields(define_action(_, _), false).
 
 % move_delta(Frames, _, _) yields when Frames > 0
 yields(move_delta(Frames, _, _), true) :-
