@@ -21,6 +21,7 @@ export const excludePatterns: string[] = [
     "**/node_modules/**",
     // "**/scripts/**",
     "**/submodules/**",
+    "**/*_test.pl",
 ];
 
 // ==========================================================
