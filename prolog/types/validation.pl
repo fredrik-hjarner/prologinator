@@ -86,8 +86,41 @@ format_(Format, Args) :-
 % context_validation/1
 % ==========================================================
 
-context_validation(ctx(State)) :-
-    state_validation(State).
+context_validation(ctx(State, Input)) :-
+    state_validation(State),
+    input_validation(Input).
+
+% ==========================================================
+% input_validation/1
+% ==========================================================
+
+input_validation(Term) :-
+    ( ground(Term) ->
+        ( input_validation_helper(Term) ->
+            true
+        ;
+            format_("ERROR: Invalid input:~n  ~w~n",
+                   [Term]),
+            throw(error(type_error(input, Term),
+                        input_validation/1))
+        )
+    ;
+        true
+    ).
+
+input_validation_helper(
+    input(events(Events), held(Held))
+) :-
+    is_list(Events),
+    is_list(Held).
+
+% ==========================================================
+% event_validation/1
+% ==========================================================
+
+event_validation(event(key(KeyCode), State)) :-
+    integer(KeyCode),
+    ( State = down ; State = up ).
 
 % ==========================================================
 % state_validation/1
@@ -513,6 +546,10 @@ action_validation_helper(Term) :-
         ; Term = log(Msg) ->
             % Structure matches, validate Msg is a string
             is_list(Msg)
+        ; builtin_action(Term) ->
+            % Built-in action - allow it (arity already
+            % validated by builtin_action/1)
+            true
         ; \+ is_builtin_functor(Term),
           callable(Term) ->
             % User-defined action - allow any callable term

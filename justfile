@@ -2,9 +2,15 @@ default:
 	@just --list
 
 # Run the game with Scryer Prolog
+# Usage: just game (uses games/default)
 # Usage: just game ./games/my_game
-game GAME:
-	@GAME={{GAME}} scryer-prolog prolog/game.pl -g "main"
+# Usage: just game ./games/my_game ./games/my_input
+game GAME='games/default' INPUTS='games/input_demo.pl':
+	@if [ -z "{{INPUTS}}" ]; then \
+		GAME={{GAME}} scryer-prolog prolog/game.pl -g "main"; \
+	else \
+		GAME={{GAME}} INPUTS={{INPUTS}} scryer-prolog prolog/game.pl -g "main"; \
+	fi
 
 # Run tests for a module (verbose output)
 # Usage: just test prolog/execute_action
@@ -37,6 +43,8 @@ test-all:
     @just test prolog/execute_action_bwd_test || exit 1
     @echo "\nTesting engine_test..."
     @just test prolog/engine_test || exit 1
+    @echo "\nTesting yields_test..."
+    @just test prolog/yields_test || exit 1
     @echo "\nTesting validation_test..."
     @just test prolog/types/validation_test || exit 1
     @echo "\nTesting validation2..."
@@ -53,6 +61,8 @@ test-all-verbose:
     @just test-verbose prolog/execute_action_bwd_test || exit 1
     @echo "\nTesting engine_test..."
     @just test-verbose prolog/engine_test || exit 1
+    @echo "\nTesting yields_test..."
+    @just test-verbose prolog/yields_test || exit 1
     @echo "\nTesting validation_test..."
     @just test-verbose prolog/types/validation_test || exit 1
     @echo "\nTesting validation2..."
@@ -98,6 +108,10 @@ lint-all:
     @just lint prolog/macros.pl || exit 1
     @echo "Linting test_macros.pl..."
     @just lint prolog/test_macros.pl || exit 1
+    @echo "Linting yields.pl..."
+    @just lint prolog/yields.pl || exit 1
+    @echo "Linting yields_test.pl..."
+    @just lint prolog/yields_test.pl || exit 1
     @echo "Linting xod/xod.pl..."
     @just lint prolog/xod/xod.pl || exit 1
     @echo "All files passed linting!"
@@ -118,6 +132,8 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/accessors.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/constraints.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/validation.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/yields.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/yields_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/xod/xod.pl
 
 # Run sconcat script to concatenate files

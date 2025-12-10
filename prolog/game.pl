@@ -4,12 +4,19 @@
 
 :- module(game, [main/0]).
 
-:- use_module(library(lists), [member/2]).
+:- use_module(library(lists), [member/2, select/3]).
 :- use_module(library(between), [between/3]).
 :- use_module(library(charsio), [
-    get_single_char/1
+    get_single_char/1,
+    atom_chars/2
 ]).
 :- use_module(library(os), [getenv/2]).
+:- use_module(library(assoc), [
+    empty_assoc/1,
+    put_assoc/4,
+    get_assoc/3,
+    list_to_assoc/2
+]).
 :- use_module('./engine', [tick/2]).
 :- use_module('./types/constraints', [
     state_constraint/1,
@@ -19,7 +26,6 @@
 :- use_module('./types/adv_accessors', [
     ctx_attr_val/3
 ]).
-:- use_module(library(assoc)).
 
 % ==========================================================
 % Main Game Loop
@@ -35,28 +41,58 @@ main :-
               throw('GAME environment variable missing')
           ),
           
+          % Load input timeline (optional)
+          ( catch(getenv("INPUTS", InputFile), _, fail) ->
+              % Convert InputFile (list of chars) to atom
+              atom_chars(InputFileAtom, InputFile),
+              % TODO: Hm relies on input_timeline existing
+              %        in InputFile??
+              consult(InputFileAtom),
+              % Try user module first, then current module
+              ( catch(user:input_timeline(TimelineList), _, 
+                      input_timeline(TimelineList)) ->
+                  list_to_assoc(TimelineList, Timeline)
+              ;
+                  throw('input_timeline not found in file')
+              )
+          ;
+              empty_assoc(Timeline)
+          ),
+          
           % Create root object that loads the game
           empty_assoc(AttrStore0),
           put_assoc(0, AttrStore0,
                     [attr(x, 0), attr(y, 0)],
                     AttrStore1),
           
-          InitialContext = ctx(state(
-              frame(0),
-              objects([
-                  object(
-                      id(0),
-                      type(static),
-                      actions([load(GameFile)]),
-                      collisions([])
-                  )
-              ]),
-              attrs(AttrStore1),
-              status(playing),
-              next_id(1),
-              commands([])
-          )),
-          game_loop(ctx_in(InitialContext), [])
+          InitialContext = ctx(
+              state(
+                  frame(0),
+                  objects([
+                      object(
+                          id(0),
+                          type(static),
+                          actions([load(GameFile)]),
+                          collisions([])
+                      )
+                  ]),
+                  attrs(AttrStore1),
+                  status(playing),
+                  next_id(1),
+                  commands([])
+              ),
+              input(
+                  events([]),  % No events at frame 0
+                  held([])     % No keys held initially
+              )
+          ),
+          
+          game_loop(
+            ctx_in(InitialContext), 
+            [],
+            input_timeline(Timeline),
+            keys_held([])  % Initial key state
+          )
         ),
         Error,
         ( write('Fatal error in main: '),
@@ -65,29 +101,44 @@ main :-
         )
     ).
 
-game_loop(ctx_in(Ctx), History) :-
+game_loop(
+    ctx_in(Ctx), 
+    History,
+    input_timeline(Timeline),
+    keys_held(KeysHeld)  % Current key state
+) :-
     catch(
         ( ctx_status(Ctx, Status),
           ( Status = playing ->
-            render(ctx_in(Ctx)),
-              write('Press: f=forward, r=reverse, q=quit'),
+              render(ctx_in(Ctx)),
+              write('Press: f=forward, r=reverse, \
+q=quit'),
               nl,
               flush_output,
               get_single_char(Char),
               ( Char = end_of_file ->
                   % EOF, quit
                   ctx_status_ctx(Ctx, lost, NewCtx),
-                  NewHistory = History
+                  NewHistory = History,
+                  NewKeysHeld = KeysHeld
               ;
                   handle_input(
                       Char,
                       ctx_in(Ctx),
                       History,
+                      input_timeline(Timeline),
+                      keys_held(KeysHeld),
                       ctx_out(NewCtx),
-                      NewHistory
+                      NewHistory,
+                      keys_held(NewKeysHeld)
                   )
               ),
-              game_loop(ctx_in(NewCtx), NewHistory)
+              game_loop(
+                ctx_in(NewCtx), 
+                NewHistory,
+                input_timeline(Timeline),
+                keys_held(NewKeysHeld)
+              )
           ;
               render(ctx_in(Ctx)),
               write('Game Over!'), nl
@@ -101,12 +152,43 @@ game_loop(ctx_in(Ctx), History) :-
     ).
 
 handle_input(
-    Char, ctx_in(Ctx), History, ctx_out(NewCtx), NewHistory
+    Char, 
+    ctx_in(Ctx), 
+    History,
+    input_timeline(Timeline),
+    keys_held(KeysHeld),
+    ctx_out(NewCtx), 
+    NewHistory,
+    keys_held(NewKeysHeld)
 ) :-
     (   char_code(Char, 102) ->  % 'f'
-        % Forward: tick and add to history
+        % Forward: lookup events, update keys, tick
+        ctx_frame(Ctx, Frame),
+        Frame1 #= Frame + 1,
+        
+        % Get events for next frame
+        ( get_assoc(Frame1, Timeline, Events) ->
+            true
+        ;
+            Events = []
+        ),
+        
+        % Update keys_held based on events
+        apply_events(Events, KeysHeld, NewKeysHeld),
+        
+        % Inject input(events, held) into context
+        ctx_input_ctx(
+          Ctx,
+          input(events(Events), held(NewKeysHeld)),
+          CtxWithInput
+        ),
+        
+        % Tick
         catch(
-            tick(ctx_in(Ctx), ctx_out(NewCtx)),
+            tick(
+              ctx_in(CtxWithInput), 
+              ctx_out(NewCtx)
+            ),
             Error,
             ( write('Error during tick: '),
               write(Error), nl,
@@ -115,24 +197,57 @@ handle_input(
         ),
         NewHistory = [ctx_in(Ctx)|History]
     ;   char_code(Char, 114) ->  % 'r'
-        % Reverse: go back to previous state
+        % Reverse: go back
         ( History = [ctx_in(PrevCtx)|RestHistory] ->
             NewCtx = PrevCtx,
-            NewHistory = RestHistory
+            NewHistory = RestHistory,
+            % Reconstruct keys_held from PrevCtx
+            ctx_input(PrevCtx, 
+                      input(_, held(NewKeysHeld)))
         ;
-            % No history, stay at current state
             NewCtx = Ctx,
-            NewHistory = History
+            NewHistory = History,
+            NewKeysHeld = KeysHeld
         )
     ;   char_code(Char, 113) ->  % 'q'
-        % Quit: set status to lost to exit loop
+        % Quit
         ctx_status_ctx(Ctx, lost, NewCtx),
-        NewHistory = History
+        NewHistory = History,
+        NewKeysHeld = KeysHeld
     ;
-        % Unknown input, stay at current state
+        % Unknown input
         NewCtx = Ctx,
-        NewHistory = History
+        NewHistory = History,
+        NewKeysHeld = KeysHeld
     ).
+
+% apply_events(+Events, +KeysIn, -KeysOut)
+% Update key state based on frame events
+apply_events([], Keys, Keys).
+apply_events(
+    [event(key(K), down)|Rest], 
+    KeysIn, 
+    KeysOut
+) :-
+    % Add K if not present
+    ( member(K, KeysIn) ->
+        KeysTemp = KeysIn
+    ;
+        KeysTemp = [K|KeysIn]
+    ),
+    apply_events(Rest, KeysTemp, KeysOut).
+apply_events(
+    [event(key(K), up)|Rest], 
+    KeysIn, 
+    KeysOut
+) :-
+    % Remove K if present
+    ( select(K, KeysIn, KeysTemp) ->
+        true
+    ;
+        KeysTemp = KeysIn
+    ),
+    apply_events(Rest, KeysTemp, KeysOut).
 
 % ==========================================================
 % ASCII Rendering
@@ -208,6 +323,7 @@ get_symbol(Obj, Symbol) :-
     (   Type = tower -> char_code(Symbol, 84)  % 'T'
     ;   Type = enemy -> char_code(Symbol, 69)  % 'E'
     ;   Type = proj -> char_code(Symbol, 42)   % '*'
+    ;   Type = player -> char_code(Symbol, 64)  % '@'
     ;   char_code(Symbol, 63)                 % '?'
     ).
 get_symbol(_, Dot) :-

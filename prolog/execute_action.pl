@@ -25,6 +25,11 @@
 :- use_module('./types/adv_accessors').
 :- use_module('./resolve_action', [resolve_action/4]).
 :- use_module('./builtin_actions', [builtin_action/1]).
+:- use_module('./input_helpers', [
+    key_down/2,
+    key_up/2,
+    key_held/2
+]).
 :- use_module('./util/util', [
     select_many/3,
     is_list/1
@@ -591,6 +596,101 @@ execute_action_impl(
         NewActions = [move_delta(Frames1, DX, DY)|Rest]
     ;
         NewActions = Rest
+    ).
+
+% ----------------------------------------------------------
+% Input Actions: wait_key_down
+% ----------------------------------------------------------
+
+% wait_key_down(+KeyCode)
+% Mode: wait_key_down(+KeyCode)
+% Description: Waits until specified key is pressed
+%   (detects 'down' event for the key)
+% Yields: false (checks each frame)
+
+execute_action_impl(
+    ctx_old(Ctx),
+    ctx_new(Ctx),  % Context unchanged
+    action(wait_key_down(KeyCode)),
+    obj_old(ObjIn),
+    obj_new([ObjOut])
+) :-
+    obj_acns(ObjIn, [_|Rest]),
+    
+    % Check if key was pressed THIS frame
+    ( key_down(Ctx, KeyCode) ->
+        % Key pressed: action complete
+        obj_acns_obj(ObjIn, Rest, ObjOut)
+    ;
+        % Key not pressed: keep waiting
+        obj_acns_obj(
+          ObjIn,
+          [wait_key_down(KeyCode)|Rest],
+          ObjOut
+        )
+    ).
+
+% ----------------------------------------------------------
+% Input Actions: wait_key_up
+% ----------------------------------------------------------
+
+% wait_key_up(+KeyCode)
+% Mode: wait_key_up(+KeyCode)
+% Description: Waits until specified key is released
+%   (detects 'up' event for the key)
+% Yields: false (checks each frame)
+
+execute_action_impl(
+    ctx_old(Ctx),
+    ctx_new(Ctx),  % Context unchanged
+    action(wait_key_up(KeyCode)),
+    obj_old(ObjIn),
+    obj_new([ObjOut])
+) :-
+    obj_acns(ObjIn, [_|Rest]),
+    
+    % Check if key released THIS frame
+    ( key_up(Ctx, KeyCode) ->
+        % Key released: action complete
+        obj_acns_obj(ObjIn, Rest, ObjOut)
+    ;
+        % Key still pressed: keep waiting
+        obj_acns_obj(
+          ObjIn,
+          [wait_key_up(KeyCode)|Rest],
+          ObjOut
+        )
+    ).
+
+% ----------------------------------------------------------
+% Input Actions: wait_key_held
+% ----------------------------------------------------------
+
+% wait_key_held(+KeyCode)
+% Mode: wait_key_held(+KeyCode)
+% Description: Yields every frame while key is held
+%   Use in loop: loop([wait_key_held(39), move(...)])
+% Yields: true when key is held, false otherwise
+
+execute_action_impl(
+    ctx_old(Ctx),
+    ctx_new(Ctx),  % Context unchanged
+    action(wait_key_held(KeyCode)),
+    obj_old(ObjIn),
+    obj_new([ObjOut])
+) :-
+    obj_acns(ObjIn, [_|Rest]),
+    
+    ( key_held(Ctx, KeyCode) ->
+        % Key held: yield (action complete)
+        obj_acns_obj(ObjIn, Rest, ObjOut)
+    ;
+        % Key not held: keep waiting
+        obj_acns_obj(
+          ObjIn,
+          [wait_key_held(KeyCode)|Rest],
+          ObjOut
+        )
     ).
 
 % ----------------------------------------------------------

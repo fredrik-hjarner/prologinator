@@ -5,6 +5,7 @@
 :- module(constructors, [
     empty_ctx/1,
     ctx_with_attrs/2,
+    ctx_with_frame_attrs/3,
     empty_attr_store/1
 ]).
 
@@ -22,6 +23,7 @@
 % - status(playing)
 % - next_id(1)
 % - commands([])
+% - input(events([]), held([]))
 empty_ctx(ctx(state(
     frame(0),
     objects([]),
@@ -29,7 +31,7 @@ empty_ctx(ctx(state(
     status(playing),
     next_id(1),
     commands([])
-))) :-
+), input(events([]), held([])))) :-
     empty_assoc(EmptyAttrs).
 
 % Creates a context with a provided attribute store.
@@ -41,7 +43,18 @@ ctx_with_attrs(Attrs, ctx(state(
     status(playing),
     next_id(1),
     commands([])
-))).
+), input(events([]), held([])))).
+
+% Creates a context with provided frame and attribute store.
+% All other fields use defaults.
+ctx_with_frame_attrs(Frame, Attrs, ctx(state(
+    frame(Frame),
+    objects([]),
+    attrs(Attrs),
+    status(playing),
+    next_id(1),
+    commands([])
+), input(events([]), held([])))).
 
 % ==========================================================
 % Attribute Store Constructors

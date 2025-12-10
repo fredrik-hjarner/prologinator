@@ -1,9 +1,41 @@
 [
-    % Example game: Simple tower defense
+    % Example game: Simple tower defense with player
     % This file contains a list of actions that the root object executes
     
     % Test log action
     log("Game loaded successfully!"),
+    
+    % Spawn player at center - responds to input
+    spawn(player, 10, 10, [
+        log("Player spawned!"),
+        parallel_all([
+            % Right arrow (39) - move right
+            loop([
+                log("move right loop started!"),
+                wait_key_held(39),
+                move_delta(1, 1, 0)
+            ]),
+            % Left arrow (37) - move left
+            loop([
+                log("move left loop started!"),
+                wait_key_held(37),
+                move_delta(1, -1, 0)
+            ]),
+            % Up arrow (38) - move up
+            loop([
+                log("move up loop started!"),
+                wait_key_held(38),
+                move_delta(1, 0, -1)
+            ]),
+            % Down arrow (40) - move down
+            loop([
+                log("move down loop started!"),
+                wait_key_held(40),
+                move_delta(1, 0, 1)
+            ])
+        ]),
+        log("parallel_all completed!")
+    ]),
     
     % Define a custom action for spawning towers
     define_action(spawn_tower(X, Y), list([

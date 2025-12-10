@@ -28,4 +28,7 @@ builtin_action(trigger_state_change(_)).
 builtin_action(define_action(_, _)).
 builtin_action(load(_)).
 builtin_action(log(_)).
+builtin_action(wait_key_down(_)).
+builtin_action(wait_key_up(_)).
+builtin_action(wait_key_held(_)).
 

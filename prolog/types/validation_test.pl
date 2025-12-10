@@ -16,6 +16,10 @@
     command_validation/1,
     action_validation/1
 ]).
+:- use_module('./constructors', [
+    ctx_with_frame_attrs/3
+]).
+:- use_module('./accessors').
 
 % test/2 clauses are intentionally separated by other code
 :- discontiguous(test/2).
@@ -86,52 +90,47 @@ objects and commands", (
               Attrs2),
     put_assoc(2, Attrs2, [attr(x, 15), attr(y, 10)],
               EmptyAttrs),
-    Ctx = ctx(state(
-        frame(42),
-        objects([
-            object(
-                id(0), type(tower),
-                actions([
-                    loop([
-                        wait(3),
-                        spawn(proj, 5, 19, [
-                            move_to(5, 0, 20)
-                        ])
+    ctx_with_frame_attrs(42, EmptyAttrs, Ctx0),
+    ctx_objs_ctx(Ctx0, [
+        object(
+            id(0), type(tower),
+            actions([
+                loop([
+                    wait(3),
+                    spawn(proj, 5, 19, [
+                        move_to(5, 0, 20)
                     ])
-                ]), collisions([])
-            ),
-            object(
-                id(1), type(enemy),
-                actions([
-                    move_to(19, 5, 15),
-                    wait(1)
-                ]), collisions([])
-            ),
-            object(
-                id(2), type(proj),
-                actions([move_to(15, 0, 10)]),
-                collisions([])
-            ),
-            object(
-                id(3), type(static),
-                actions([
-                    parallel_all([
-                        wait(5),
-                        spawn(enemy, 0, 10, [])
-                    ])
-                ]), collisions([])
-            )
-        ]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(4),
-        commands([
-            spawn_request(enemy, 0, 0, []),
-            spawn_request(proj, 10, 10, [
-                move_to(10, 0, 10)
-            ])
+                ])
+            ]), collisions([])
+        ),
+        object(
+            id(1), type(enemy),
+            actions([
+                move_to(19, 5, 15),
+                wait(1)
+            ]), collisions([])
+        ),
+        object(
+            id(2), type(proj),
+            actions([move_to(15, 0, 10)]),
+            collisions([])
+        ),
+        object(
+            id(3), type(static),
+            actions([
+                parallel_all([
+                    wait(5),
+                    spawn(enemy, 0, 10, [])
+                ])
+            ]), collisions([])
+        )
+    ], Ctx1),
+    ctx_nextid_cmds_ctx(Ctx1, 4, [
+        spawn_request(enemy, 0, 0, []),
+        spawn_request(proj, 10, 10, [
+            move_to(10, 0, 10)
         ])
-    )),
+    ], Ctx),
     context_validation(Ctx)
 )).
 

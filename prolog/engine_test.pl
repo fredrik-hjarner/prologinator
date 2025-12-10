@@ -2,40 +2,15 @@
 % use_module/1 imports ALL the exported stuff.
 :- use_module('./engine').
 :- use_module('./types/accessors').
-:- use_module('./types/constructors', [empty_ctx/1]).
+:- use_module('./types/constructors', [
+    empty_ctx/1,
+    ctx_with_attrs/2
+]).
 :- use_module(library(lists), [member/2, length/2]).
 :- use_module(library(assoc), [
     empty_assoc/1,
     put_assoc/4
 ]).
-
-% ==========================================================
-% Tests for yields/2
-% ==========================================================
-
-test("yields: wait with positive number should \
-yield", (
-    A = wait(5),
-    yields(A, true)
-)).
-
-test("yields: wait with zero should not yield", (
-    A = wait(0),
-    yields(A, false)
-)).
-
-test("yields: move_to with positive frames should yield", (
-    A = move_to(10, 20, 3),
-    yields(A, true)
-)).
-
-test("yields: can generate yielding actions \
-bidirectionally", (
-    yields(A, true),
-    ( A = wait(_)
-    ; A = move_to(_, _, _)
-    ; A = parallel_all_running(_) )
-)).
 
 % ==========================================================
 % Tests for tick_object/5
@@ -49,15 +24,7 @@ object", (
         actions([]),
         collisions([])
     ),
-    empty_assoc(EmptyAttrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_ctx(Ctx),
     tick_object(
         ctx_old(Ctx),
         ctx_new(CtxNew),
@@ -81,15 +48,7 @@ after one execution", (
         actions([wait(5)]),
         collisions([])
     ),
-    empty_assoc(EmptyAttrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_ctx(Ctx),
     tick_object(
         ctx_old(Ctx),
         ctx_new(CtxNew),
@@ -113,15 +72,7 @@ continues until empty", (
         actions([wait(0)]),
         collisions([])
     ),
-    empty_assoc(EmptyAttrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_ctx(Ctx),
     tick_object(
         ctx_old(Ctx),
         ctx_new(CtxNew),
@@ -143,95 +94,57 @@ continues until empty", (
 
 test("tick: increments frame and processes empty game \
 state", (
-    empty_assoc(EmptyAttrs),
-    CtxIn = ctx(state(
-        frame(0),
-        objects([object(
-            id(0),
-            type(static),
-            actions([]),
-            collisions([])
-        )]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_ctx(CtxIn0),
+    ctx_objs_ctx(CtxIn0, [object(
+        id(0),
+        type(static),
+        actions([]),
+        collisions([])
+    )], CtxIn),
     tick(ctx_in(CtxIn), ctx_out(CtxOut)),
-    CtxOut = ctx(state(
-        frame(1),
-        objects([object(
-            id(0),
-            type(static),
-            actions([]),
-            collisions([])
-        )]),
-        attrs(_),
-        status(playing),
-        next_id(1),
-        commands([])
-    ))
+    ctx_frame(CtxOut, 1),
+    ctx_objs(CtxOut, [object(
+        id(0),
+        type(static),
+        actions([]),
+        collisions([])
+    )])
 )).
 
 test("tick: processes object with yielding action \
 (wait)", (
-    empty_assoc(EmptyAttrs),
-    CtxIn = ctx(state(
-        frame(0),
-        objects([object(
-            id(0),
-            type(static),
-            actions([wait(3)]),
-            collisions([])
-        )]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_ctx(CtxIn0),
+    ctx_objs_ctx(CtxIn0, [object(
+        id(0),
+        type(static),
+        actions([wait(3)]),
+        collisions([])
+    )], CtxIn),
     tick(ctx_in(CtxIn), ctx_out(CtxOut)),
-    CtxOut = ctx(state(
-        frame(1),
-        objects([object(
-            id(0),
-            type(static),
-            actions([wait(2)]),
-            collisions([])
-        )]),
-        attrs(_),
-        status(playing),
-        next_id(1),
-        commands([])
-    ))
+    ctx_frame(CtxOut, 1),
+    ctx_objs(CtxOut, [object(
+        id(0),
+        type(static),
+        actions([wait(2)]),
+        collisions([])
+    )])
 )).
 
 test("tick: processes spawn request and creates new \
 object", (
-    empty_assoc(EmptyAttrs),
-    CtxIn = ctx(state(
-        frame(0),
-        objects([object(
-            id(0),
-            type(static),
-            actions([
-                spawn(enemy, 5, 5, [])
-            ]),
-            collisions([])
-        )]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_ctx(CtxIn0),
+    ctx_objs_ctx(CtxIn0, [object(
+        id(0),
+        type(static),
+        actions([
+            spawn(enemy, 5, 5, [])
+        ]),
+        collisions([])
+    )], CtxIn),
     tick(ctx_in(CtxIn), ctx_out(CtxOut)),
-    CtxOut = ctx(state(
-        frame(1),
-        objects(FinalObjs),
-        attrs(_),
-        status(playing),
-        next_id(2),
-        commands([])
-    )),
+    ctx_frame(CtxOut, 1),
+    ctx_nextid(CtxOut, 2),
+    ctx_objs(CtxOut, FinalObjs),
     member(
         object(
             id(0),
@@ -267,42 +180,31 @@ test("collision: simple enemy-projectile collision", (
               Attrs1),
     put_assoc(1, Attrs1, [attr(x, 5), attr(y, 10)],
               EmptyAttrs),
-    InitialContext = ctx(state(
-        frame(0),
-        objects([
-            object(
-                id(0), type(enemy),
-                actions([
-                    % Moving right, arrives at (10, 10) in 1
-                    % frame
-                    move_to(10, 10, 1)
-                ]), collisions([])
-            ),
-            object(
-                id(1), type(proj),
-                actions([
-                    % Moving to same target, arrives at
-                    % (10, 10) in 1 frame
-                    move_to(10, 10, 1)
-                ]), collisions([])
-            )
-        ]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(2),
-        commands([])
-    )),
+    ctx_with_attrs(EmptyAttrs, Ctx0),
+    ctx_objs_ctx(Ctx0, [
+        object(
+            id(0), type(enemy),
+            actions([
+                % Moving right, arrives at (10, 10) in 1
+                % frame
+                move_to(10, 10, 1)
+            ]), collisions([])
+        ),
+        object(
+            id(1), type(proj),
+            actions([
+                % Moving to same target, arrives at
+                % (10, 10) in 1 frame
+                move_to(10, 10, 1)
+            ]), collisions([])
+        )
+    ], Ctx1),
+    ctx_nextid_ctx(Ctx1, 2, InitialContext),
     % Run 2 frames - collision should happen at frame 1 when
     % both reach (10, 10)
     tick(ctx_in(InitialContext), ctx_out(Context1)),
-    Context1 = ctx(state(
-        frame(1),
-        objects(Objs1),
-        attrs(_),
-        status(_),
-        next_id(_),
-        commands(_)
-    )),
+    ctx_frame(Context1, 1),
+    ctx_objs(Context1, Objs1),
     % After collision at frame 1, both objects should be
     % removed
     length(Objs1, ObjCount),
@@ -324,72 +226,60 @@ freeze (first collision)", (
               Attrs2),
     put_assoc(2, Attrs2, [attr(x, 15), attr(y, 19)],
               EmptyAttrs),
-    InitialContext = ctx(state(
-        frame(0),
-        objects([
-            object(
-                id(0), type(tower),
-                actions([
-                    loop([
-                        wait(3),
-                        spawn(proj, 5, 19, [
-                            move_to(5, 0, 20)
-                        ])
+    ctx_with_attrs(EmptyAttrs, Ctx0),
+    ctx_objs_ctx(Ctx0, [
+        object(
+            id(0), type(tower),
+            actions([
+                loop([
+                    wait(3),
+                    spawn(proj, 5, 19, [
+                        move_to(5, 0, 20)
                     ])
-                ]), collisions([])
-            ),
-            object(
-                id(1), type(tower),
-                actions([
-                    loop([
-                        wait(3),
-                        spawn(proj, 10, 19, [
-                            move_to(10, 0, 20)
-                        ])
+                ])
+            ]), collisions([])
+        ),
+        object(
+            id(1), type(tower),
+            actions([
+                loop([
+                    wait(3),
+                    spawn(proj, 10, 19, [
+                        move_to(10, 0, 20)
                     ])
-                ]), collisions([])
-            ),
-            object(
-                id(2), type(tower),
-                actions([
-                    loop([
-                        wait(3),
-                        spawn(proj, 15, 19, [
-                            move_to(15, 0, 20)
-                        ])
+                ])
+            ]), collisions([])
+        ),
+        object(
+            id(2), type(tower),
+            actions([
+                loop([
+                    wait(3),
+                    spawn(proj, 15, 19, [
+                        move_to(15, 0, 20)
                     ])
-                ]), collisions([])
-            ),
-            object(
-                id(3), type(static),
-                actions([
-                    loop([
-                        wait(5),
-                        spawn(enemy, 0, 10, [
-                            move_to(19, 10, 30)
-                        ])
+                ])
+            ]), collisions([])
+        ),
+        object(
+            id(3), type(static),
+            actions([
+                loop([
+                    wait(5),
+                    spawn(enemy, 0, 10, [
+                        move_to(19, 10, 30)
                     ])
-                ]), collisions([])
-            )
-        ]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(4),
-        commands([])
-    )),
+                ])
+            ]), collisions([])
+        )
+    ], Ctx1),
+    ctx_nextid_ctx(Ctx1, 4, InitialContext),
     % Run tick 32 times (first collision should happen
     % around here)
     run_ticks(
         ctx_in(InitialContext), 32, ctx_out(FinalContext)
     ),
-    FinalContext = ctx(state(
-        frame(32),
-        objects(_),
-        attrs(_),
-        status(_),
-        next_id(_),
-        commands(_)
-    ))
+    ctx_frame(FinalContext, 32)
 )).
 
 % ==========================================================
