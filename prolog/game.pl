@@ -6,7 +6,10 @@
 
 :- use_module(library(lists), [member/2]).
 :- use_module(library(between), [between/3]).
-:- use_module(library(charsio), [get_single_char/1]).
+:- use_module(library(charsio), [
+    get_single_char/1
+]).
+:- use_module(library(os), [getenv/2]).
 :- use_module('./engine', [tick/2]).
 :- use_module('./types/constraints', [
     state_constraint/1,
@@ -22,125 +25,79 @@
 % Main Game Loop
 % ==========================================================
 main :-
-    % Initial game state:
-    % - Multiple towers at the bottom row that shoot
-    %   projectiles periodically
-    % - A spawner that creates enemies every 5 frames
-    % Initialize attribute store
-    empty_assoc(AttrStore0),
-    put_assoc(0, AttrStore0,
-              [attr(x, 5), attr(y, 19)], AttrStore1),
-    put_assoc(1, AttrStore1,
-              [attr(x, 10), attr(y, 19)], AttrStore2),
-    put_assoc(2, AttrStore2,
-              [attr(x, 15), attr(y, 19)], AttrStore3),
-    InitialContext = ctx(state(
-        frame(0),
-        objects([
-            % Tower 1: Burst fire (3 shots in quick
-            %   succession)
-            object(
-                id(0), type(tower),
-                actions([
-                    loop([
-                        wait(5),
-                        repeat(3, [
-                            spawn(proj, 5, 19, [
-                                move_delta(20, 0, -1)
-                            ]),
-                            wait(1)
-                        ])
-                    ])
-                ]), collisions([])
-            ),
-            % Tower 2: Diagonal shots
-            object(
-                id(1), type(tower),
-                actions([
-                    loop([
-                        wait(4),
-                        spawn(proj, 10, 19, [
-                            move_delta(15, 1, -1)
-                        ]),
-                        wait(2),
-                        spawn(proj, 10, 19, [
-                            move_delta(15, -1, -1)
-                        ])
-                    ])
-                ]), collisions([])
-            ),
-            % Tower 3: Rapid fire burst
-            object(
-                id(2), type(tower),
-                actions([
-                    loop([
-                        wait(6),
-                        repeat(5, [
-                            spawn(proj, 15, 19, [
-                                move_delta(25, 0, -1)
-                            ]),
-                            wait(1)
-                        ])
-                    ])
-                ]), collisions([])
-            ),
-            % Enemy spawner: Creates enemies with varied
-            %   patterns
-            object(
-                id(3), type(static),
-                actions([
-                    loop([
-                        wait(8),
-                        spawn(enemy, 0, 10, [
-                            move_delta(30, 1, 0)
-                        ]),
-                        wait(3),
-                        spawn(enemy, 0, 5, [
-                            % Zigzag pattern
-                            repeat(3, [
-                                move_delta(5, 2, 0),
-                                move_delta(5, 2, 1)
-                            ])
-                        ]),
-                        wait(2),
-                        spawn(enemy, 0, 15, [
-                            move_delta(25, 1, -1)
-                        ])
-                    ])
-                ]), collisions([])
-            )
-        ]),
-        attrs(AttrStore3),
-        status(playing),
-        next_id(4),
-        commands([])
-    )),
-    game_loop(ctx_in(InitialContext), []).
+    catch(
+        ( % Get game file from environment (required)
+          ( catch(getenv("GAME", GameFile), _, fail) ->
+              % GameFile is already a list of chars
+              % (Scryer string)
+              true
+          ;
+              throw('GAME environment variable missing')
+          ),
+          
+          % Create root object that loads the game
+          empty_assoc(AttrStore0),
+          put_assoc(0, AttrStore0,
+                    [attr(x, 0), attr(y, 0)],
+                    AttrStore1),
+          
+          InitialContext = ctx(state(
+              frame(0),
+              objects([
+                  object(
+                      id(0),
+                      type(static),
+                      actions([load(GameFile)]),
+                      collisions([])
+                  )
+              ]),
+              attrs(AttrStore1),
+              status(playing),
+              next_id(1),
+              commands([])
+          )),
+          game_loop(ctx_in(InitialContext), [])
+        ),
+        Error,
+        ( write('Fatal error in main: '),
+          write(Error), nl,
+          halt(1)
+        )
+    ).
 
 game_loop(ctx_in(Ctx), History) :-
-    ctx_status(Ctx, Status),
-    ( Status = playing ->
-        render(ctx_in(Ctx)),
-        write('Press: f=forward, r=reverse, q=quit'), nl,
-        flush_output,
-        get_single_char(Char),
-        ( Char = end_of_file ->
-            % EOF, quit
-            ctx_status_ctx(Ctx, lost, NewCtx),
-            NewHistory = History
-        ;
-            handle_input(
-                Char,
-                ctx_in(Ctx),
-                History,
-                ctx_out(NewCtx),
-                NewHistory
-            )
+    catch(
+        ( ctx_status(Ctx, Status),
+          ( Status = playing ->
+            render(ctx_in(Ctx)),
+              write('Press: f=forward, r=reverse, q=quit'),
+              nl,
+              flush_output,
+              get_single_char(Char),
+              ( Char = end_of_file ->
+                  % EOF, quit
+                  ctx_status_ctx(Ctx, lost, NewCtx),
+                  NewHistory = History
+              ;
+                  handle_input(
+                      Char,
+                      ctx_in(Ctx),
+                      History,
+                      ctx_out(NewCtx),
+                      NewHistory
+                  )
+              ),
+              game_loop(ctx_in(NewCtx), NewHistory)
+          ;
+              render(ctx_in(Ctx)),
+              write('Game Over!'), nl
+          )
         ),
-        game_loop(ctx_in(NewCtx), NewHistory)
-    ;
-        render(ctx_in(Ctx)),
-        write('Game Over!'), nl
+        Error,
+        ( write('Error in game_loop: '),
+          write(Error), nl,
+          halt(1)
+        )
     ).
 
 handle_input(
@@ -148,7 +105,14 @@ handle_input(
 ) :-
     (   char_code(Char, 102) ->  % 'f'
         % Forward: tick and add to history
-        tick(ctx_in(Ctx), ctx_out(NewCtx)),
+        catch(
+            tick(ctx_in(Ctx), ctx_out(NewCtx)),
+            Error,
+            ( write('Error during tick: '),
+              write(Error), nl,
+              throw(Error)
+            )
+        ),
         NewHistory = [ctx_in(Ctx)|History]
     ;   char_code(Char, 114) ->  % 'r'
         % Reverse: go back to previous state
@@ -175,8 +139,9 @@ handle_input(
 % ==========================================================
 render(ctx_in(Ctx)) :-
     % Clear screen (ANSI escape code)
-    char_code(Esc, 27),  % ESC character
-    write(Esc), write('[2J'), write(Esc), write('[H'),
+    % COMMENTED OUT for debugging
+    % char_code(Esc, 27),  % ESC character
+    % write(Esc), write('[2J'), write(Esc), write('[H'),
     
     ctx_frame(Ctx, Frame),
     ctx_status(Ctx, Status),

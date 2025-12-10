@@ -2,8 +2,9 @@ default:
 	@just --list
 
 # Run the game with Scryer Prolog
-game:
-	scryer-prolog prolog/game.pl -g "main"
+# Usage: just game ./games/my_game
+game GAME:
+	@GAME={{GAME}} scryer-prolog prolog/game.pl -g "main"
 
 # Run tests for a module (verbose output)
 # Usage: just test prolog/execute_action
@@ -81,6 +82,8 @@ lint-all:
     @just lint prolog/types/accessors.pl || exit 1
     @echo "Linting resolve_action.pl..."
     @just lint prolog/resolve_action.pl || exit 1
+    @echo "Linting builtin_actions.pl..."
+    @just lint prolog/builtin_actions.pl || exit 1
     @echo "Linting execute_action.pl..."
     @just lint prolog/execute_action.pl || exit 1
     @echo "Linting execute_action_fwd_test.pl..."
@@ -104,6 +107,7 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/resolve_action.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/builtin_actions.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action_fwd_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action_bwd_test.pl

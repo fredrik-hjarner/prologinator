@@ -7,7 +7,9 @@
 ]).
 :- use_module(library(reif), [if_/3, (=)/3]).
 :- use_module(library(dif), [dif/2]).
-:- use_module('./execute_action', [execute_action/5]).
+:- use_module('./execute_action', [
+    execute_action/5, user_action/2
+]).
 :- use_module('./types/accessors'). % import all. so many...
 :- use_module('./types/validation', [
     context_validation/1,
@@ -71,12 +73,27 @@ yields(repeat(_, _), false).
 % define_action(_, _) does NOT yield
 %   (expands immediately, stores definition)
 yields(define_action(_, _), false).
+% load(_) does NOT yield (expands immediately)
+yields(load(_), false).
+% log(_) does NOT yield (expands immediately)
+yields(log(_), false).
 
 % move_delta(Frames, _, _) yields when Frames > 0
 yields(move_delta(Frames, _, _), true) :-
     Frames #> 0.
 yields(move_delta(Frames, _, _), false) :-
     Frames #=< 0.
+
+% Custom actions (user-defined via define_action)
+% do NOT yield - they always expand immediately
+yields(Action, false) :-
+    user_action(Template, _),
+    Action = Template.
+
+% If we reach here, action matched nothing above
+% Safe default: don't yield
+% TODO: Look into if this can be removed. Might mask errors.
+yields(_, false).
 
 % ==========================================================
 % Execution Model: tick_object

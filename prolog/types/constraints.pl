@@ -81,7 +81,7 @@ state_constraint(
   state(
       frame(Frame),
       objects(Objects),
-      attrs(Attrs),
+      attrs(_Attrs),
       status(Status),
       next_id(NextID),
       commands(Commands)
@@ -178,7 +178,7 @@ action_constraint(move_to(X, Y, Frames), _) :-
 
 action_constraint(despawn, _).
 
-action_constraint(spawn(Type, X, Y, Acts), DepthLeft) :-
+action_constraint(spawn(Type, _X, _Y, Acts), DepthLeft) :-
     DepthLeft #> 0,
     DepthLeft1 #= DepthLeft - 1,
     object_type_constraint(Type),
@@ -240,7 +240,7 @@ pos_constraint(_).  % Accept any position structure
 % command_constraint/1 Constraint (Addendum 1)
 % ==========================================================
 
-command_constraint(spawn_request(Type, X, Y, Acts)) :-
+command_constraint(spawn_request(Type, _X, _Y, Acts)) :-
     object_type_constraint(Type),
     % X and Y: no constraints
     bounded_list_of(action_constraint, Acts, 100).

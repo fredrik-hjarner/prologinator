@@ -5,7 +5,8 @@
     flatten/2,
     select_many/3,
     err_write/1,
-    err_format/2
+    err_format/2,
+    is_list/1
 ]).
 
 :- use_module(library(lists), [append/2, select/3]).
@@ -78,4 +79,13 @@ err_format(Fmt, Args) :-
     format(Fmt, Args),
     nl,
     fail.
+
+% ==========================================================
+% List Check Helper
+% ==========================================================
+% is_list(+Term)
+% Succeeds if Term is a list ([] or [H|T] where T is a list)
+
+is_list([]).
+is_list([_|T]) :- is_list(T).
 

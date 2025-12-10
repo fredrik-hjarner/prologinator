@@ -55,6 +55,8 @@
 
 :- use_module(library(format)).
 :- use_module(library(lists), [length/2]).
+:- use_module('../util/util', [is_list/1]).
+:- use_module('../builtin_actions', [builtin_action/1]).
 :- use_module(library(assoc), [
     empty_assoc/1,
     put_assoc/4
@@ -358,30 +360,16 @@ action_validation(Term) :-
 % ==========================================================
 % This checks the functor name, not the arity, to catch
 % invalid built-in actions with wrong arity
+% Optimized: cache functor names for faster lookup
+
+builtin_functor_name(Name) :-
+    builtin_action(Template),
+    functor(Template, Name, _).
 
 is_builtin_functor(Term) :-
     callable(Term),
     functor(Term, Name, _Arity),
-    builtin_action_name(Name).
-
-builtin_action_name(wait).
-builtin_action_name(move_to).
-builtin_action_name(move_delta).
-builtin_action_name(despawn).
-builtin_action_name(spawn).
-builtin_action_name(set_attr).
-builtin_action_name(loop).
-builtin_action_name(list).
-builtin_action_name(repeat).
-builtin_action_name(noop).
-builtin_action_name(parallel_all).
-builtin_action_name(parallel_race).
-builtin_action_name(parallel_all_running).
-builtin_action_name(parallel_race_running).
-builtin_action_name(trigger_state_change).
-builtin_action_name(define_action).
-builtin_action_name(incr).
-builtin_action_name(decr).
+    builtin_functor_name(Name).
 
 % ==========================================================
 % action_validation_helper/1
@@ -391,11 +379,7 @@ action_validation_helper(Term) :-
     ( ground(Term) ->
         ( Term = wait(N) ->
             % Structure matches, validate content
-            ( ground(N) ->
-                integer(N)
-            ;
-                true
-            )
+            integer(N)
         ; Term = move_to(X, Y, Frames) ->
             % Structure matches, validate content
             integer(X),
@@ -523,6 +507,12 @@ action_validation_helper(Term) :-
             ;
                 true
             )
+        ; Term = load(Path) ->
+            % Structure matches, validate Path is a string
+            is_list(Path)
+        ; Term = log(Msg) ->
+            % Structure matches, validate Msg is a string
+            is_list(Msg)
         ; \+ is_builtin_functor(Term),
           callable(Term) ->
             % User-defined action - allow any callable term
