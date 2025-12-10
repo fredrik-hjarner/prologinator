@@ -45,8 +45,7 @@ value", (
         attrs(Attrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -73,8 +72,7 @@ value", (
         attrs(Attrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -101,8 +99,7 @@ value", (
         attrs(Attrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -130,8 +127,7 @@ from known Key and Value", (
         attrs(Attrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -156,8 +152,7 @@ test("ctx_attr_val: enumerate ObjectID and Value from Key", (
         attrs(Attrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -182,8 +177,7 @@ test("ctx_attr_val: enumerate Key and Value from ObjectID", (
         attrs(Attrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -209,8 +203,7 @@ test("ctx_attr_val: enumerate all from Value", (
         attrs(Attrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -245,8 +238,7 @@ writes (attr/2 format enables bidirectionality)", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -271,8 +263,7 @@ writes", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -297,8 +288,7 @@ for writes", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act

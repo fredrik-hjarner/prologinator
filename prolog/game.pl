@@ -113,8 +113,7 @@ main :-
         attrs(AttrStore3),
         status(playing),
         next_id(4),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     game_loop(ctx_in(InitialContext), []).
 
@@ -194,32 +193,49 @@ render(ctx_in(Ctx)) :-
     nl.
 
 render_grid(Ctx, Objects) :-
+    % Build position map once: pos(X, Y) -> Symbol
+    build_position_map(Ctx, Objects, PosMap),
     % Grid is 20x20, positions 0-19
-    render_grid_rows(Ctx, Objects, 0).
+    render_grid_rows(PosMap, 0).
 
-render_grid_rows(Ctx, Objects, Y) :-
+build_position_map(Ctx, Objects, PosMap) :-
+    empty_assoc(EmptyMap),
+    build_position_map_loop(Ctx, Objects, EmptyMap, PosMap).
+
+build_position_map_loop(_, [], Map, Map).
+build_position_map_loop(Ctx, [Obj|Rest], MapIn, MapOut) :-
+    obj_id(Obj, ID),
+    ( ctx_attr_val(Ctx, ID/x, X),
+      ctx_attr_val(Ctx, ID/y, Y),
+      get_symbol(Obj, Symbol) ->
+        Pos = pos(X, Y),
+        put_assoc(Pos, MapIn, Symbol, MapTemp)
+    ;
+        MapTemp = MapIn
+    ),
+    build_position_map_loop(Ctx, Rest, MapTemp, MapOut).
+
+render_grid_rows(PosMap, Y) :-
     Y =< 19,
-    render_grid_row(Ctx, Objects, Y, 0),
+    render_grid_row(PosMap, Y, 0),
     Y1 is Y + 1,
-    render_grid_rows(Ctx, Objects, Y1).
-render_grid_rows(_, _, Y) :-
+    render_grid_rows(PosMap, Y1).
+render_grid_rows(_, Y) :-
     Y > 19.
 
-render_grid_row(Ctx, Objects, Y, X) :-
+render_grid_row(PosMap, Y, X) :-
     X =< 19,
-    ( member(Obj, Objects),
-      obj_id(Obj, ID),
-      ctx_attr_val(Ctx, ID/x, X),
-      ctx_attr_val(Ctx, ID/y, Y) ->
-        get_symbol(Obj, Symbol)
+    Pos = pos(X, Y),
+    ( get_assoc(Pos, PosMap, Symbol) ->
+        true
     ;
         char_code(Symbol, 46)  % '.'
     ),
     write(Symbol),
     ( X = 19 -> nl ; write(' ') ),
     X1 is X + 1,
-    render_grid_row(Ctx, Objects, Y, X1).
-render_grid_row(_, _, _, X) :-
+    render_grid_row(PosMap, Y, X1).
+render_grid_row(_, _, X) :-
     X > 19.
 
 get_symbol(Obj, Symbol) :-

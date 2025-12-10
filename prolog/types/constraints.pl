@@ -8,7 +8,6 @@
     object_constraint/1,
     game_status_constraint/1,
     command_constraint/1,
-    rev_hint_constraint/1,
     action_constraint/1,
     pos_constraint/1,
     attr_constraint/1,
@@ -85,8 +84,7 @@ state_constraint(
       attrs(Attrs),
       status(Status),
       next_id(NextID),
-      commands(Commands),
-      rev_hints(RevHints)
+      commands(Commands)
   )
 ) :-
     Frame #>= 0,
@@ -109,9 +107,7 @@ state_constraint(
     NextID #> MaxID,
     
     game_status_constraint(Status),
-    bounded_list_of(command_constraint, Commands, 100),
-    % TODO: next line causes extreme performance problems.
-    bounded_list_of(rev_hint_constraint, RevHints, 200).
+    bounded_list_of(command_constraint, Commands, 100).
 
 % ==========================================================
 % Status Constraint
@@ -259,15 +255,6 @@ command_constraint(state_change(Change)) :-
 state_change_constraint(game_over(won)).
 state_change_constraint(game_over(lost)).
 
-% ==========================================================
-% rev_hint_constraint/1 Constraint
-% ==========================================================
-
-rev_hint_constraint(despawned(ID, Attrs)) :-
-    % Object ID: non-negative integer
-    ID #>= 0,
-    % Saved attributes at despawn time - no constraint
-    is_list(Attrs).
 
 % ==========================================================
 % collision_constraint/1 Constraint

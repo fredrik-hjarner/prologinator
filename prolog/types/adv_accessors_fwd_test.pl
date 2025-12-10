@@ -31,8 +31,7 @@ test("ctx_attr_val: read existing attribute", (
         attrs(Attrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -57,8 +56,7 @@ test("ctx_attr_val: fails when object doesn't exist", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act & Assert
@@ -78,8 +76,7 @@ test("ctx_attr_val: fails when attribute doesn't exist", (
         attrs(Attrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act & Assert
@@ -99,8 +96,7 @@ test("ctx_attr_val: enumerate Value from ObjectID and Key", (
         attrs(Attrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -128,8 +124,7 @@ test("ctx_attr_val_ctx: create new attribute on new object", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -154,8 +149,7 @@ test("ctx_attr_val_ctx: add attribute to existing object", (
         attrs(AttrsIn),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -182,8 +176,7 @@ test("ctx_attr_val_ctx: replace existing attribute", (
         attrs(AttrsIn),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -209,8 +202,7 @@ test("ctx_attr_val_ctx: multiple updates preserve other attributes", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act
@@ -240,8 +232,7 @@ test("ctx_attr_val_ctx: multiple objects independent", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % ------------------------------------------------------
     % Act

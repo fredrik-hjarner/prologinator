@@ -14,7 +14,7 @@
     state_validation/1,
     object_validation/1
 ]).
-:- use_module('./collisions', [detect_collisions/4]).
+:- use_module('./collisions', [detect_collisions/2]).
 
 % ==========================================================
 % Yielding Actions (Reified)
@@ -90,7 +90,7 @@ yields(move_delta(Frames, _, _), false) :-
 % -AllRevHints).
 
 % tick_object/4 threads the context.
-% Cmds and RevHints are now appended directly to CtxNew.
+% Cmds are now appended directly to CtxNew.
 tick_object(
     ctx_old(Ctx),
     ctx_new(Ctx),
@@ -150,7 +150,7 @@ tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
     
     % 2. Resolve Collisions
     % Removes objects, adds collision hints.
-    resolve_collisions(CtxPhys, CtxColl),
+    detect_collisions(ctx_old(CtxPhys), ctx_new(CtxColl)),
     context_validation(CtxColl),
     
     % 3. Increment Frame
@@ -159,17 +159,6 @@ tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
 % ==========================================================
 % Pipeline Stages
 % ==========================================================
-
-resolve_collisions(CtxIn, CtxOut) :-
-    ctx_objs_cmds_revhints(CtxIn, Objs, Cmds, Revs1),
-    ctx_state(CtxIn, State),
-    detect_collisions(State, Objs, NewObjs, Revs2),
-    append(Revs1, Revs2, AllRevs),
-    ctx_objs_cmds_revhints_ctx(
-        CtxIn,
-        NewObjs, Cmds, AllRevs,
-        CtxOut
-    ).
 
 increment_frame(CtxIn, CtxOut) :-
     ctx_frame(CtxIn, F),

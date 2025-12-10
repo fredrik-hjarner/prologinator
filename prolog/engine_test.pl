@@ -56,8 +56,7 @@ object", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     tick_object(
         ctx_old(Ctx),
@@ -66,7 +65,6 @@ object", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, []),
-    ctx_revhints(CtxNew, []),
     ObjOut = [object(
         id(1),
         type(static),
@@ -90,8 +88,7 @@ after one execution", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     tick_object(
         ctx_old(Ctx),
@@ -100,7 +97,6 @@ after one execution", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, []),
-    ctx_revhints(CtxNew, []),
     ObjOut = [object(
         id(1),
         type(static),
@@ -124,8 +120,7 @@ continues until empty", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     tick_object(
         ctx_old(Ctx),
@@ -134,7 +129,6 @@ continues until empty", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, []),
-    ctx_revhints(CtxNew, []),
     ObjOut = [object(
         id(1),
         type(static),
@@ -161,8 +155,7 @@ state", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     tick(ctx_in(CtxIn), ctx_out(CtxOut)),
     CtxOut = ctx(state(
@@ -176,8 +169,7 @@ state", (
         attrs(_),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     ))
 )).
 
@@ -195,8 +187,7 @@ test("tick: processes object with yielding action \
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     tick(ctx_in(CtxIn), ctx_out(CtxOut)),
     CtxOut = ctx(state(
@@ -210,8 +201,7 @@ test("tick: processes object with yielding action \
         attrs(_),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     ))
 )).
 
@@ -231,8 +221,7 @@ object", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     tick(ctx_in(CtxIn), ctx_out(CtxOut)),
     CtxOut = ctx(state(
@@ -241,8 +230,7 @@ object", (
         attrs(_),
         status(playing),
         next_id(2),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     member(
         object(
@@ -302,8 +290,7 @@ test("collision: simple enemy-projectile collision", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(2),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % Run 2 frames - collision should happen at frame 1 when
     % both reach (10, 10)
@@ -314,8 +301,7 @@ test("collision: simple enemy-projectile collision", (
         attrs(_),
         status(_),
         next_id(_),
-        commands(_),
-        rev_hints(_)
+        commands(_)
     )),
     % After collision at frame 1, both objects should be
     % removed
@@ -389,8 +375,7 @@ freeze (first collision)", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(4),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     % Run tick 32 times (first collision should happen
     % around here)
@@ -403,8 +388,7 @@ freeze (first collision)", (
         attrs(_),
         status(_),
         next_id(_),
-        commands(_),
-        rev_hints(_)
+        commands(_)
     ))
 )).
 

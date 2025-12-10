@@ -40,8 +40,7 @@ count from remaining frames", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     execute_action(
         ctx_old(Ctx),
@@ -51,7 +50,6 @@ count from remaining frames", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, []),
-    ctx_revhints(CtxNew, []),
     N = 3  % Verify that N was correctly inferred
 )).
 
@@ -83,7 +81,6 @@ wait values from parallel_all_running state", (
         collisions([])
     )],
     Commands = [],
-    RevHints = [],
     empty_assoc(EmptyAttrs),
     Ctx = ctx(state(
         frame(0),
@@ -91,8 +88,7 @@ wait values from parallel_all_running state", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     execute_action(
         ctx_old(Ctx),
@@ -102,7 +98,6 @@ wait values from parallel_all_running state", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
-    ctx_revhints(CtxNew, RevHints),
     N1 = 3,  % Verify that N1 was correctly inferred
     N2 = 4   % Verify that N2 was correctly inferred
 )).
@@ -128,7 +123,6 @@ coordinates from final position", (
         []
     )],
     Commands = [],
-    RevHints = [],
     empty_assoc(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
               EmptyAttrs),
@@ -138,8 +132,7 @@ coordinates from final position", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     execute_action(
         ctx_old(Ctx),
@@ -149,7 +142,6 @@ coordinates from final position", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
-    ctx_revhints(CtxNew, RevHints),
     ctx_attr_val(CtxNew, 1/x, 5),
     ctx_attr_val(CtxNew, 1/y, 5),
     % Verify that TargetX was correctly inferred
@@ -189,7 +181,6 @@ coordinates from final position", (
 %         collisions([])
 %     )],
 %     Commands = [],
-%     RevHints = [],
 %     % For backward execution, context already has the
 %     % spawned object
 %     empty_assoc(EmptyAttrsOut0),
@@ -208,8 +199,8 @@ coordinates from final position", (
 %         attrs(EmptyAttrsOut),
 %         status(playing),
 %         next_id(2),
-%         commands([]),
-%         rev_hints([])
+%         commands([])
+%         
 %     )),
 %     empty_assoc(EmptyAttrsIn),
 %     CtxIn = ctx(state(
@@ -218,8 +209,8 @@ coordinates from final position", (
 %         attrs(EmptyAttrsIn),
 %         status(playing),
 %         next_id(1),
-%         commands([]),
-%         rev_hints([])
+%         commands([])
+%         
 %     )),
 %     execute_action(
 %         ctx_old(CtxIn),
@@ -229,7 +220,6 @@ coordinates from final position", (
 %         obj_new(ObjOut)
 %     ),
 %     ctx_cmds(CtxOut, Commands),
-%     ctx_revhints(CtxOut, RevHints),
 %     % Verify that Type was correctly inferred
 %     Type = enemy,
 %     % Verify that Actions were correctly inferred
@@ -257,7 +247,6 @@ change from updated status", (
         collisions([])
     )],
     Commands = [],
-    RevHints = [],
     % For backward execution, context already has the
     % updated status
     empty_assoc(EmptyAttrs),
@@ -267,8 +256,7 @@ change from updated status", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     CtxOut = ctx(state(
         frame(0),
@@ -276,8 +264,7 @@ change from updated status", (
         attrs(EmptyAttrs),
         status(won),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     execute_action(
         ctx_old(CtxIn),
@@ -287,7 +274,6 @@ change from updated status", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxOut, Commands),
-    ctx_revhints(CtxOut, RevHints),
     % Verify that Change was correctly inferred
     Change = game_over(won)
 )).
@@ -316,7 +302,6 @@ final action list", (
         collisions([])
     )],
     Commands = [],
-    RevHints = [],
     empty_assoc(EmptyAttrs),
     Ctx = ctx(state(
         frame(0),
@@ -324,8 +309,7 @@ final action list", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     execute_action(
         ctx_old(Ctx),
@@ -335,7 +319,6 @@ final action list", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
-    ctx_revhints(CtxNew, RevHints),
     % Verify that Actions were correctly inferred
     Actions = [move_to(5, 5, 1)]
 )).
@@ -356,7 +339,6 @@ from despawned rev_hint", (
     ),
     ObjOut = [],
     Commands = [],
-    RevHints = [despawned(1, [attr(x, 10), attr(y, 20)])],
     % For backward execution, attributes should be in the
     % context before despawn
     empty_assoc(EmptyAttrs0),
@@ -368,8 +350,7 @@ from despawned rev_hint", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     execute_action(
         ctx_old(Ctx),
@@ -379,7 +360,6 @@ from despawned rev_hint", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
-    ctx_revhints(CtxNew, RevHints),
     ID = 1  % Verify that ID was correctly inferred
 )).
 

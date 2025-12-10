@@ -30,14 +30,14 @@ test-quiet MODULE:
 	timeout 10 scryer-prolog -g "use_module('submodules/scryer-prolog/src/tests/test_framework'), use_module('./{{MODULE}}'), main_quiet($base)."
 
 test-all:
-    @echo "\nTesting execute_action (forward)..."
+    @echo "\nTesting execute_action_fwd_test..."
     @just test prolog/execute_action_fwd_test || exit 1
-    @echo "\nTesting execute_action (backward)..."
+    @echo "\nTesting execute_action_bwd_test..."
     @just test prolog/execute_action_bwd_test || exit 1
-    @echo "\nTesting engine..."
+    @echo "\nTesting engine_test..."
     @just test prolog/engine_test || exit 1
-    @echo "\nTesting validation..."
-    @just test prolog/types/validation || exit 1
+    @echo "\nTesting validation_test..."
+    @just test prolog/types/validation_test || exit 1
     @echo "\nTesting validation2..."
     @just test prolog/types/validation2 || exit 1
     @echo "\nTesting macros..."
@@ -46,14 +46,14 @@ test-all:
     @just test prolog/xod/xod || exit 1
 
 test-all-verbose:
-    @echo "\nTesting execute_action (forward)..."
+    @echo "\nTesting execute_action_fwd_test..."
     @just test-verbose prolog/execute_action_fwd_test || exit 1
-    @echo "\nTesting execute_action (backward)..."
+    @echo "\nTesting execute_action_bwd_test..."
     @just test-verbose prolog/execute_action_bwd_test || exit 1
-    @echo "\nTesting engine..."
+    @echo "\nTesting engine_test..."
     @just test-verbose prolog/engine_test || exit 1
-    @echo "\nTesting validation..."
-    @just test-verbose prolog/types/validation || exit 1
+    @echo "\nTesting validation_test..."
+    @just test-verbose prolog/types/validation_test || exit 1
     @echo "\nTesting validation2..."
     @just test-verbose prolog/types/validation2 || exit 1
     @echo "\nTesting macros..."

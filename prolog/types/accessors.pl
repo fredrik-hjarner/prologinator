@@ -34,10 +34,10 @@
     ctx_state_ctx/3,
     ctx_cmds/2,
     ctx_cmds_ctx/3,
-    ctx_revhints/2,
-    ctx_revhints_ctx/3,
-    ctx_objs_cmds_revhints/4,
-    ctx_objs_cmds_revhints_ctx/5,
+    ctx_objs_cmds/3,
+    ctx_objs_cmds_ctx/4,
+    ctx_objs_attrs/3,
+    ctx_objs_attrs_ctx/4,
     ctx_status/2,
     ctx_status_ctx/3,
     ctx_status_cmds/3,
@@ -65,45 +65,43 @@
 
 % Get frame from context
 ctx_frame(
-    ctx(state(frame(F), _, _, _, _, _, _)), F
+    ctx(state(frame(F), _, _, _, _, _)), F
 ).
 
 % Set frame in context
 ctx_frame_ctx(
     ctx(state(_, Objects, Attrs, Status, NextID,
-              Commands, RevHints)),
+              Commands)),
     NewFrame,
     ctx(state(frame(NewFrame), Objects, Attrs, Status,
-              NextID, Commands, RevHints))
+              NextID, Commands))
 ).
 
 % Get objects from context
 ctx_objs(
-    ctx(state(_, objects(Objects), _, _, _, _, _)),
+    ctx(state(_, objects(Objects), _, _, _, _)),
     Objects
 ).
 
 % Set objects in context
 ctx_objs_ctx(
-    ctx(state(F, _, Attrs, Status, NextID, Commands,
-              RevHints)),
+    ctx(state(F, _, Attrs, Status, NextID, Commands)),
     NewObjects,
     ctx(state(F, objects(NewObjects), Attrs, Status,
-              NextID, Commands, RevHints))
+              NextID, Commands))
 ).
 
 % Get attributes from context
 ctx_attrs(
-    ctx(state(_, _, attrs(Attrs), _, _, _, _)), Attrs
+    ctx(state(_, _, attrs(Attrs), _, _, _)), Attrs
 ).
 
 % Set attributes in context
 ctx_attrs_ctx(
-    ctx(state(F, Objects, _, Status, NextID, Commands,
-              RevHints)),
+    ctx(state(F, Objects, _, Status, NextID, Commands)),
     NewAttrs,
     ctx(state(F, Objects, attrs(NewAttrs), Status,
-              NextID, Commands, RevHints))
+              NextID, Commands))
 ).
 
 % Get state from context
@@ -118,77 +116,74 @@ ctx_state_ctx(
 
 % Get commands from context
 ctx_cmds(
-    ctx(state(_, _, _, _, _, commands(Commands), _)),
+    ctx(state(_, _, _, _, _, commands(Commands))),
     Commands
 ).
 
 % Set commands in context
 ctx_cmds_ctx(
-    ctx(state(F, Objects, Attrs, Status, NextID, _,
-              RevHints)),
+    ctx(state(F, Objects, Attrs, Status, NextID, _)),
     NewCommands,
     ctx(state(F, Objects, Attrs, Status, NextID,
-              commands(NewCommands), RevHints))
+              commands(NewCommands)))
 ).
 
-% Get rev_hints from context
-ctx_revhints(
-    ctx(state(_, _, _, _, _, _, rev_hints(RevHints))),
-    RevHints
-).
-
-% Set rev_hints in context
-ctx_revhints_ctx(
-    ctx(state(F, Objects, Attrs, Status, NextID,
-              Commands, _)),
-    NewRevHints,
-    ctx(state(F, Objects, Attrs, Status, NextID,
-              Commands, rev_hints(NewRevHints)))
-).
-
-% Get objects, commands, and rev_hints from context
+% Get objects and commands from context
 % (bulk getter)
-ctx_objs_cmds_revhints(
+ctx_objs_cmds(
     ctx(state(_, objects(Objects), _, _, _,
-              commands(Commands),
-              rev_hints(RevHints))),
+              commands(Commands))),
     Objects,
-    Commands,
-    RevHints
+    Commands
 ).
 
-% Set objects, commands, and rev_hints in context
+% Get objects and attrs from context
+% (bulk getter)
+ctx_objs_attrs(
+    ctx(state(_, objects(Objects), attrs(Attrs), _, _, _)),
+    Objects,
+    Attrs
+).
+
+% Set objects and commands in context
 % (bulk setter)
-ctx_objs_cmds_revhints_ctx(
-    ctx(state(F, _, Attrs, Status, NextID, _, _)),
+ctx_objs_cmds_ctx(
+    ctx(state(F, _, Attrs, Status, NextID, _)),
     NewObjects,
     NewCommands,
-    NewRevHints,
     ctx(state(F, objects(NewObjects), Attrs, Status,
-              NextID, commands(NewCommands),
-              rev_hints(NewRevHints)))
+              NextID, commands(NewCommands)))
+).
+
+% Set objects and attrs in context
+% (bulk setter)
+ctx_objs_attrs_ctx(
+    ctx(state(F, _, _, Status, NextID, Commands)),
+    NewObjects,
+    NewAttrs,
+    ctx(state(F, objects(NewObjects), attrs(NewAttrs),
+              Status, NextID, Commands))
 ).
 
 % Get status from context
 ctx_status(
-    ctx(state(_, _, _, status(Status), _, _, _)),
+    ctx(state(_, _, _, status(Status), _, _)),
     Status
 ).
 
 % Set status in context
 ctx_status_ctx(
-    ctx(state(F, Objects, Attrs, _, NextID, Commands,
-              RevHints)),
+    ctx(state(F, Objects, Attrs, _, NextID, Commands)),
     NewStatus,
     ctx(state(F, Objects, Attrs, status(NewStatus),
-              NextID, Commands, RevHints))
+              NextID, Commands))
 ).
 
 % Get status and commands from context
 % (bulk getter - order matches state structure)
 ctx_status_cmds(
     ctx(state(_, _, _, status(Status), _,
-              commands(Commands), _)),
+              commands(Commands))),
     Status,
     Commands
 ).
@@ -196,31 +191,31 @@ ctx_status_cmds(
 % Set status and commands in context
 % (bulk setter - order matches state structure)
 ctx_status_cmds_ctx(
-    ctx(state(F, Objects, Attrs, _, NextID, _, RevHints)),
+    ctx(state(F, Objects, Attrs, _, NextID, _)),
     NewStatus,
     NewCommands,
     ctx(state(F, Objects, Attrs, status(NewStatus),
-              NextID, commands(NewCommands), RevHints))
+              NextID, commands(NewCommands)))
 ).
 
 % Get next_id from context
 ctx_nextid(
-    ctx(state(_, _, _, _, next_id(NID), _, _)), NID
+    ctx(state(_, _, _, _, next_id(NID), _)), NID
 ).
 
 % Set next_id in context
 ctx_nextid_ctx(
-    ctx(state(F, Objs, Attrs, Status, _, Cmds, Revs)),
+    ctx(state(F, Objs, Attrs, Status, _, Cmds)),
     NewNID,
     ctx(state(F, Objs, Attrs, Status, next_id(NewNID),
-              Cmds, Revs))
+              Cmds))
 ).
 
 % Get objects, next_id, and commands from context
 % (bulk getter - order matches state structure)
 ctx_objs_nextid_cmds(
     ctx(state(_, objects(Objects), _, _, next_id(NextID),
-              commands(Commands), _)),
+              commands(Commands))),
     Objects,
     NextID,
     Commands
@@ -229,13 +224,13 @@ ctx_objs_nextid_cmds(
 % Set objects, next_id, and commands in context
 % (bulk setter - order matches state structure)
 ctx_objs_nextid_cmds_ctx(
-    ctx(state(F, _, Attrs, Status, _, _, Revs)),
+    ctx(state(F, _, Attrs, Status, _, _)),
     NewObjects,
     NewNextID,
     NewCommands,
     ctx(state(F, objects(NewObjects), Attrs, Status,
               next_id(NewNextID),
-              commands(NewCommands), Revs))
+              commands(NewCommands)))
 ).
 
 % ==========================================================
@@ -247,7 +242,7 @@ ctx_objs_nextid_cmds_ctx(
 %       because ya know maybe you dont need to grab state
 %       first ya know.
 state_attrs(
-    state(_, _, attrs(Attrs), _, _, _, _), Attrs
+    state(_, _, attrs(Attrs), _, _, _), Attrs
 ).
 
 % Set attributes in state
@@ -255,20 +250,18 @@ state_attrs(
 %       because ya know maybe you dont need to grab state
 %       first ya know.
 state_attrs_state(
-    state(F, Objects, _, Status, NextID, Commands,
-          RevHints),
+    state(F, Objects, _, Status, NextID, Commands),
     NewAttrs,
     state(F, Objects, attrs(NewAttrs), Status,
-          NextID, Commands, RevHints)
+          NextID, Commands)
 ).
 
 % Set status in state
 state_status_state(
-    state(F, Objects, Attrs, _, NextID, Commands,
-          RevHints),
+    state(F, Objects, Attrs, _, NextID, Commands),
     NewStatus,
     state(F, Objects, Attrs, status(NewStatus),
-          NextID, Commands, RevHints)
+          NextID, Commands)
 ).
 
 % ==========================================================

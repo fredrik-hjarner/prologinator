@@ -42,8 +42,7 @@ test("define_action: stores action definition", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     execute_action(
         ctx_old(Ctx),
@@ -62,7 +61,6 @@ test("define_action: stores action definition", (
     obj_acns(ObjOut, []),
     % Definition should be stored
     user_action(zigzag(_, _), _),
-    ctx_revhints(CtxNew, []),
     ctx_cmds(CtxNew, [])
 )).
 
@@ -98,8 +96,7 @@ test("custom_action: zigzag expands and executes", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     execute_action(
         ctx_old(Ctx),
@@ -116,7 +113,6 @@ test("custom_action: zigzag expands and executes", (
     ( member(repeat(1, [move_delta(30, 0, 10), move_delta(-30, 0, 10)]), Actions)
     ; member(move_delta(30, 0, 10), Actions)  % Or already expanded further
     ),
-    ctx_revhints(CtxNew, []),
     ctx_cmds(CtxNew, [])
 )).
 
@@ -151,8 +147,7 @@ test("custom_action: define and use in same action list", (
         objects([]),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     
     % First tick: define_action executes
@@ -205,8 +200,7 @@ test("custom_action: shoot_burst defines and executes", (
         objects([]),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     
     % First tick: define_action executes
@@ -255,8 +249,7 @@ test("custom_action: multiple definitions work", (
         objects([]),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     
     % First tick: first define_action
@@ -313,8 +306,7 @@ test("custom_action: parameters are correctly substituted", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     )),
     execute_action(
         ctx_old(Ctx),
@@ -328,7 +320,6 @@ test("custom_action: parameters are correctly substituted", (
     ( member(list([move_to(10, 10, 5), move_to(20, 20, 5)]), Actions)
     ; member(move_to(10, 10, 5), Actions)  % Or already expanded
     ),
-    ctx_revhints(CtxNew, []),
     ctx_cmds(CtxNew, [])
 )).
 

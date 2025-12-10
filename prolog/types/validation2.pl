@@ -26,7 +26,6 @@
     spawn_request_schema/1,
     state_change_schema/1,
     % Rev hint schemas
-    rev_hint_schema/1,
     % Object schemas
     id_schema/1,
     type_schema/1,
@@ -40,12 +39,15 @@
     status_schema/1,
     next_id_schema/1,
     commands_schema/1,
-    rev_hints_schema/1,
     state_schema/1,
     context_schema/1
 ]).
 
 :- use_module('../xod/xod', [validate/2]).
+:- use_module(library(assoc), [
+    empty_assoc/1,
+    put_assoc/4
+]).
 
 % ==========================================================
 % SCHEMA DEFINITIONS
@@ -174,11 +176,6 @@ state_change_schema(struct(state_change, [
 % Rev Hint Schemas
 % ==========================================================
 
-% Rev hint: despawned(ID, Attrs)
-rev_hint_schema(struct(despawned, [
-    id(integer),
-    attrs(list(any))
-])).
 
 % ==========================================================
 % Object Schema
@@ -197,7 +194,7 @@ type_schema(struct(type, [
 
 % attrs(Attrs) where Attrs is list of any
 attrs_schema(struct(attrs, [
-    value(list(any))
+    value(any)
 ])).
 
 % actions(Actions) where Actions is list of actions
@@ -224,14 +221,12 @@ object_schema(struct(object, [
 % ==========================================================
 
 % State: state(frame(Frame), objects(Objects), status(Status), 
-%              next_id(NextID), commands(Commands), rev_hints(RevHints))
 % Each argument is a wrapped term like frame(Frame), so we validate:
 % - frame(Frame) where Frame is integer >= 0
 % - objects(Objects) where Objects is list of objects
 % - status(Status) where Status is playing/won/lost
 % - next_id(NextID) where NextID is integer >= 1
 % - commands(Commands) where Commands is list
-% - rev_hints(RevHints) where RevHints is list
 
 % Wrapped term schemas: frame(Frame), objects(Objects), etc.
 % These are structs with arity 1 where the single arg is the value
@@ -260,19 +255,14 @@ commands_schema(struct(commands, [
     value(list(schema(command_schema)))
 ])).
 
-% For rev_hints(RevHints), we validate that it's rev_hints/1 and RevHints is a list
-rev_hints_schema(struct(rev_hints, [
-    value(list(schema(rev_hint_schema)))
-])).
-
 % State schema: validates state/6 with wrapped arguments
 state_schema(struct(state, [
     frame(schema(frame_schema)),
     objects(schema(objects_schema)),
+    attrs(schema(attrs_schema)),
     status(schema(status_schema)),
     next_id(schema(next_id_schema)),
-    commands(schema(commands_schema)),
-    rev_hints(schema(rev_hints_schema))
+    commands(schema(commands_schema))
 ])).
 
 % Context schema: ctx(State) where State is a state
@@ -288,22 +278,24 @@ context_schema(struct(ctx, [
 :- discontiguous(test/2).
 
 test("game_state_validation: valid state passes", (
+    empty_assoc(EmptyAttrs),
     State = state(
         frame(0),
         objects([object(
             id(0), type(static), attrs([pos(0, 0)]),
             actions([]), collisions([])
         )]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     ),
     validate(State, validation2:state_schema)
 )).
 
 test("game_state_validation: complex state with \
 multiple objects and commands", (
+    empty_assoc(EmptyAttrs),
     State = state(
         frame(5),
         objects([
@@ -321,21 +313,19 @@ multiple objects and commands", (
                 actions([]), collisions([])
             )
         ]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(3),
         commands([
             spawn_request(enemy, pos(0, 0), []),
             spawn_request(enemy, pos(0, 0), [])
-        ]),
-        rev_hints([
-            despawned(1, [pos(10, 10)])
         ])
     ),
     validate(State, validation2:state_schema)
 )).
 
 test("context_validation: complex context with multiple \
-objects, commands, and rev_hints", (
+objects and commands", (
     Ctx = ctx(state(
         frame(42),
         objects([
@@ -372,6 +362,7 @@ objects, commands, and rev_hints", (
                 ]), collisions([])
             )
         ]),
+        attrs(t),
         status(playing),
         next_id(4),
         commands([
@@ -379,10 +370,6 @@ objects, commands, and rev_hints", (
             spawn_request(proj, pos(10, 10), [
                 move_to(10, 0, 10)
             ])
-        ]),
-        rev_hints([
-            despawned(1, [pos(19, 5)]),
-            despawned(2, [pos(15, 0)])
         ])
     )),
     validate(Ctx, validation2:context_schema)
@@ -428,8 +415,7 @@ test("game_state_validation: invalid status fails", (
         objects([]),
         status(invalid_status),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     ),
     expect_exception(validate(State, validation2:state_schema))
 )).
@@ -440,8 +426,7 @@ test("game_state_validation: non-integer frame fails", (
         objects([]),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     ),
     expect_exception(validate(State, validation2:state_schema))
 )).
@@ -461,7 +446,7 @@ test("game_state_validation: non-integer frame fails", (
 %         status(playing),
 %         next_id(5),
 %         commands([]),
-%         rev_hints([])
+%         
 %     ),
 %     expect_exception(validate(State, validation2:state_schema))
 % )).
@@ -528,11 +513,6 @@ test("action_validation: invalid spawn action fails", (
     expect_exception(validate(Action2, validation2:action_schema))
 )).
 
-test("rev_hint_validation: invalid despawned fails", (
-    Hint = despawned(not_int,[]),
-    expect_exception(validate(Hint, validation2:rev_hint_schema))
-)).
-
 % ----------------------------------------------------------
 % Structure mismatch tests
 % ----------------------------------------------------------
@@ -544,9 +524,9 @@ test("game_state_validation: wrong arity throws", (
     State = state(
         frame(0),
         objects([]),
+        attrs(t),
         status(playing),
-        next_id(1),
-        commands([])
+        next_id(1)
     ),
     expect_exception(validate(State, validation2:state_schema))
 )).
@@ -555,10 +535,10 @@ test("game_state_validation: wrong functor throws", (
     State = not_state(
         frame(0),
         objects([]),
+        attrs(t),
         status(playing),
         next_id(1),
-        commands([]),
-        rev_hints([])
+        commands([])
     ),
     expect_exception(validate(State, validation2:state_schema))
 )).
@@ -604,16 +584,6 @@ test("pos_validation: wrong arity throws", (
 test("pos_validation: wrong functor throws", (
     Pos = not_pos(0, 0),
     expect_exception(validate(Pos, validation2:pos_schema))
-)).
-
-test("rev_hint_validation: wrong arity throws", (
-    Hint = despawned(1),
-    expect_exception(validate(Hint, validation2:rev_hint_schema))
-)).
-
-test("rev_hint_validation: wrong functor throws", (
-    Hint = not_despawned(1, []),
-    expect_exception(validate(Hint, validation2:rev_hint_schema))
 )).
 
 test("action_validation: wrong structure throws", (

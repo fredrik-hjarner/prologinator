@@ -215,18 +215,14 @@ execute_action_impl(
     obj_old(object(id(ID), _, _, _)),
     obj_new([])
 ) :-
-    % Get attrs from store for rev_hint, then remove
+    % Remove object's attributes from store
     ctx_attrs(CtxIn, AttrStore),
-    ( gen_assoc(ID, AttrStore, Attrs) ->
+    ( gen_assoc(ID, AttrStore, _Attrs) ->
         del_assoc(ID, AttrStore, _, NewAttrStore)
     ;
-        Attrs = [],
         NewAttrStore = AttrStore
     ),
-    ctx_attrs_ctx(CtxIn, NewAttrStore, CtxTemp),
-    ctx_revhints(CtxTemp, Revs),
-    append(Revs, [despawned(ID, Attrs)], NewRevs),
-    ctx_revhints_ctx(CtxTemp, NewRevs, CtxOut).
+    ctx_attrs_ctx(CtxIn, NewAttrStore, CtxOut).
 
 % ----------------------------------------------------------
 % Basic Actions: noop
@@ -407,6 +403,9 @@ execute_action_impl(
     % 4. Append to Context
     % Since ID is increasing, appending to end keeps the
     % list sorted.
+    % Note: append/3 is O(N), but for typical game sizes
+    % (<1000 objects) this is acceptable. For larger scales,
+    % consider difference lists or reverse-order storage.
     ctx_objs(CtxTemp2, CurrentSpawns),
     append(CurrentSpawns, [NewObj], NewSpawns),
     ctx_objs_ctx(CtxTemp2, NewSpawns, CtxOut).
@@ -640,11 +639,8 @@ execute_action_impl(
     %   - continue(RunningKids, FinalObj): No child done
     %     yet. Continue racing with RunningKids next tick.
     tick_race(CtxOld, CtxNew, ChildActions, ObjIn, Status),
-    ( Status = done(FinalObj) ->
-        % Race finished: check if child despawned
-        obj_id(ObjIn, ParentID),
-        ctx_revhints(CtxNew, RevHints),
-        ( member(despawned(ParentID, _), RevHints) ->
+    ( Status = done(FinalObj, Despawned) ->
+        ( Despawned = true ->
             % Child despawned: parent must also despawn
             MaybeObjectOut = []
         ;
@@ -715,9 +711,12 @@ tick_all(
 %   or despawns, then stops immediately.
 %
 % Status indicates the outcome:
-%   - done(FinalObj): A child finished (actions empty)
-%     or despawned (result is []). Execution stops here.
+%   - done(FinalObj, Despawned): A child finished
+%     (actions empty) or despawned (result is []).
+%     Execution stops here.
 %     FinalObj has attrs updated from the winning child.
+%     Despawned is true if child despawned,
+%     false if finished.
 %   - continue(RunningKids, FinalObj): No child finished
 %     yet.
 %     RunningKids is the list of actions still running.
@@ -735,7 +734,12 @@ tick_race(CIn, COut, [Act|Acts], ObjIn, Status) :-
         %   remaining children
         COut = CTemp,
         update_obj_attrs(ObjIn, Res, FinalObj),
-        Status = done(FinalObj)
+        ( Res = [] ->
+            Despawned = true
+        ;
+            Despawned = false
+        ),
+        Status = done(FinalObj, Despawned)
     ;
         % This child still running: continue with next
         %   sibling

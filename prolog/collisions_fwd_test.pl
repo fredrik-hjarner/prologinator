@@ -1,5 +1,5 @@
 :- module(collisions_fwd_test, []).
-:- use_module('./collisions', [detect_collisions/4]).
+:- use_module('./collisions', [detect_collisions/2]).
 :- use_module('./types/accessors').
 :- use_module('./types/constructors', [empty_ctx/1]).
 :- use_module(library(assoc), [
@@ -34,18 +34,20 @@ different positions", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(2),
-        commands([]),
-        rev_hints([])
+        commands([])
     ),
-    Objects = [
+    CtxIn = ctx(State),
+    detect_collisions(
+        ctx_old(CtxIn),
+        ctx_new(CtxOut)
+    ),
+    ctx_objs(CtxOut, NewObjects),
+    NewObjects = [
         object(id(0), type(enemy), actions([]),
                collisions([])),
         object(id(1), type(proj), actions([]),
                collisions([]))
-    ],
-    detect_collisions(State, Objects, NewObjects, RevHints),
-    NewObjects = Objects,  % No objects removed
-    RevHints = []  % No rev hints
+    ]  % No objects removed
 )).
 
 % --------------------------------------------------------
@@ -59,28 +61,27 @@ are both removed", (
               Attrs1),
     put_assoc(1, Attrs1, [attr(x, 10), attr(y, 10)],
               EmptyAttrs),
-    State = state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(2),
-        commands([]),
-        rev_hints([])
-    ),
     Objects = [
         object(id(0), type(enemy), actions([]),
                collisions([])),
         object(id(1), type(proj), actions([]),
                collisions([]))
     ],
-    detect_collisions(State, Objects, NewObjects, RevHints),
-    NewObjects = [],  % Both objects removed
-    length(RevHints, 2),  % Two despawn hints
-    member(despawned(0, [attr(x, 10), attr(y, 10)]),
-           RevHints),
-    member(despawned(1, [attr(x, 10), attr(y, 10)]),
-           RevHints)
+    State = state(
+        frame(0),
+        objects(Objects),
+        attrs(EmptyAttrs),
+        status(playing),
+        next_id(2),
+        commands([])
+    ),
+    CtxIn = ctx(State),
+    detect_collisions(
+        ctx_old(CtxIn),
+        ctx_new(CtxOut)
+    ),
+    ctx_objs(CtxOut, NewObjects),
+    NewObjects = []  % Both objects removed
 )).
 
 test("collisions: enemy and projectile collision removes \
@@ -92,15 +93,6 @@ only colliding objects", (
               Attrs2),
     put_assoc(2, Attrs2, [attr(x, 5), attr(y, 5)],
               EmptyAttrs),
-    State = state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(3),
-        commands([]),
-        rev_hints([])
-    ),
     Objects = [
         object(id(0), type(enemy), actions([]),
                collisions([])),
@@ -109,14 +101,22 @@ only colliding objects", (
         object(id(2), type(enemy), actions([]),
                collisions([]))
     ],
-    detect_collisions(State, Objects, NewObjects, RevHints),
+    State = state(
+        frame(0),
+        objects(Objects),
+        attrs(EmptyAttrs),
+        status(playing),
+        next_id(3),
+        commands([])
+    ),
+    CtxIn = ctx(State),
+    detect_collisions(
+        ctx_old(CtxIn),
+        ctx_new(CtxOut)
+    ),
+    ctx_objs(CtxOut, NewObjects),
     NewObjects = [object(id(2), type(enemy), actions([]),
-                         collisions([]))],  % Only non-colliding object remains
-    length(RevHints, 2),  % Two despawn hints
-    member(despawned(0, [attr(x, 10), attr(y, 10)]),
-           RevHints),
-    member(despawned(1, [attr(x, 10), attr(y, 10)]),
-           RevHints)
+                         collisions([]))]  % Only non-colliding object remains
 )).
 
 % --------------------------------------------------------
@@ -130,24 +130,27 @@ not collide", (
               Attrs1),
     put_assoc(1, Attrs1, [attr(x, 10), attr(y, 10)],
               EmptyAttrs),
-    State = state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(2),
-        commands([]),
-        rev_hints([])
-    ),
     Objects = [
         object(id(0), type(enemy), actions([]),
                collisions([])),
         object(id(1), type(enemy), actions([]),
                collisions([]))
     ],
-    detect_collisions(State, Objects, NewObjects, RevHints),
-    NewObjects = Objects,  % No objects removed
-    RevHints = []  % No rev hints
+    State = state(
+        frame(0),
+        objects(Objects),
+        attrs(EmptyAttrs),
+        status(playing),
+        next_id(2),
+        commands([])
+    ),
+    CtxIn = ctx(State),
+    detect_collisions(
+        ctx_old(CtxIn),
+        ctx_new(CtxOut)
+    ),
+    ctx_objs(CtxOut, NewObjects),
+    NewObjects = Objects  % No objects removed
 )).
 
 test("collisions: projectile and projectile at same \
@@ -157,24 +160,27 @@ position do not collide", (
               Attrs1),
     put_assoc(1, Attrs1, [attr(x, 10), attr(y, 10)],
               EmptyAttrs),
-    State = state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(2),
-        commands([]),
-        rev_hints([])
-    ),
     Objects = [
         object(id(0), type(proj), actions([]),
                collisions([])),
         object(id(1), type(proj), actions([]),
                collisions([]))
     ],
-    detect_collisions(State, Objects, NewObjects, RevHints),
-    NewObjects = Objects,  % No objects removed
-    RevHints = []  % No rev hints
+    State = state(
+        frame(0),
+        objects(Objects),
+        attrs(EmptyAttrs),
+        status(playing),
+        next_id(2),
+        commands([])
+    ),
+    CtxIn = ctx(State),
+    detect_collisions(
+        ctx_old(CtxIn),
+        ctx_new(CtxOut)
+    ),
+    ctx_objs(CtxOut, NewObjects),
+    NewObjects = Objects  % No objects removed
 )).
 
 % --------------------------------------------------------
@@ -184,24 +190,27 @@ position do not collide", (
 test("collisions: objects without x/y attributes are \
 ignored", (
     empty_assoc(EmptyAttrs),
-    State = state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(2),
-        commands([]),
-        rev_hints([])
-    ),
     Objects = [
         object(id(0), type(enemy), actions([]),
                collisions([])),
         object(id(1), type(proj), actions([]),
                collisions([]))
     ],
-    detect_collisions(State, Objects, NewObjects, RevHints),
-    NewObjects = Objects,  % No objects removed (no positions)
-    RevHints = []  % No rev hints
+    State = state(
+        frame(0),
+        objects(Objects),
+        attrs(EmptyAttrs),
+        status(playing),
+        next_id(2),
+        commands([])
+    ),
+    CtxIn = ctx(State),
+    detect_collisions(
+        ctx_old(CtxIn),
+        ctx_new(CtxOut)
+    ),
+    ctx_objs(CtxOut, NewObjects),
+    NewObjects = Objects  % No objects removed (no positions)
 )).
 
 test("collisions: object with only x attribute is \
@@ -209,22 +218,25 @@ ignored", (
     empty_assoc(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0, [attr(x, 10)],
               EmptyAttrs),
-    State = state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([]),
-        rev_hints([])
-    ),
     Objects = [
         object(id(0), type(enemy), actions([]),
                collisions([]))
     ],
-    detect_collisions(State, Objects, NewObjects, RevHints),
-    NewObjects = Objects,  % No objects removed
-    RevHints = []  % No rev hints
+    State = state(
+        frame(0),
+        objects(Objects),
+        attrs(EmptyAttrs),
+        status(playing),
+        next_id(1),
+        commands([])
+    ),
+    CtxIn = ctx(State),
+    detect_collisions(
+        ctx_old(CtxIn),
+        ctx_new(CtxOut)
+    ),
+    ctx_objs(CtxOut, NewObjects),
+    NewObjects = Objects  % No objects removed
 )).
 
 :- discontiguous(test/2).

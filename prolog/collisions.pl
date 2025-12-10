@@ -1,12 +1,15 @@
 % Collision Detection Module
 % Handles collision detection between game objects
 
-:- module(collisions, [detect_collisions/4]).
+:- module(collisions, [detect_collisions/2]).
 
 :- use_module(library(lists), [
     findall/3, member/2, list_to_set/2, append/3
 ]).
-:- use_module(library(assoc), [gen_assoc/3]).
+:- use_module(library(assoc), [
+    gen_assoc/3,
+    del_assoc/4
+]).
 :- use_module('./types/accessors').
 
 % ==========================================================
@@ -14,8 +17,11 @@
 % ==========================================================
 % -list(game_object), -list(hint)).
 
-detect_collisions(State, Objects, NewObjects, RevHints) :-
-    state_attrs(State, AttrStore),
+detect_collisions(ctx_old(CtxIn),ctx_new(CtxOut)) :-
+    % Extract objects and attrs from context
+    ctx_objs_attrs(CtxIn, Objects, AttrStore),
+    
+    % Find collisions
     findall(
         collision(ID1, ID2),
         (
@@ -34,18 +40,34 @@ detect_collisions(State, Objects, NewObjects, RevHints) :-
         ),
         Collisions
     ),
+    
+    % Handle collisions and get IDs to remove
     handle_collisions(
-        State, Objects, Collisions, NewObjects, RevHints
+        Objects, Collisions, NewObjects, ToRemoveIDs
+    ),
+    
+    % Clean up attributes for removed objects
+    cleanup_attributes(
+        AttrStore, ToRemoveIDs, NewAttrStore
+    ),
+    
+    % Update context with new objects and cleaned attrs
+    ctx_objs_attrs_ctx(
+        CtxIn,
+        NewObjects, NewAttrStore,
+        CtxOut
     ).
 
 collides_at(X, Y, X, Y).
 
+% TODO: I dont like that what happens at collision is
+% hard-coded like this.
+%       should be dynamic.
 handle_collisions(
-    State,
     Objects,
     Collisions,
     NewObjects,
-    RevHints
+    ToRemoveIDs
 ) :-
     findall(
         (ProjID, EnemyID),
@@ -64,43 +86,30 @@ handle_collisions(
         ),
         ToRemove
     ),
-    findall(ID, member((ID, _), ToRemove), P1),
-    findall(ID, member((_, ID), ToRemove), P2),
-    append(P1, P2, AllIDs),
-    list_to_set(AllIDs, UniqueIDs),
-    % TODO: I dont like that what happens at collision is
-    % hard-coded like this.
-    %       should be dynamic.
-    remove_with_rev_hints(
-        State, Objects, UniqueIDs, NewObjects, RevHints
-    ).
+    findall(
+        ID,
+        (member((A, B), ToRemove), (ID = A ; ID = B)),
+        AllIDs
+    ),
+    list_to_set(AllIDs, ToRemoveIDs),
+    remove_objects(Objects, ToRemoveIDs, NewObjects).
 
-% :- pred remove_with_rev_hints(+Objects,
-% +IDsOfObjectsToRemove, -NewObjects, -RevHints).
+% Clean up attributes for removed objects
+cleanup_attributes(Attrs, [], Attrs).
+cleanup_attributes(Attrs, [ID|Rest], Result) :-
+    ( gen_assoc(ID, Attrs, _) ->
+        del_assoc(ID, Attrs, _, Temp)
+    ;
+        Temp = Attrs
+    ),
+    cleanup_attributes(Temp, Rest, Result).
 
-remove_with_rev_hints(_State, [], _, [], []).
-remove_with_rev_hints(
-    State,
-    [Obj|Rest],
-    ToRemove,
-    NewObjs,
-    RevHints
-) :-
+remove_objects([], _, []).
+remove_objects([Obj|Rest], ToRemove, NewObjs) :-
     obj_id(Obj, ID),
     ( member(ID, ToRemove) ->
-        state_attrs(State, AttrStore),
-        ( gen_assoc(ID, AttrStore, Attrs) ->
-            true
-        ;
-            Attrs = []
-        ),
-        RevHints = [despawned(ID, Attrs)|RestRevHints],
-        remove_with_rev_hints(
-            State, Rest, ToRemove, NewObjs, RestRevHints
-        )
+        remove_objects(Rest, ToRemove, NewObjs)
     ;
         NewObjs = [Obj|RestObjs],
-        remove_with_rev_hints(
-            State, Rest, ToRemove, RestObjs, RevHints
-        )
+        remove_objects(Rest, ToRemove, RestObjs)
     ).

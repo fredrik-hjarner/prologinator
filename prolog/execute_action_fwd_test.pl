@@ -45,7 +45,6 @@ remaining", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
-    ctx_revhints(CtxNew, RevHints),
     ctx_attr_val(CtxNew, 1/x, NewX),
     ctx_attr_val(CtxNew, 1/y, NewY),
     % ------------------------------------------------------
@@ -59,8 +58,7 @@ remaining", (
     )] ; err_write("ObjOut mismatch") ),
     (NewX = 3 ; err_write("NewX != 3")),
     (NewY = 6 ; err_write("NewY != 6")),
-    (Commands = [] ; err_write("Commands != []")),
-    (RevHints = [] ; err_write("RevHints != []"))
+    (Commands = [] ; err_write("Commands != []"))
 )).
 
 test("move_to: negative direction, multiple frames \
@@ -90,7 +88,6 @@ remaining", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
-    ctx_revhints(CtxNew, RevHints),
     ctx_attr_val(CtxNew, 1/x, NewX),
     ctx_attr_val(CtxNew, 1/y, NewY),
     % ------------------------------------------------------
@@ -104,8 +101,7 @@ remaining", (
     )],
     (NewX = 7 ; err_write("NewX != 7")),
     (NewY = 14 ; err_write("NewY != 14")),
-    (Commands = [] ; err_write("Commands != []")),
-    (RevHints = [] ; err_write("RevHints != []"))
+    (Commands = [] ; err_write("Commands != []"))
 )).
 
 test("move_to: single frame, arrives at target", (
@@ -134,7 +130,6 @@ test("move_to: single frame, arrives at target", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
-    ctx_revhints(CtxNew, RevHints),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     % ------------------------------------------------------
@@ -148,8 +143,7 @@ test("move_to: single frame, arrives at target", (
     )],
     (X = 5 ; err_write("X != 5")),
     (Y = 5 ; err_write("Y != 5")),
-    (Commands = [] ; err_write("Commands != []")),
-    (RevHints = [] ; err_write("RevHints != []"))
+    (Commands = [] ; err_write("Commands != []"))
 )).
 
 test("move_to: already at target, stays at position and \
@@ -179,7 +173,6 @@ continues with remaining frames", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
-    ctx_revhints(CtxNew, RevHints),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     % ------------------------------------------------------
@@ -193,8 +186,7 @@ continues with remaining frames", (
     )],
     (X = 10 ; err_write("X != 10")),
     (Y = 20 ; err_write("Y != 20")),
-    (Commands = [] ; err_write("Commands != []")),
-    (RevHints = [] ; err_write("RevHints != []"))
+    (Commands = [] ; err_write("Commands != []"))
 )).
 
 test("move_to: negative target coordinates", (
@@ -217,7 +209,6 @@ test("move_to: negative target coordinates", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
-    ctx_revhints(CtxNew, RevHints),
     ctx_attr_val(CtxNew, 1/x, NewX),
     ctx_attr_val(CtxNew, 1/y, NewY),
     % ------------------------------------------------------
@@ -231,8 +222,7 @@ test("move_to: negative target coordinates", (
     )],
     (NewX = -2 ; err_write("NewX != -2")),
     (NewY = -5 ; err_write("NewY != -5")),
-    (Commands = [] ; err_write("Commands != []")),
-    (RevHints = [] ; err_write("RevHints != []"))
+    (Commands = [] ; err_write("Commands != []"))
 )).
 
 % --------------------------------------------------------
@@ -263,7 +253,6 @@ to won", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxOut, Commands),
-    ctx_revhints(CtxOut, RevHints),
     ctx_status(CtxOut, Status),
     % ------------------------------------------------------
     % Assert
@@ -275,8 +264,7 @@ to won", (
         collisions([])
     )],
     (Status = won ; err_write("Status != won")),
-    (Commands = [] ; err_write("Commands != []")),
-    (RevHints = [] ; err_write("RevHints != []"))
+    (Commands = [] ; err_write("Commands != []"))
 )).
 
 test("trigger_state_change: forward test - updates status \
@@ -303,7 +291,6 @@ to lost", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxOut, Commands),
-    ctx_revhints(CtxOut, RevHints),
     ctx_status(CtxOut, Status),
     % ------------------------------------------------------
     % Assert
@@ -315,8 +302,7 @@ to lost", (
         collisions([])
     )],
     (Status = lost ; err_write("Status != lost")),
-    (Commands = [] ; err_write("Commands != []")),
-    (RevHints = [] ; err_write("RevHints != []"))
+    (Commands = [] ; err_write("Commands != []"))
 )).
 
 test("trigger_state_change: forward test - won cannot \
@@ -344,7 +330,6 @@ override lost", (
         obj_new(ObjOut)
     ),
     ctx_cmds(CtxOut, Commands),
-    ctx_revhints(CtxOut, RevHints),
     ctx_status(CtxOut, Status),
     % ------------------------------------------------------
     % Assert
@@ -356,8 +341,7 @@ override lost", (
         collisions([])
     )],
     (Status = lost ; err_write("Status != lost")),
-    (Commands = [] ; err_write("Commands != []")),
-    (RevHints = [] ; err_write("RevHints != []"))
+    (Commands = [] ; err_write("Commands != []"))
 )).
 
 % ==========================================================
@@ -383,7 +367,6 @@ test("noop: removes self from action queue", (
         obj_old(ObjIn),
         obj_new([ObjOut])
     ),
-    ctx_revhints(CtxNew, RevHints),
     ctx_cmds(CtxNew, Commands),
     ctx_frame(CtxNew, Frame),
     ctx_status(CtxNew, Status),
@@ -394,7 +377,6 @@ test("noop: removes self from action queue", (
         id(0), type(static),
         actions([wait(1)]), collisions([])
     ),
-    (RevHints = [] ; err_write("RevHints != []")),
     (Commands = [] ; err_write("Commands != []")),
     (Frame = 0 ; err_write("Frame != 0")),
     (Status = playing ; err_write("Status != playing"))
@@ -426,7 +408,6 @@ test("list: expands actions into queue", (
         actions([wait(1), move_to(5, 5, 2), wait(3)]),
         collisions([])
     ),
-    ctx_revhints(CtxNew, []),
     ctx_cmds(CtxNew, []),
     ctx_frame(CtxNew, 0),
     ctx_status(CtxNew, playing)
@@ -487,15 +468,12 @@ actions from executing", (
         obj_old(ObjIn),
         obj_new(ObjOut)
     ),
-    ctx_revhints(CtxNew, RevHints),
     ctx_cmds(CtxNew, Commands),
     ctx_frame(CtxNew, Frame),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
     (ObjOut = [] ; err_write("ObjOut != []")),
-    (RevHints = [despawned(1, [attr(x, 0), attr(y, 0)])] ;
-     err_write("RevHints wrong")),
     (Commands = [] ; err_write("Commands != []")),
     (Frame = 0 ; err_write("Frame != 0"))
 )).
@@ -523,7 +501,6 @@ executing after despawn", (
     % Object must be despawned (empty list)
     ObjOut = [],
     % Despawn hint must be recorded
-    ctx_revhints(CtxNew, [despawned(1, [])]),
     % Status must remain playing (game_over did NOT execute)
     ctx_status(CtxNew, playing),
     % No commands
@@ -559,7 +536,6 @@ test("set_attr: set new attribute", (
     ctx_attr_val(CtxNew, 1/hp, HP),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
-    ctx_revhints(CtxNew, RevHints),
     ctx_cmds(CtxNew, Commands),
     % ------------------------------------------------------
     % Assert
@@ -571,7 +547,6 @@ test("set_attr: set new attribute", (
     (HP = 100 ; err_write("HP != 100")),
     (X = 5 ; err_write("X != 5")),
     (Y = 10 ; err_write("Y != 10")),
-    (RevHints = [] ; err_write("RevHints != []")),
     (Commands = [] ; err_write("Commands != []"))
 )).
 
@@ -718,15 +693,12 @@ despawns", (
         obj_old(Obj),
         obj_new(ObjOut)
     ),
-    ctx_revhints(CtxNew, RevHints),
     ctx_status(CtxNew, Status),
     ctx_cmds(CtxNew, Commands),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
     (ObjOut = [] ; err_write("ObjOut != []")),
-    (RevHints = [despawned(1, [attr(x, 0), attr(y, 0)])] ;
-     err_write("RevHints wrong")),
     (Status = playing ; err_write("Status != playing")),
     (Commands = [] ; err_write("Commands != []"))
 )).
@@ -807,7 +779,6 @@ test("repeat: expands actions once and decrements", (
         repeat(2, [noop, set_attr(count, 1)]),
         despawn
     ],
-    ctx_revhints(CtxNew, []),
     ctx_cmds(CtxNew, [])
 )).
 
@@ -833,7 +804,6 @@ test("repeat: last repetition doesn't add repeat", (
         obj_new([ObjOut])
     ),
     obj_acns(ObjOut, Actions),
-    ctx_revhints(CtxNew, RevHints),
     ctx_cmds(CtxNew, Commands),
     % ------------------------------------------------------
     % Assert
@@ -841,7 +811,6 @@ test("repeat: last repetition doesn't add repeat", (
     (Actions = [noop, despawn]
      ;
      err_write("Actions wrong")),
-    (RevHints = [] ; err_write("RevHints != []")),
     (Commands = [] ; err_write("Commands != []"))
 )).
 
@@ -878,7 +847,6 @@ test("repeat: multiple actions in repeat list", (
         obj_new([ObjOut])
     ),
     obj_acns(ObjOut, Actions),
-    ctx_revhints(CtxNew, RevHints),
     ctx_cmds(CtxNew, Commands),
     % ------------------------------------------------------
     % Assert
@@ -890,7 +858,6 @@ test("repeat: multiple actions in repeat list", (
         repeat(1, [noop, set_attr(a, 1), set_attr(b, 2)]),
         despawn
     ] ; err_write("Actions wrong")),
-    (RevHints = [] ; err_write("RevHints != []")),
     (Commands = [] ; err_write("Commands != []"))
 )).
 
@@ -924,7 +891,6 @@ test("move_delta: single frame moves and completes", (
     ),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
-    ctx_revhints(CtxNew, RevHints),
     ctx_cmds(CtxNew, Commands),
     % ------------------------------------------------------
     % Assert
@@ -937,7 +903,6 @@ test("move_delta: single frame moves and completes", (
     ),
     (X = 15 ; err_write("X != 15")),
     (Y = 17 ; err_write("Y != 17")),
-    (RevHints = [] ; err_write("RevHints != []")),
     (Commands = [] ; err_write("Commands != []"))
 )).
 
@@ -968,7 +933,6 @@ test("move_delta: multiple frames continues", (
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     obj_acns(ObjOut, Actions),
-    ctx_revhints(CtxNew, RevHints),
     ctx_cmds(CtxNew, Commands),
     % ------------------------------------------------------
     % Assert
@@ -978,7 +942,6 @@ test("move_delta: multiple frames continues", (
     (Actions = [move_delta(2, 10, 5)]
      ;
      err_write("Actions wrong")),
-    (RevHints = [] ; err_write("RevHints != []")),
     (Commands = [] ; err_write("Commands != []"))
 )).
 
@@ -1009,7 +972,6 @@ test("move_delta: negative deltas work", (
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     obj_acns(ObjOut, Actions),
-    ctx_revhints(CtxNew, RevHints),
     ctx_cmds(CtxNew, Commands),
     % ------------------------------------------------------
     % Assert
@@ -1019,7 +981,6 @@ test("move_delta: negative deltas work", (
     (Actions = [move_delta(1, -10, -5)]
      ;
      err_write("Actions wrong")),
-    (RevHints = [] ; err_write("RevHints != []")),
     (Commands = [] ; err_write("Commands != []"))
 )).
 
@@ -1050,7 +1011,6 @@ test("move_delta: preserves other attributes", (
     ctx_attr_val(CtxNew, 1/y, Y),
     ctx_attr_val(CtxNew, 1/hp, HP),
     ctx_attr_val(CtxNew, 1/speed, Speed),
-    ctx_revhints(CtxNew, RevHints),
     ctx_cmds(CtxNew, Commands),
     % ------------------------------------------------------
     % Assert
@@ -1065,7 +1025,6 @@ test("move_delta: preserves other attributes", (
     (Y = 17 ; err_write("Y != 17")),
     (HP = 100 ; err_write("HP != 100")),
     (Speed = 5 ; err_write("Speed != 5")),
-    (RevHints = [] ; err_write("RevHints != []")),
     (Commands = [] ; err_write("Commands != []"))
 )).
 
