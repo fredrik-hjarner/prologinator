@@ -9,7 +9,8 @@
     append/3,
     select/3,
     member/2,
-    findall/3
+    findall/3,
+    maplist/3
 ]).
 :- use_module(library(assoc), [
     gen_assoc/3,
@@ -59,6 +60,50 @@ is_builtin(trigger_state_change(_)).
 is_builtin(define_action(_, _)).
 
 % ==========================================================
+% Value Resolution
+% ==========================================================
+% Resolve all value specs in an action
+resolve_action(Ctx, MyID, ActionIn, ActionOut) :-
+    ActionIn =.. [Functor|Args],
+    maplist(resolve_arg(Ctx, MyID), Args,
+            ResolvedArgs),
+    ActionOut =.. [Functor|ResolvedArgs].
+
+% Resolve individual arguments
+resolve_arg(Ctx, MyID, attr(Path), V) :-
+    ground(Path),  % Only resolve if path is ground
+    !,
+    resolve_path(Ctx, MyID, Path, V).
+
+% Lists need recursive resolution
+resolve_arg(Ctx, MyID, List, ResolvedList) :-
+    List = [_|_], !,
+    maplist(resolve_arg(Ctx, MyID), List,
+            ResolvedList).
+resolve_arg(_Ctx, _MyID, [], []).
+
+% Pass through primitives and other terms
+resolve_arg(_Ctx, _MyID, Other, Other).
+
+% ==========================================================
+% Path Resolution (handles x/y/z chains)
+% ==========================================================
+% Simple attribute (no path)
+resolve_path(Ctx, MyID, AttrName, Value) :-
+    atom(AttrName),  % Not a / term
+    !,
+    ctx_attr_val(Ctx, MyID/AttrName, Value).
+
+% Path with / separator (handles nested / like a/b/c)
+resolve_path(Ctx, MyID, FirstAttr/RestPath, Value) :-
+    !,
+    % FirstAttr might itself be a path (like a/b),
+    % so resolve it
+    resolve_path(Ctx, MyID, FirstAttr, NextID),
+    % Continue from that object (RestPath may be nested)
+    resolve_path(Ctx, NextID, RestPath, Value).
+
+% ==========================================================
 % execute_action/5
 % ==========================================================
 
@@ -82,10 +127,36 @@ is_builtin(define_action(_, _)).
 % :- pred execute_action(+Action, +ObjIn, +ObjOut,
 %     +Commands, +RevHints).
 
+% ==========================================================
+% Top-level execute_action (with resolution)
+% ==========================================================
+execute_action(
+    ctx_old(CtxOld),
+    ctx_new(CtxNew),
+    action(Action),
+    obj_old(ObjIn),
+    obj_new(ObjOut)
+) :-
+    % 1. Resolve value specs in action
+    obj_id(ObjIn, MyID),
+    resolve_action(CtxOld, MyID, Action, ResolvedAction),
+    
+    % 2. Delegate to existing logic (renamed)
+    execute_action_resolved(
+        ctx_old(CtxOld),
+        ctx_new(CtxNew),
+        action(ResolvedAction),
+        obj_old(ObjIn),
+        obj_new(ObjOut)
+    ).
+
+% ==========================================================
+% RENAMED: execute_action → execute_action_resolved
+% ==========================================================
 % Wrapper: validates action then delegates to implementation
 % Now threads Context directly to accumulate side effects.
 % Also handles user-defined actions via runtime expansion.
-execute_action(
+execute_action_resolved(
     ctx_old(CtxOld),
     ctx_new(CtxNew),
     action(Action),
@@ -117,6 +188,8 @@ execute_action(
         % Unify Action with Template (this binds variables
         % in Body)
         % Body now has the correct bindings, use it directly
+        % Note: Body may contain attr() specs, so recurse
+        % through top-level execute_action for resolution
         execute_action(
             ctx_old(CtxOld),
             ctx_new(CtxNew),
