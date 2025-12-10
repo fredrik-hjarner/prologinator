@@ -114,6 +114,48 @@ lint-all:
     @just lint prolog/yields_test.pl || exit 1
     @echo "Linting xod/xod.pl..."
     @just lint prolog/xod/xod.pl || exit 1
+    @echo "Linting actions/wait.pl..."
+    @just lint prolog/actions/wait.pl || exit 1
+    @echo "Linting actions/move_to.pl..."
+    @just lint prolog/actions/move_to.pl || exit 1
+    @echo "Linting actions/move_delta.pl..."
+    @just lint prolog/actions/move_delta.pl || exit 1
+    @echo "Linting actions/despawn.pl..."
+    @just lint prolog/actions/despawn.pl || exit 1
+    @echo "Linting actions/noop.pl..."
+    @just lint prolog/actions/noop.pl || exit 1
+    @echo "Linting actions/define_action.pl..."
+    @just lint prolog/actions/define_action.pl || exit 1
+    @echo "Linting actions/set_attr.pl..."
+    @just lint prolog/actions/set_attr.pl || exit 1
+    @echo "Linting actions/incr.pl..."
+    @just lint prolog/actions/incr.pl || exit 1
+    @echo "Linting actions/decr.pl..."
+    @just lint prolog/actions/decr.pl || exit 1
+    @echo "Linting actions/log.pl..."
+    @just lint prolog/actions/log.pl || exit 1
+    @echo "Linting actions/spawn.pl..."
+    @just lint prolog/actions/spawn.pl || exit 1
+    @echo "Linting actions/loop.pl..."
+    @just lint prolog/actions/loop.pl || exit 1
+    @echo "Linting actions/list.pl..."
+    @just lint prolog/actions/list.pl || exit 1
+    @echo "Linting actions/repeat.pl..."
+    @just lint prolog/actions/repeat.pl || exit 1
+    @echo "Linting actions/load.pl..."
+    @just lint prolog/actions/load.pl || exit 1
+    @echo "Linting actions/trigger_state_change.pl..."
+    @just lint prolog/actions/trigger_state_change.pl || exit 1
+    @echo "Linting actions/wait_key_down.pl..."
+    @just lint prolog/actions/wait_key_down.pl || exit 1
+    @echo "Linting actions/wait_key_up.pl..."
+    @just lint prolog/actions/wait_key_up.pl || exit 1
+    @echo "Linting actions/wait_key_held.pl..."
+    @just lint prolog/actions/wait_key_held.pl || exit 1
+    @echo "Linting actions/parallel_all.pl..."
+    @just lint prolog/actions/parallel_all.pl || exit 1
+    @echo "Linting actions/parallel_race.pl..."
+    @just lint prolog/actions/parallel_race.pl || exit 1
     @echo "All files passed linting!"
 
 # lint the max length of files.
@@ -135,6 +177,27 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/yields.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/yields_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/xod/xod.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/move_to.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/move_delta.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/despawn.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/noop.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/define_action.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/set_attr.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/incr.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/decr.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/log.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/spawn.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/loop.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/list.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/repeat.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/load.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/trigger_state_change.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait_key_down.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait_key_up.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait_key_held.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel_all.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel_race.pl
 
 # Run sconcat script to concatenate files
 # Usage: just sconcat [output_file]

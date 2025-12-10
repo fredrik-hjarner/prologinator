@@ -1,0 +1,50 @@
+% load action implementation
+
+:- module(execute_action_load, []).
+
+:- use_module(library(lists), [
+    append/3
+]).
+:- use_module(library(charsio), [atom_chars/2]).
+:- use_module(library(iso_ext)).
+:- use_module('../types/accessors').
+:- use_module('../types/adv_accessors').
+:- use_module('../util/util', [is_list/1]).
+
+:- multifile(execute_action:execute_action_impl/5).
+:- discontiguous(execute_action:execute_action_impl/5).
+
+% load(+Path)
+% Mode: load(+Path)
+% Description: Loads a file containing a list of actions
+%   and prepends them to the action queue
+% Yields: false (expands immediately)
+
+execute_action:execute_action_impl(
+    ctx_old(Ctx),
+    ctx_new(Ctx),
+    action(load(Path)),
+    obj_old(ObjIn),
+    obj_new([ObjOut])
+) :-
+    obj_acns(ObjIn, [_|Rest]),
+    % Convert Path (list of chars) to atom for open/3
+    % Path must be a string (list of chars), not an atom
+    atom_chars(PathAtom, Path),
+    % Read file as term (expects list of actions)
+    setup_call_cleanup(
+        open(PathAtom, read, Stream),
+        read_term(Stream, Actions, []),
+        close(Stream)
+    ),
+    % Validate it's a list
+    ( is_list(Actions) ->
+        append(Actions, Rest, NewActions),
+        obj_acns_obj(ObjIn, NewActions, ObjOut)
+    ;
+        throw(error(
+            type_error(list, Actions),
+            load/1
+        ))
+    ).
+
