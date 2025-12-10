@@ -6,6 +6,12 @@
 % ensure consistent access to nested structures and make
 % refactoring easier.
 
+:- use_module(library(assoc), [
+    empty_assoc/1,
+    put_assoc/4,
+    del_assoc/4
+]).
+
 % Conventions:
 % For getters the functors start with the "thing" we get
 % from, then comes _ followed by all "stuff" we want to get.
@@ -22,6 +28,10 @@
     ctx_frame_ctx/3,
     ctx_objs/2,
     ctx_objs_ctx/3,
+    ctx_attrs/2,
+    ctx_attrs_ctx/3,
+    ctx_state/2,
+    ctx_state_ctx/3,
     ctx_cmds/2,
     ctx_cmds_ctx/3,
     ctx_revhints/2,
@@ -38,18 +48,15 @@
     ctx_objs_nextid_cmds_ctx/5,
     % State accessors
     state_status_state/3,
+    state_attrs/2,
+    state_attrs_state/3,
     % Object accessors
     obj_id/2,
-    obj_attrs/2,
     obj_acns/2,
     obj_type/2,
     obj_collisions/2,
-    obj_id_attrs/3,
     obj_id_type/3,
-    obj_type_attrs/3,
-    obj_acns_obj/3,
-    obj_attrs_obj/3,
-    obj_attrs_acns_obj/4
+    obj_acns_obj/3
 ]).
 
 % ==========================================================
@@ -58,63 +65,92 @@
 
 % Get frame from context
 ctx_frame(
-    ctx(state(frame(F), _, _, _, _, _)), F
+    ctx(state(frame(F), _, _, _, _, _, _)), F
 ).
 
 % Set frame in context
 ctx_frame_ctx(
-    ctx(state(_, Objects, Status, NextID, Commands,
-              RevHints)),
+    ctx(state(_, Objects, Attrs, Status, NextID,
+              Commands, RevHints)),
     NewFrame,
-    ctx(state(frame(NewFrame), Objects, Status, NextID,
-              Commands, RevHints))
+    ctx(state(frame(NewFrame), Objects, Attrs, Status,
+              NextID, Commands, RevHints))
 ).
 
 % Get objects from context
 ctx_objs(
-    ctx(state(_, objects(Objects), _, _, _, _)), Objects
+    ctx(state(_, objects(Objects), _, _, _, _, _)),
+    Objects
 ).
 
 % Set objects in context
 ctx_objs_ctx(
-    ctx(state(F, _, Status, NextID, Commands, RevHints)),
+    ctx(state(F, _, Attrs, Status, NextID, Commands,
+              RevHints)),
     NewObjects,
-    ctx(state(F, objects(NewObjects), Status,
+    ctx(state(F, objects(NewObjects), Attrs, Status,
               NextID, Commands, RevHints))
+).
+
+% Get attributes from context
+ctx_attrs(
+    ctx(state(_, _, attrs(Attrs), _, _, _, _)), Attrs
+).
+
+% Set attributes in context
+ctx_attrs_ctx(
+    ctx(state(F, Objects, _, Status, NextID, Commands,
+              RevHints)),
+    NewAttrs,
+    ctx(state(F, Objects, attrs(NewAttrs), Status,
+              NextID, Commands, RevHints))
+).
+
+% Get state from context
+ctx_state(
+    ctx(State), State
+).
+
+% Set state in context
+ctx_state_ctx(
+    ctx(_), NewState, ctx(NewState)
 ).
 
 % Get commands from context
 ctx_cmds(
-    ctx(state(_, _, _, _, commands(Commands), _)),
+    ctx(state(_, _, _, _, _, commands(Commands), _)),
     Commands
 ).
 
 % Set commands in context
 ctx_cmds_ctx(
-    ctx(state(F, Objects, Status, NextID, _, RevHints)),
+    ctx(state(F, Objects, Attrs, Status, NextID, _,
+              RevHints)),
     NewCommands,
-    ctx(state(F, Objects, Status, NextID,
+    ctx(state(F, Objects, Attrs, Status, NextID,
               commands(NewCommands), RevHints))
 ).
 
 % Get rev_hints from context
 ctx_revhints(
-    ctx(state(_, _, _, _, _, rev_hints(RevHints))),
+    ctx(state(_, _, _, _, _, _, rev_hints(RevHints))),
     RevHints
 ).
 
 % Set rev_hints in context
 ctx_revhints_ctx(
-    ctx(state(F, Objects, Status, NextID, Commands, _)),
+    ctx(state(F, Objects, Attrs, Status, NextID,
+              Commands, _)),
     NewRevHints,
-    ctx(state(F, Objects, Status, NextID,
+    ctx(state(F, Objects, Attrs, Status, NextID,
               Commands, rev_hints(NewRevHints)))
 ).
 
 % Get objects, commands, and rev_hints from context
 % (bulk getter)
 ctx_objs_cmds_revhints(
-    ctx(state(_, objects(Objects), _, _, commands(Commands),
+    ctx(state(_, objects(Objects), _, _, _,
+              commands(Commands),
               rev_hints(RevHints))),
     Objects,
     Commands,
@@ -124,33 +160,34 @@ ctx_objs_cmds_revhints(
 % Set objects, commands, and rev_hints in context
 % (bulk setter)
 ctx_objs_cmds_revhints_ctx(
-    ctx(state(F, _, Status, NextID, _, _)),
+    ctx(state(F, _, Attrs, Status, NextID, _, _)),
     NewObjects,
     NewCommands,
     NewRevHints,
-    ctx(state(F, objects(NewObjects), Status, NextID,
-              commands(NewCommands),
+    ctx(state(F, objects(NewObjects), Attrs, Status,
+              NextID, commands(NewCommands),
               rev_hints(NewRevHints)))
 ).
 
 % Get status from context
 ctx_status(
-    ctx(state(_, _, status(Status), _, _, _)),
+    ctx(state(_, _, _, status(Status), _, _, _)),
     Status
 ).
 
 % Set status in context
 ctx_status_ctx(
-    ctx(state(F, Objects, _, NextID, Commands, RevHints)),
+    ctx(state(F, Objects, Attrs, _, NextID, Commands,
+              RevHints)),
     NewStatus,
-    ctx(state(F, Objects, status(NewStatus), NextID,
-              Commands, RevHints))
+    ctx(state(F, Objects, Attrs, status(NewStatus),
+              NextID, Commands, RevHints))
 ).
 
 % Get status and commands from context
 % (bulk getter - order matches state structure)
 ctx_status_cmds(
-    ctx(state(_, _, status(Status), _,
+    ctx(state(_, _, _, status(Status), _,
               commands(Commands), _)),
     Status,
     Commands
@@ -159,29 +196,30 @@ ctx_status_cmds(
 % Set status and commands in context
 % (bulk setter - order matches state structure)
 ctx_status_cmds_ctx(
-    ctx(state(F, Objects, _, NextID, _, RevHints)),
+    ctx(state(F, Objects, Attrs, _, NextID, _, RevHints)),
     NewStatus,
     NewCommands,
-    ctx(state(F, Objects, status(NewStatus), NextID,
-              commands(NewCommands), RevHints))
+    ctx(state(F, Objects, Attrs, status(NewStatus),
+              NextID, commands(NewCommands), RevHints))
 ).
 
 % Get next_id from context
 ctx_nextid(
-    ctx(state(_, _, _, next_id(NID), _, _)), NID
+    ctx(state(_, _, _, _, next_id(NID), _, _)), NID
 ).
 
 % Set next_id in context
 ctx_nextid_ctx(
-    ctx(state(F, Objs, Status, _, Cmds, Revs)),
+    ctx(state(F, Objs, Attrs, Status, _, Cmds, Revs)),
     NewNID,
-    ctx(state(F, Objs, Status, next_id(NewNID), Cmds, Revs))
+    ctx(state(F, Objs, Attrs, Status, next_id(NewNID),
+              Cmds, Revs))
 ).
 
 % Get objects, next_id, and commands from context
 % (bulk getter - order matches state structure)
 ctx_objs_nextid_cmds(
-    ctx(state(_, objects(Objects), _, next_id(NextID),
+    ctx(state(_, objects(Objects), _, _, next_id(NextID),
               commands(Commands), _)),
     Objects,
     NextID,
@@ -191,11 +229,11 @@ ctx_objs_nextid_cmds(
 % Set objects, next_id, and commands in context
 % (bulk setter - order matches state structure)
 ctx_objs_nextid_cmds_ctx(
-    ctx(state(F, _, Status, _, _, Revs)),
+    ctx(state(F, _, Attrs, Status, _, _, Revs)),
     NewObjects,
     NewNextID,
     NewCommands,
-    ctx(state(F, objects(NewObjects), Status,
+    ctx(state(F, objects(NewObjects), Attrs, Status,
               next_id(NewNextID),
               commands(NewCommands), Revs))
 ).
@@ -204,12 +242,33 @@ ctx_objs_nextid_cmds_ctx(
 % State Accessors
 % ==========================================================
 
+% Get attributes from state
+% Note: If possible use ctx_attrs directly if you can
+%       because ya know maybe you dont need to grab state
+%       first ya know.
+state_attrs(
+    state(_, _, attrs(Attrs), _, _, _, _), Attrs
+).
+
+% Set attributes in state
+% Note: If possible use ctx_attrs_ctx directly if you can
+%       because ya know maybe you dont need to grab state
+%       first ya know.
+state_attrs_state(
+    state(F, Objects, _, Status, NextID, Commands,
+          RevHints),
+    NewAttrs,
+    state(F, Objects, attrs(NewAttrs), Status,
+          NextID, Commands, RevHints)
+).
+
 % Set status in state
 state_status_state(
-    state(F, Objects, _, NextID, Commands, RevHints),
+    state(F, Objects, Attrs, _, NextID, Commands,
+          RevHints),
     NewStatus,
-    state(F, Objects, status(NewStatus), NextID,
-          Commands, RevHints)
+    state(F, Objects, Attrs, status(NewStatus),
+          NextID, Commands, RevHints)
 ).
 
 % ==========================================================
@@ -217,59 +276,28 @@ state_status_state(
 % ==========================================================
 
 % Extract ID from object
-obj_id(object(id(ID), _, _, _, _), ID).
-
-% Extract attrs from object
-obj_attrs(object(_, _, attrs(Attrs), _, _), Attrs).
+obj_id(object(id(ID), _, _, _), ID).
 
 % Extract actions from object
-obj_acns(object(_, _, _, actions(Actions), _), Actions).
+obj_acns(object(_, _, actions(Actions), _), Actions).
 
 % Extract type from object
-obj_type(object(_, type(Type), _, _, _), Type).
+obj_type(object(_, type(Type), _, _), Type).
 
 % Extract collisions from object
 obj_collisions(
-    object(_, _, _, _, collisions(Colls)), Colls
-).
-
-% Extract ID and attrs from object
-obj_id_attrs(
-    object(id(ID), _, attrs(Attrs), _, _), ID, Attrs
+    object(_, _, _, collisions(Colls)), Colls
 ).
 
 % Extract ID and type from object
-obj_id_type(object(id(ID), type(Type), _, _, _), ID, Type).
-
-% Extract type and attrs from object
-obj_type_attrs(
-    object(_, type(Type), attrs(Attrs), _, _), Type, Attrs
-).
+obj_id_type(object(id(ID), type(Type), _, _), ID, Type).
 
 % Set actions in object
 obj_acns_obj(
-    object(id(ID), type(Type), attrs(Attrs), _,
-           collisions(Colls)),
+    object(id(ID), type(Type), _, collisions(Colls)),
     NewActions,
-    object(id(ID), type(Type), attrs(Attrs),
-           actions(NewActions), collisions(Colls))
+    object(id(ID), type(Type), actions(NewActions),
+           collisions(Colls))
 ).
 
-% Set attrs in object
-obj_attrs_obj(
-    object(id(ID), type(Type), _, actions(Actions),
-           collisions(Colls)),
-    NewAttrs,
-    object(id(ID), type(Type), attrs(NewAttrs),
-           actions(Actions), collisions(Colls))
-).
-
-% Set attrs and actions in object
-obj_attrs_acns_obj(
-    object(id(ID), type(Type), _, _, collisions(Colls)),
-    NewAttrs,
-    NewActions,
-    object(id(ID), type(Type), attrs(NewAttrs),
-           actions(NewActions), collisions(Colls))
-).
 

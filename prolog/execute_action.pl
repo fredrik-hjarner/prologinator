@@ -11,8 +11,14 @@
     member/2,
     findall/3
 ]).
+:- use_module(library(assoc), [
+    gen_assoc/3,
+    del_assoc/4
+]).
+:- use_module(library(format)).
 :- use_module('./types/validation', [action_validation/1]).
 :- use_module('./types/accessors').
+:- use_module('./types/adv_accessors').
 :- use_module('./util/util', [select_many/3]).
 
 % :- use_module('xod/xod', [validate/2]).
@@ -36,6 +42,11 @@ is_builtin(move_delta(_, _, _)).
 is_builtin(despawn).
 is_builtin(spawn(_, _, _, _)).
 is_builtin(set_attr(_, _)).
+is_builtin(set_attr(_, _, _)).
+is_builtin(incr(_, _)).
+is_builtin(incr(_, _, _)).
+is_builtin(decr(_, _)).
+is_builtin(decr(_, _, _)).
 is_builtin(loop(_)).
 is_builtin(list(_)).
 is_builtin(repeat(_, _)).
@@ -81,6 +92,9 @@ execute_action(
     obj_old(ObjIn),
     obj_new(ObjOut)
 ) :-
+    % TODO: action_validation nowadays it almost useless
+    %       since custom actions allow anything.
+    %       so maybe I should validate builtins separately?
     action_validation(Action),
     % validate(Action, action_schema),
     ( is_builtin(Action) ->
@@ -147,25 +161,25 @@ wait_continue(N, Rest, Rest) :- N #=< 1.
 
 execute_action_impl(
     ctx_old(Ctx),
-    ctx_new(Ctx), % Context unchanged
+    ctx_new(CtxOut), % Context may change due to attrs
     action(move_to(TargetX, TargetY, Frames)),
     obj_old(object(
         id(ID),
         type(Type),
-        attrs(Attrs),
         actions([_|Rest]),
         Colls
     )),
     obj_new([object(
         id(ID),
         type(Type),
-        attrs(NewAttrs),
         actions(NewActions),
         Colls
     )])
 ) :-
-    % Extract current x and y separately
-    select_many([x(CurrX), y(CurrY)], Attrs, Attrs2),
+    % Get current position from attribute store
+    % Fails if object doesn't have x/y attributes
+    ctx_attr_val(Ctx, ID/x, CurrX),
+    ctx_attr_val(Ctx, ID/y, CurrY),
     % Compute step using integer division
     DX #= (TargetX - CurrX) // Frames,
     DY #= (TargetY - CurrY) // Frames,
@@ -179,7 +193,9 @@ execute_action_impl(
     ;
         true
     ),
-    NewAttrs = [x(NewX), y(NewY)|Attrs2],
+    % Update position in attribute store
+    ctx_attr_val_ctx(Ctx, ID/x, NewX, Ctx1),
+    ctx_attr_val_ctx(Ctx1, ID/y, NewY, CtxOut),
     ( Frames #> 1 ->
         Frames1 #= Frames - 1,
         NewActions = [move_to(TargetX, TargetY, Frames1)|
@@ -196,12 +212,21 @@ execute_action_impl(
     ctx_old(CtxIn),
     ctx_new(CtxOut),
     action(despawn),
-    obj_old(object(id(ID), _, attrs(Attrs), _, _)),
+    obj_old(object(id(ID), _, _, _)),
     obj_new([])
 ) :-
-    ctx_revhints(CtxIn, Revs),
+    % Get attrs from store for rev_hint, then remove
+    ctx_attrs(CtxIn, AttrStore),
+    ( gen_assoc(ID, AttrStore, Attrs) ->
+        del_assoc(ID, AttrStore, _, NewAttrStore)
+    ;
+        Attrs = [],
+        NewAttrStore = AttrStore
+    ),
+    ctx_attrs_ctx(CtxIn, NewAttrStore, CtxTemp),
+    ctx_revhints(CtxTemp, Revs),
     append(Revs, [despawned(ID, Attrs)], NewRevs),
-    ctx_revhints_ctx(CtxIn, NewRevs, CtxOut).
+    ctx_revhints_ctx(CtxTemp, NewRevs, CtxOut).
 
 % ----------------------------------------------------------
 % Basic Actions: noop
@@ -242,36 +267,112 @@ execute_action_impl(
 % Basic Actions: set_attr
 % ----------------------------------------------------------
 
+% set_attr/2 - Set attribute on self
 execute_action_impl(
     ctx_old(Ctx),
-    ctx_new(Ctx),
-    action(set_attr(Name, Value)),
-    obj_old(object(
-        id(ID),
-        type(Type),
-        attrs(Attrs),
-        actions([_|Rest]),
-        Colls
-    )),
-    obj_new([object(
-        id(ID),
-        type(Type),
-        attrs(NewAttrs),
-        actions(Rest),
-        Colls
-    )])
+    ctx_new(CtxOut),
+    action(set_attr(Key, Value)),
+    obj_old(ObjIn),
+    obj_new([ObjOut])
 ) :-
-    % Build attribute term to search for
-    functor(Attr, Name, 1),
-    % Try to remove old attribute if it exists
-    (select(Attr, Attrs, AttrsWithoutOld) ->
-        AttrsAfterRemoval = AttrsWithoutOld
+    obj_id(ObjIn, MyID),
+    obj_acns(ObjIn, [_|Rest]),
+    obj_acns_obj(ObjIn, Rest, ObjOut),
+    ctx_attr_val_ctx(Ctx, MyID/Key, Value, CtxOut).
+
+% set_attr/3 - Set attribute on specific object
+execute_action_impl(
+    ctx_old(Ctx),
+    ctx_new(CtxOut),
+    action(set_attr(TargetID, Key, Value)),
+    obj_old(ObjIn),
+    obj_new([ObjOut])
+) :-
+    obj_acns(ObjIn, [_|Rest]),
+    obj_acns_obj(ObjIn, Rest, ObjOut),
+    ctx_attr_val_ctx(Ctx, TargetID/Key, Value, CtxOut).
+
+% ----------------------------------------------------------
+% Basic Actions: incr
+% ----------------------------------------------------------
+
+% incr/2 - Increment attribute on self
+execute_action_impl(
+    ctx_old(Ctx),
+    ctx_new(CtxOut),
+    action(incr(Key, Amount)),
+    obj_old(ObjIn),
+    obj_new([ObjOut])
+) :-
+    obj_id(ObjIn, MyID),
+    obj_acns(ObjIn, [_|Rest]),
+    obj_acns_obj(ObjIn, Rest, ObjOut),
+    ( ctx_attr_val(Ctx, MyID/Key, CurrentValue) ->
+        NewValue #= CurrentValue + Amount
     ;
-        AttrsAfterRemoval = Attrs
+        NewValue = Amount
     ),
-    % Create new attribute and prepend
-    NewAttr =.. [Name, Value],
-    NewAttrs = [NewAttr|AttrsAfterRemoval].
+    ctx_attr_val_ctx(Ctx, MyID/Key, NewValue, CtxOut).
+
+% incr/3 - Increment attribute on specific object
+execute_action_impl(
+    ctx_old(Ctx),
+    ctx_new(CtxOut),
+    action(incr(TargetID, Key, Amount)),
+    obj_old(ObjIn),
+    obj_new([ObjOut])
+) :-
+    obj_acns(ObjIn, [_|Rest]),
+    obj_acns_obj(ObjIn, Rest, ObjOut),
+    ( ctx_attr_val(Ctx, TargetID/Key,
+                   CurrentValue) ->
+        NewValue #= CurrentValue + Amount
+    ;
+        NewValue = Amount
+    ),
+    ctx_attr_val_ctx(Ctx, TargetID/Key, NewValue,
+                     CtxOut).
+
+% ----------------------------------------------------------
+% Basic Actions: decr
+% ----------------------------------------------------------
+
+% decr/2 - Decrement attribute on self
+execute_action_impl(
+    ctx_old(Ctx),
+    ctx_new(CtxOut),
+    action(decr(Key, Amount)),
+    obj_old(ObjIn),
+    obj_new([ObjOut])
+) :-
+    obj_id(ObjIn, MyID),
+    obj_acns(ObjIn, [_|Rest]),
+    obj_acns_obj(ObjIn, Rest, ObjOut),
+    ( ctx_attr_val(Ctx, MyID/Key, CurrentValue) ->
+        NewValue #= CurrentValue - Amount
+    ;
+        NewValue #= 0 - Amount
+    ),
+    ctx_attr_val_ctx(Ctx, MyID/Key, NewValue, CtxOut).
+
+% decr/3 - Decrement attribute on specific object
+execute_action_impl(
+    ctx_old(Ctx),
+    ctx_new(CtxOut),
+    action(decr(TargetID, Key, Amount)),
+    obj_old(ObjIn),
+    obj_new([ObjOut])
+) :-
+    obj_acns(ObjIn, [_|Rest]),
+    obj_acns_obj(ObjIn, Rest, ObjOut),
+    ( ctx_attr_val(Ctx, TargetID/Key,
+                   CurrentValue) ->
+        NewValue #= CurrentValue - Amount
+    ;
+        NewValue #= 0 - Amount
+    ),
+    ctx_attr_val_ctx(Ctx, TargetID/Key, NewValue,
+                     CtxOut).
 
 % ----------------------------------------------------------
 % Compound Actions: spawn
@@ -293,18 +394,22 @@ execute_action_impl(
     NextID #= ID + 1,
     ctx_nextid_ctx(CtxIn, NextID, CtxTemp1),
     
-    % 2. Create Object with x/y attributes
+    % 2. Create Object (no attributes - stored separately)
     NewObj = object(
-        id(ID), type(Type), attrs([x(X), y(Y)]),
+        id(ID), type(Type),
         actions(Actions), collisions([])
     ),
     
-    % 3. Append to Context
+    % 3. Initialize attributes in store
+    ctx_attr_val_ctx(CtxTemp1, ID/x, X, CtxTemp2a),
+    ctx_attr_val_ctx(CtxTemp2a, ID/y, Y, CtxTemp2),
+    
+    % 4. Append to Context
     % Since ID is increasing, appending to end keeps the
     % list sorted.
-    ctx_objs(CtxTemp1, CurrentSpawns),
+    ctx_objs(CtxTemp2, CurrentSpawns),
     append(CurrentSpawns, [NewObj], NewSpawns),
-    ctx_objs_ctx(CtxTemp1, NewSpawns, CtxOut).
+    ctx_objs_ctx(CtxTemp2, NewSpawns, CtxOut).
 
 % ----------------------------------------------------------
 % Compound Actions: loop
@@ -382,25 +487,30 @@ execute_action_impl(
 
 execute_action_impl(
     ctx_old(Ctx),
-    ctx_new(Ctx),
+    ctx_new(CtxOut),
     action(move_delta(Frames, DX, DY)),
     obj_old(object(
         id(ID),
         type(Type),
-        attrs(Attrs),
         actions([_|Rest]),
         Colls
     )),
     obj_new([object(
         id(ID),
         type(Type),
-        attrs(NewAttrs),
         actions(NewActions),
         Colls
     )])
 ) :-
-    % Extract current position
-    select_many([x(CurrX), y(CurrY)], Attrs, Attrs2),
+    % Get current position from attribute store
+    ( ctx_attr_val(Ctx, ID/x, CurrX),
+      ctx_attr_val(Ctx, ID/y, CurrY) ->
+        true
+    ;
+        % Default to 0,0 if not set
+        CurrX = 0,
+        CurrY = 0
+    ),
     % Apply delta
     NewX #= CurrX + DX,
     NewY #= CurrY + DY,
@@ -411,8 +521,9 @@ execute_action_impl(
     ;
         true
     ),
-    % Update attributes
-    NewAttrs = [x(NewX), y(NewY)|Attrs2],
+    % Update position in attribute store
+    ctx_attr_val_ctx(Ctx, ID/x, NewX, Ctx1),
+    ctx_attr_val_ctx(Ctx1, ID/y, NewY, CtxOut),
     % Continue or arrive
     ( Frames #> 1 ->
         Frames1 #= Frames - 1,
@@ -462,7 +573,7 @@ execute_action_impl(
         CtxNew,
         ChildActions,
         ObjIn,
-        ObjFinal,
+        _ObjFinal,
         ChildResults
     ),
     ( member([], ChildResults) ->
@@ -471,16 +582,12 @@ execute_action_impl(
         filter_running_actions(
             ChildResults, RemainingActions
         ),
-        obj_attrs(ObjFinal, AttrsOut),
         ( RemainingActions = [] ->
-            obj_attrs_acns_obj(
-                ObjIn, AttrsOut, Rest, NewObj
-            ),
+            obj_acns_obj(ObjIn, Rest, NewObj),
             MaybeObjectOut = [NewObj]
         ;
-            obj_attrs_acns_obj(
+            obj_acns_obj(
                 ObjIn,
-                AttrsOut,
                 [
                     parallel_all_running(RemainingActions)
                     |Rest
@@ -542,20 +649,16 @@ execute_action_impl(
             MaybeObjectOut = []
         ;
             % Child finished normally: proceed with parent
-            %   actions
-            obj_attrs(FinalObj, AttrsOut),
-            obj_attrs_acns_obj(
-                ObjIn, AttrsOut, Rest, NewObj
-            ),
+            %   actions (attributes already in store by ID)
+            obj_acns_obj(ObjIn, Rest, NewObj),
             MaybeObjectOut = [NewObj]
         )
     ; Status = continue(RunningKids, FinalObj) ->
         % Race continues: wrap remaining children in
         %   parallel_race_running for next tick
-        obj_attrs(FinalObj, AttrsOut),
-        obj_attrs_acns_obj(
+        % (attributes already in store by ID)
+        obj_acns_obj(
             ObjIn,
-            AttrsOut,
             [parallel_race_running(RunningKids)|Rest],
             NewObj
         ),
@@ -653,12 +756,11 @@ tick_race(CIn, COut, [Act|Acts], ObjIn, Status) :-
 run_child(CIn, COut, Act, Obj, Res) :-
     obj_id(Obj, ID),
     obj_type(Obj, T),
-    obj_attrs(Obj, A),
     obj_collisions(Obj, C),
+    % Create child object (attrs in centralized store)
     Child = object(
         id(ID),
         type(T),
-        attrs(A),
         actions([Act]),
         collisions(C)
     ),
@@ -671,16 +773,15 @@ run_child(CIn, COut, Act, Obj, Res) :-
     ).
 
 % update_obj_attrs(+Obj, +ResultList, -NewObj)
-% Updates object attributes based on child result.
-%   - If result is an object, use its attrs
-%   - If result is [] (despawned), keep old attrs
-%     (so next child can still run with old state)
+% Updates object based on child result.
+%   - If result is an object, use it
+%   - If result is [] (despawned), keep old obj
+%   Attributes are in centralized store, so no need to copy
+%   them.
 
 update_obj_attrs(
-    Obj, [object(_, _, attrs(A), _, _)], New
-) :-
-    !,
-    obj_attrs_obj(Obj, A, New).
+    Obj, [object(_, _, _, _)], Obj
+).
 update_obj_attrs(Obj, [], Obj).
 
 % is_child_done(+ResultList)
@@ -690,14 +791,14 @@ update_obj_attrs(Obj, [], Obj).
 %     finished (no remaining actions)
 
 is_child_done([]).
-is_child_done([object(_, _, _, actions([]), _)]).
+is_child_done([object(_, _, actions([]), _)]).
 
 % extract_action(+ResultList, -Action)
 % Extracts the next action from a running child's
 %   result. The child is still running if it has
 %   actions remaining.
 
-extract_action([object(_, _, _, actions([A|_]), _)], A).
+extract_action([object(_, _, actions([A|_]), _)], A).
 
 % filter_running_actions(+Results, -Actions)
 % Recursively filters child results to extract actions
@@ -707,7 +808,7 @@ extract_action([object(_, _, _, actions([A|_]), _)], A).
 
 filter_running_actions([], []).
 filter_running_actions([Res|Rs], Acc) :-
-    ( Res = [object(_, _, _, actions([A|_]), _)] ->
+    ( Res = [object(_, _, actions([A|_]), _)] ->
         % Child still running: include its action
         Acc = [A|RestAcc],
         filter_running_actions(Rs, RestAcc)

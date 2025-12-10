@@ -82,6 +82,7 @@ state_constraint(
   state(
       frame(Frame),
       objects(Objects),
+      attrs(Attrs),
       status(Status),
       next_id(NextID),
       commands(Commands),
@@ -129,7 +130,6 @@ object_constraint(
   object(
       id(ID),
       type(Type),
-      attrs(Attrs),
       actions(Actions),
       collisions(_Colls)
   )
@@ -137,7 +137,6 @@ object_constraint(
     ID #>= 0,
     ID #=< 1000,
     object_type_constraint(Type),
-    is_list(Attrs),
     bounded_list_of(action_constraint, Actions, 100).
     % Skip collision constraints - feature not
     % implemented yet

@@ -13,13 +13,13 @@ game:
 # The module name will be extracted from the last path component
 test MODULE:
 	@base=$(basename "{{MODULE}}") && \
-	VALIDATION_ERR_MSG=false scryer-prolog -g "catch((use_module('submodules/scryer-prolog/src/tests/test_framework'), use_module('./{{MODULE}}'), main($base)), Error, (format(\"Uncaught exception: ~w~n\", [Error]), halt(1)))." 2>&1 | tee /tmp/just_test_output.txt; \
+	VALIDATION_ERR_MSG=false timeout 10 scryer-prolog -g "catch((use_module('submodules/scryer-prolog/src/tests/test_framework'), use_module('./{{MODULE}}'), main($base)), Error, (format(\"Uncaught exception: ~w~n\", [Error]), halt(1)))." 2>&1 | tee /tmp/just_test_output.txt; \
 	if grep -q "Failed test" /tmp/just_test_output.txt; then rm -f /tmp/just_test_output.txt; exit 1; fi; \
 	rm -f /tmp/just_test_output.txt
 
 test-verbose MODULE:
 	@base=$(basename "{{MODULE}}") && \
-	scryer-prolog -g "catch((use_module('submodules/scryer-prolog/src/tests/test_framework'), use_module('./{{MODULE}}'), main($base)), Error, (format(\"Uncaught exception: ~w~n\", [Error]), halt(1)))." 2>&1 | tee /tmp/just_test_output.txt; \
+	timeout 10 scryer-prolog -g "catch((use_module('submodules/scryer-prolog/src/tests/test_framework'), use_module('./{{MODULE}}'), main($base)), Error, (format(\"Uncaught exception: ~w~n\", [Error]), halt(1)))." 2>&1 | tee /tmp/just_test_output.txt; \
 	if grep -q "Failed test" /tmp/just_test_output.txt; then rm -f /tmp/just_test_output.txt; exit 1; fi; \
 	rm -f /tmp/just_test_output.txt
 
@@ -27,11 +27,13 @@ test-verbose MODULE:
 # Usage: just test-quiet prolog/execute_action
 test-quiet MODULE:
 	@base=$(basename "{{MODULE}}") && \
-	scryer-prolog -g "use_module('submodules/scryer-prolog/src/tests/test_framework'), use_module('./{{MODULE}}'), main_quiet($base)."
+	timeout 10 scryer-prolog -g "use_module('submodules/scryer-prolog/src/tests/test_framework'), use_module('./{{MODULE}}'), main_quiet($base)."
 
 test-all:
-    @echo "\nTesting execute_action..."
-    @just test prolog/execute_action_test || exit 1
+    @echo "\nTesting execute_action (forward)..."
+    @just test prolog/execute_action_fwd_test || exit 1
+    @echo "\nTesting execute_action (backward)..."
+    @just test prolog/execute_action_bwd_test || exit 1
     @echo "\nTesting engine..."
     @just test prolog/engine_test || exit 1
     @echo "\nTesting validation..."
@@ -44,8 +46,10 @@ test-all:
     @just test prolog/xod/xod || exit 1
 
 test-all-verbose:
-    @echo "\nTesting execute_action..."
-    @just test-verbose prolog/execute_action_test || exit 1
+    @echo "\nTesting execute_action (forward)..."
+    @just test-verbose prolog/execute_action_fwd_test || exit 1
+    @echo "\nTesting execute_action (backward)..."
+    @just test-verbose prolog/execute_action_bwd_test || exit 1
     @echo "\nTesting engine..."
     @just test-verbose prolog/engine_test || exit 1
     @echo "\nTesting validation..."
@@ -77,8 +81,10 @@ lint-all:
     @just lint prolog/types/accessors.pl || exit 1
     @echo "Linting execute_action.pl..."
     @just lint prolog/execute_action.pl || exit 1
-    @echo "Linting execute_action_test.pl..."
-    @just lint prolog/execute_action_test.pl || exit 1
+    @echo "Linting execute_action_fwd_test.pl..."
+    @just lint prolog/execute_action_fwd_test.pl || exit 1
+    @echo "Linting execute_action_bwd_test.pl..."
+    @just lint prolog/execute_action_bwd_test.pl || exit 1
     @echo "Linting collisions.pl..."
     @just lint prolog/collisions.pl || exit 1
     @echo "Linting types/validation.pl..."
@@ -96,7 +102,8 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action_test.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action_fwd_test.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action_bwd_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/collisions.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/game.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/macros.pl

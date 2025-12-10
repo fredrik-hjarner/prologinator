@@ -12,12 +12,11 @@
     state_constraint/1,
     object_constraint/1
 ]).
-:- use_module('./types/accessors', [
-    ctx_status/2,
-    ctx_status_ctx/3,
-    obj_attrs/2,
-    obj_type_attrs/3
+:- use_module('./types/accessors').
+:- use_module('./types/adv_accessors', [
+    ctx_attr_val/3
 ]).
+:- use_module(library(assoc)).
 
 % ==========================================================
 % Main Game Loop
@@ -27,13 +26,21 @@ main :-
     % - Multiple towers at the bottom row that shoot
     %   projectiles periodically
     % - A spawner that creates enemies every 5 frames
+    % Initialize attribute store
+    empty_assoc(AttrStore0),
+    put_assoc(0, AttrStore0,
+              [attr(x, 5), attr(y, 19)], AttrStore1),
+    put_assoc(1, AttrStore1,
+              [attr(x, 10), attr(y, 19)], AttrStore2),
+    put_assoc(2, AttrStore2,
+              [attr(x, 15), attr(y, 19)], AttrStore3),
     InitialContext = ctx(state(
         frame(0),
         objects([
             % Tower 1: Burst fire (3 shots in quick
             %   succession)
             object(
-                id(0), type(tower), attrs([x(5), y(19)]),
+                id(0), type(tower),
                 actions([
                     loop([
                         wait(5),
@@ -48,7 +55,7 @@ main :-
             ),
             % Tower 2: Diagonal shots
             object(
-                id(1), type(tower), attrs([x(10), y(19)]),
+                id(1), type(tower),
                 actions([
                     loop([
                         wait(4),
@@ -64,7 +71,7 @@ main :-
             ),
             % Tower 3: Rapid fire burst
             object(
-                id(2), type(tower), attrs([x(15), y(19)]),
+                id(2), type(tower),
                 actions([
                     loop([
                         wait(6),
@@ -80,7 +87,7 @@ main :-
             % Enemy spawner: Creates enemies with varied
             %   patterns
             object(
-                id(3), type(static), attrs([]),
+                id(3), type(static),
                 actions([
                     loop([
                         wait(8),
@@ -103,6 +110,7 @@ main :-
                 ]), collisions([])
             )
         ]),
+        attrs(AttrStore3),
         status(playing),
         next_id(4),
         commands([]),
@@ -171,15 +179,9 @@ render(ctx_in(Ctx)) :-
     char_code(Esc, 27),  % ESC character
     write(Esc), write('[2J'), write(Esc), write('[H'),
     
-    Ctx = ctx(State),
-    State = state(
-        frame(Frame),
-        objects(Objects),
-        status(Status),
-        _,
-        _,
-        _
-    ),
+    ctx_frame(Ctx, Frame),
+    ctx_status(Ctx, Status),
+    ctx_objs(Ctx, Objects),
     
     % Header
     write('=== Tower Defense ==='), nl,
@@ -187,49 +189,46 @@ render(ctx_in(Ctx)) :-
     write(' | Status: '), write(Status), nl,
     write('================================'), nl, nl,
     
-    % Render grid (10x10 for simplicity)
-    render_grid(Objects),
+    % Render grid (20x20)
+    render_grid(Ctx, Objects),
     nl.
 
-render_grid(Objects) :-
+render_grid(Ctx, Objects) :-
     % Grid is 20x20, positions 0-19
-    render_grid_rows(Objects, 0).
+    render_grid_rows(Ctx, Objects, 0).
 
-render_grid_rows(Objects, Y) :-
+render_grid_rows(Ctx, Objects, Y) :-
     Y =< 19,
-    render_grid_row(Objects, Y, 0),
+    render_grid_row(Ctx, Objects, Y, 0),
     Y1 is Y + 1,
-    render_grid_rows(Objects, Y1).
-render_grid_rows(_, Y) :-
+    render_grid_rows(Ctx, Objects, Y1).
+render_grid_rows(_, _, Y) :-
     Y > 19.
 
-render_grid_row(Objects, Y, X) :-
+render_grid_row(Ctx, Objects, Y, X) :-
     X =< 19,
     ( member(Obj, Objects),
-      obj_attrs(Obj, Attrs),
-      member(x(X), Attrs),
-      member(y(Y), Attrs) ->
-        get_symbol(Objects, X, Y, Symbol)
+      obj_id(Obj, ID),
+      ctx_attr_val(Ctx, ID/x, X),
+      ctx_attr_val(Ctx, ID/y, Y) ->
+        get_symbol(Obj, Symbol)
     ;
         char_code(Symbol, 46)  % '.'
     ),
     write(Symbol),
     ( X = 19 -> nl ; write(' ') ),
     X1 is X + 1,
-    render_grid_row(Objects, Y, X1).
-render_grid_row(_, _, X) :-
+    render_grid_row(Ctx, Objects, Y, X1).
+render_grid_row(_, _, _, X) :-
     X > 19.
 
-get_symbol(Objects, X, Y, Symbol) :-
-    member(Obj, Objects),
-    obj_type_attrs(Obj, Type, Attrs),
-    member(x(X), Attrs),
-    member(y(Y), Attrs),
+get_symbol(Obj, Symbol) :-
+    obj_type(Obj, Type),
     (   Type = tower -> char_code(Symbol, 84)  % 'T'
     ;   Type = enemy -> char_code(Symbol, 69)  % 'E'
     ;   Type = proj -> char_code(Symbol, 42)   % '*'
     ;   char_code(Symbol, 63)                 % '?'
     ).
-get_symbol(_, _, _, Dot) :-
+get_symbol(_, Dot) :-
     char_code(Dot, 46).  % '.'
 

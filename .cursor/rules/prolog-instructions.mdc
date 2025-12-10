@@ -23,6 +23,7 @@ Instead of the banned tokens, use CLP(Z) constraints:
 - Instead of `>`: Use `#>` from CLP(Z)
 - Instead of `=<`: Use `#=<` from CLP(Z)
 - Instead of `>=`: Use `#>=` from CLP(Z)
+- Instead of `get_assoc`: Use `gen_assoc`.
 
 # Max 60 characters per line
 

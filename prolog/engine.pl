@@ -14,7 +14,7 @@
     state_validation/1,
     object_validation/1
 ]).
-:- use_module('./collisions', [detect_collisions/3]).
+:- use_module('./collisions', [detect_collisions/4]).
 
 % ==========================================================
 % Yielding Actions (Reified)
@@ -162,7 +162,8 @@ tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
 
 resolve_collisions(CtxIn, CtxOut) :-
     ctx_objs_cmds_revhints(CtxIn, Objs, Cmds, Revs1),
-    detect_collisions(Objs, NewObjs, Revs2),
+    ctx_state(CtxIn, State),
+    detect_collisions(State, Objs, NewObjs, Revs2),
     append(Revs1, Revs2, AllRevs),
     ctx_objs_cmds_revhints_ctx(
         CtxIn,

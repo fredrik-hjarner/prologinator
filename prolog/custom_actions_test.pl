@@ -3,6 +3,10 @@
 :- use_module('./types/accessors').
 :- use_module('./engine', [tick/2]).
 :- use_module(library(lists), [member/2]).
+:- use_module(library(assoc), [
+    empty_assoc/1,
+    put_assoc/4
+]).
 
 % ==========================================================
 % Tests: Custom Actions (define_action and user-defined
@@ -20,7 +24,6 @@ test("define_action: stores action definition", (
     ObjIn = object(
         id(0),
         type(static),
-        attrs([]),
         actions([
             define_action(
                 zigzag(Amplitude, Times),
@@ -32,9 +35,11 @@ test("define_action: stores action definition", (
         ]),
         collisions([])
     ),
+    empty_assoc(EmptyAttrs),
     Ctx = ctx(state(
         frame(0),
         objects([]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),
@@ -81,13 +86,16 @@ test("custom_action: zigzag expands and executes", (
     ObjIn = object(
         id(0),
         type(static),
-        attrs([x(100), y(100)]),
         actions([zigzag(30, 2)]),
         collisions([])
     ),
+    empty_assoc(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(x, 100), attr(y, 100)],
+              EmptyAttrs),
     Ctx = ctx(state(
         frame(0),
         objects([]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),
@@ -123,7 +131,6 @@ test("custom_action: define and use in same action list", (
     ObjIn = object(
         id(0),
         type(static),
-        attrs([x(50), y(50)]),
         actions([
             % Define zigzag
             define_action(
@@ -179,7 +186,6 @@ test("custom_action: shoot_burst defines and executes", (
     ObjIn = object(
         id(0),
         type(static),
-        attrs([x(100), y(100)]),
         actions([
             define_action(
                 shoot_burst(Count),
@@ -236,7 +242,6 @@ test("custom_action: multiple definitions work", (
     ObjIn = object(
         id(0),
         type(static),
-        attrs([x(0), y(0)]),
         actions([
             define_action(move_up(Dist), move_delta(0, -Dist, 10)),
             define_action(move_down(Dist), move_delta(0, Dist, 10)),
@@ -298,13 +303,14 @@ test("custom_action: parameters are correctly substituted", (
     ObjIn = object(
         id(0),
         type(static),
-        attrs([x(0), y(0)]),
         actions([move_pattern(10, 10, 20, 20, 5)]),
         collisions([])
     ),
+    empty_assoc(EmptyAttrs),
     Ctx = ctx(state(
         frame(0),
         objects([]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),

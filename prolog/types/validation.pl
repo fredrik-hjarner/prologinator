@@ -56,6 +56,10 @@
 
 :- use_module(library(format)).
 :- use_module(library(lists), [length/2]).
+:- use_module(library(assoc), [
+    empty_assoc/1,
+    put_assoc/4
+]).
 :- use_module(library(os), [getenv/2]).
 
 % ==========================================================
@@ -111,6 +115,7 @@ state_validation_helper(Term) :-
         ( Term = state(
               frame(Frame),
               objects(Objects),
+              attrs(Attrs),
               status(Status),
               next_id(NextID),
               commands(Commands),
@@ -119,6 +124,9 @@ state_validation_helper(Term) :-
             % Structure matches, validate content
             integer(Frame),
             length(Objects, _),
+            % Attrs is an assoc tree - just check it's
+            % ground
+            ground(Attrs),
             game_status_validation(Status),
             integer(NextID),
             length(Commands, _),
@@ -153,7 +161,7 @@ state_validation_helper(Term) :-
 
 extract_ids([], []).
 extract_ids(
-    [object(id(ID), _, _, _, _)|Rest], [ID|IDs]
+    [object(id(ID), _, _, _)|Rest], [ID|IDs]
 ) :-
     extract_ids(Rest, IDs).
 
@@ -188,13 +196,12 @@ object_validation(Term) :-
 object_validation_helper(Term) :-
     ( ground(Term) ->
         ( Term = object(
-              id(ID), type(Type), attrs(Attrs),
+              id(ID), type(Type),
               actions(Actions), collisions(_Colls)
           ) ->
             % Structure matches, validate content
             integer(ID),
             object_type_validation(Type),
-            length(Attrs, _),
             length(Actions, _)
         ;
             % Structure doesn't match - throw
@@ -415,6 +422,8 @@ builtin_action_name(parallel_all_running).
 builtin_action_name(parallel_race_running).
 builtin_action_name(trigger_state_change).
 builtin_action_name(define_action).
+builtin_action_name(incr).
+builtin_action_name(decr).
 
 % ==========================================================
 % action_validation_helper/1
@@ -446,7 +455,25 @@ action_validation_helper(Term) :-
             % X and Y: no validation needed
             length(Acts, _)
         ; Term = set_attr(_Name, _Value) ->
-            % Structure matches, no content validation
+            % Structure matches, no validation (2-arg)
+            true
+        ; Term = set_attr(_TargetID, _Name,
+                         _Value) ->
+            % Structure matches, no validation (3-arg)
+            true
+        ; Term = incr(_Key, _Amount) ->
+            % Structure matches, no validation (2-arg)
+            true
+        ; Term = incr(_TargetID, _Key,
+                      _Amount) ->
+            % Structure matches, no validation (3-arg)
+            true
+        ; Term = decr(_Key, _Amount) ->
+            % Structure matches, no validation (2-arg)
+            true
+        ; Term = decr(_TargetID, _Key,
+                      _Amount) ->
+            % Structure matches, no validation (3-arg)
             true
         ; Term = loop(Acts) ->
             % Structure matches, validate content
@@ -569,12 +596,14 @@ action_validation_helper(Term) :-
 :- discontiguous(test/2).
 
 test("game_state_validation: valid state passes", (
+    empty_assoc(EmptyAttrs),
     State = state(
         frame(0),
         objects([object(
-            id(0), type(static), attrs([x(0), y(0)]),
+            id(0), type(static),
             actions([]), collisions([])
         )]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),
@@ -585,23 +614,31 @@ test("game_state_validation: valid state passes", (
 
 test("game_state_validation: complex state with \
 multiple objects and commands", (
+    empty_assoc(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(x, 10), attr(y, 19)],
+              Attrs1),
+    put_assoc(1, Attrs1, [attr(x, 5), attr(y, 5)],
+              Attrs2),
+    put_assoc(2, Attrs2, [attr(x, 15), attr(y, 15)],
+              EmptyAttrs),
     State = state(
         frame(5),
         objects([
             object(
-                id(0), type(tower), attrs([x(10), y(19)]),
+                id(0), type(tower),
                 actions([wait(3)]), collisions([])
             ),
             object(
-                id(1), type(enemy), attrs([x(5), y(5)]),
+                id(1), type(enemy),
                 actions([move_to(10, 10, 5)]),
                 collisions([])
             ),
             object(
-                id(2), type(proj), attrs([x(15), y(15)]),
+                id(2), type(proj),
                 actions([]), collisions([])
             )
         ]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(3),
         commands([
@@ -609,7 +646,7 @@ multiple objects and commands", (
             spawn_request(enemy, 0, 0, [])
         ]),
         rev_hints([
-            despawned(1, [x(10), y(10)])
+            despawned(1, [attr(x, 10), attr(y, 10)])
         ])
     ),
     state_validation(State)
@@ -617,11 +654,18 @@ multiple objects and commands", (
 
 test("context_validation: complex context with multiple \
 objects, commands, and rev_hints", (
+    empty_assoc(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(x, 5), attr(y, 19)],
+              Attrs1),
+    put_assoc(1, Attrs1, [attr(x, 10), attr(y, 5)],
+              Attrs2),
+    put_assoc(2, Attrs2, [attr(x, 15), attr(y, 10)],
+              EmptyAttrs),
     Ctx = ctx(state(
         frame(42),
         objects([
             object(
-                id(0), type(tower), attrs([x(5), y(19)]),
+                id(0), type(tower),
                 actions([
                     loop([
                         wait(3),
@@ -632,19 +676,19 @@ objects, commands, and rev_hints", (
                 ]), collisions([])
             ),
             object(
-                id(1), type(enemy), attrs([x(10), y(5)]),
+                id(1), type(enemy),
                 actions([
                     move_to(19, 5, 15),
                     wait(1)
                 ]), collisions([])
             ),
             object(
-                id(2), type(proj), attrs([x(15), y(10)]),
+                id(2), type(proj),
                 actions([move_to(15, 0, 10)]),
                 collisions([])
             ),
             object(
-                id(3), type(static), attrs([]),
+                id(3), type(static),
                 actions([
                     parallel_all([
                         wait(5),
@@ -653,6 +697,7 @@ objects, commands, and rev_hints", (
                 ]), collisions([])
             )
         ]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(4),
         commands([
@@ -662,8 +707,8 @@ objects, commands, and rev_hints", (
             ])
         ]),
         rev_hints([
-            despawned(1, [x(19), y(5)]),
-            despawned(2, [x(15), y(0)])
+            despawned(1, [attr(x, 19), attr(y, 5)]),
+            despawned(2, [attr(x, 15), attr(y, 0)])
         ])
     )),
     context_validation(Ctx)
@@ -704,9 +749,11 @@ expect_exception(Goal) :-
 % ----------------------------------------------------------
 
 test("game_state_validation: invalid status fails", (
+    empty_assoc(EmptyAttrs),
     State = state(
         frame(0),
         objects([]),
+        attrs(EmptyAttrs),
         status(invalid_status),
         next_id(1),
         commands([]),
@@ -716,9 +763,11 @@ test("game_state_validation: invalid status fails", (
 )).
 
 test("game_state_validation: non-integer frame fails", (
+    empty_assoc(EmptyAttrs),
     State = state(
         frame(not_an_int),
         objects([]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),
@@ -731,13 +780,14 @@ test("game_state_validation: NextID <= max ID fails", (
     Obj = object(
         id(5),
         type(static),
-        attrs([]),
         actions([]),
         collisions([])
     ),
+    empty_assoc(EmptyAttrs),
     State = state(
         frame(0),
         objects([Obj]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(5),
         commands([]),
@@ -751,7 +801,6 @@ wrapped) throws", (
     Obj = object(
         5,
         type(static),
-        attrs([]),
         actions([]),
         collisions([])
     ),
@@ -762,7 +811,6 @@ test("object_validation: invalid object type fails", (
     Obj = object(
         id(0),
         type(invalid_type),
-        attrs([]),
         actions([]),
         collisions([])
     ),
@@ -823,9 +871,11 @@ test("rev_hint_validation: invalid despawned fails", (
 % wrong argument structure)
 
 test("game_state_validation: wrong arity throws", (
+    empty_assoc(EmptyAttrs),
     State = state(
         frame(0),
         objects([]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([])
@@ -834,9 +884,11 @@ test("game_state_validation: wrong arity throws", (
 )).
 
 test("game_state_validation: wrong functor throws", (
+    empty_assoc(EmptyAttrs),
     State = not_state(
         frame(0),
         objects([]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),
@@ -847,7 +899,7 @@ test("game_state_validation: wrong functor throws", (
 
 test("object_validation: wrong arity throws", (
     Obj = object(
-        id(0), type(static), attrs([]), actions([])
+        id(0), type(static), actions([])
     ),
     expect_exception(object_validation(Obj))
 )).
@@ -856,7 +908,6 @@ test("object_validation: wrong functor throws", (
     Obj = not_object(
         id(0),
         type(static),
-        attrs([]),
         actions([]),
         collisions([])
     ),

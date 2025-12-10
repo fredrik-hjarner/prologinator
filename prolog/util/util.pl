@@ -44,11 +44,14 @@ flatten(ListOfLists, FlatList) :-
 % select_many(+Patterns, +List, -Remaining)
 % Selects multiple items from List matching Patterns,
 % returning Remaining list without those items.
-% Patterns is a list of terms to match (e.g., [x(X), y(Y)])
+% Patterns is a list of terms to match (e.g., [attr(x, X),
+%   attr(y, Y)])
 %
 % Example:
-%   select_many([x(CurrX), y(CurrY)], [x(5), y(10), z(3)], Remaining)
-%   binds CurrX=5, CurrY=10, Remaining=[z(3)]
+%   select_many([attr(x, CurrX), attr(y, CurrY)],
+%               [attr(x, 5), attr(y, 10), attr(z, 3)],
+%               Remaining)
+%   binds CurrX=5, CurrY=10, Remaining=[attr(z, 3)]
 
 select_many([], List, List).
 select_many([Pattern|Patterns], List, Remaining) :-
@@ -67,10 +70,12 @@ select_many([Pattern|Patterns], List, Remaining) :-
 %   Useful for error messages in test assertions.
 
 err_write(Msg) :-
-    write(Msg),
+    write(user_output, Msg),
+    nl,
     fail.
 
 err_format(Fmt, Args) :-
     format(Fmt, Args),
+    nl,
     fail.
 

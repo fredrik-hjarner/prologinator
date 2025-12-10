@@ -2,7 +2,12 @@
 % use_module/1 imports ALL the exported stuff.
 :- use_module('./engine').
 :- use_module('./types/accessors').
+:- use_module('./types/constructors', [empty_ctx/1]).
 :- use_module(library(lists), [member/2, length/2]).
+:- use_module(library(assoc), [
+    empty_assoc/1,
+    put_assoc/4
+]).
 
 % ==========================================================
 % Tests for yields/2
@@ -41,13 +46,14 @@ object", (
     ObjIn = object(
         id(1),
         type(static),
-        attrs([x(0), y(0)]),
         actions([]),
         collisions([])
     ),
+    empty_assoc(EmptyAttrs),
     Ctx = ctx(state(
         frame(0),
         objects([]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),
@@ -64,7 +70,6 @@ object", (
     ObjOut = [object(
         id(1),
         type(static),
-        attrs([x(0), y(0)]),
         actions([]),
         collisions([])
     )]
@@ -75,13 +80,14 @@ after one execution", (
     ObjIn = object(
         id(1),
         type(static),
-        attrs([x(0), y(0)]),
         actions([wait(5)]),
         collisions([])
     ),
+    empty_assoc(EmptyAttrs),
     Ctx = ctx(state(
         frame(0),
         objects([]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),
@@ -98,7 +104,6 @@ after one execution", (
     ObjOut = [object(
         id(1),
         type(static),
-        attrs([x(0), y(0)]),
         actions([wait(4)]),
         collisions([])
     )]
@@ -109,13 +114,14 @@ continues until empty", (
     ObjIn = object(
         id(1),
         type(static),
-        attrs([x(0), y(0)]),
         actions([wait(0)]),
         collisions([])
     ),
+    empty_assoc(EmptyAttrs),
     Ctx = ctx(state(
         frame(0),
         objects([]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),
@@ -132,7 +138,6 @@ continues until empty", (
     ObjOut = [object(
         id(1),
         type(static),
-        attrs([x(0), y(0)]),
         actions([]),
         collisions([])
     )]
@@ -144,15 +149,16 @@ continues until empty", (
 
 test("tick: increments frame and processes empty game \
 state", (
+    empty_assoc(EmptyAttrs),
     CtxIn = ctx(state(
         frame(0),
         objects([object(
             id(0),
             type(static),
-            attrs([x(0), y(0)]),
             actions([]),
             collisions([])
         )]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),
@@ -164,10 +170,10 @@ state", (
         objects([object(
             id(0),
             type(static),
-            attrs([x(0), y(0)]),
             actions([]),
             collisions([])
         )]),
+        attrs(_),
         status(playing),
         next_id(1),
         commands([]),
@@ -177,15 +183,16 @@ state", (
 
 test("tick: processes object with yielding action \
 (wait)", (
+    empty_assoc(EmptyAttrs),
     CtxIn = ctx(state(
         frame(0),
         objects([object(
             id(0),
             type(static),
-            attrs([x(0), y(0)]),
             actions([wait(3)]),
             collisions([])
         )]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),
@@ -197,10 +204,10 @@ test("tick: processes object with yielding action \
         objects([object(
             id(0),
             type(static),
-            attrs([x(0), y(0)]),
             actions([wait(2)]),
             collisions([])
         )]),
+        attrs(_),
         status(playing),
         next_id(1),
         commands([]),
@@ -210,17 +217,18 @@ test("tick: processes object with yielding action \
 
 test("tick: processes spawn request and creates new \
 object", (
+    empty_assoc(EmptyAttrs),
     CtxIn = ctx(state(
         frame(0),
         objects([object(
             id(0),
             type(static),
-            attrs([x(0), y(0)]),
             actions([
                 spawn(enemy, 5, 5, [])
             ]),
             collisions([])
         )]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(1),
         commands([]),
@@ -230,6 +238,7 @@ object", (
     CtxOut = ctx(state(
         frame(1),
         objects(FinalObjs),
+        attrs(_),
         status(playing),
         next_id(2),
         commands([]),
@@ -239,7 +248,6 @@ object", (
         object(
             id(0),
             type(static),
-            attrs([x(0), y(0)]),
             actions([]),
             collisions([])
         ),
@@ -249,7 +257,6 @@ object", (
         object(
             id(_NewID),
             type(enemy),
-            attrs([x(5), y(5)]),
             actions([]),
             collisions([])
         ),
@@ -267,11 +274,16 @@ test("collision: simple enemy-projectile collision", (
     % collide
     % Both move towards the same target position so they
     % collide
+    empty_assoc(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(x, 5), attr(y, 10)],
+              Attrs1),
+    put_assoc(1, Attrs1, [attr(x, 5), attr(y, 10)],
+              EmptyAttrs),
     InitialContext = ctx(state(
         frame(0),
         objects([
             object(
-                id(0), type(enemy), attrs([x(5), y(10)]),
+                id(0), type(enemy),
                 actions([
                     % Moving right, arrives at (10, 10) in 1
                     % frame
@@ -279,7 +291,7 @@ test("collision: simple enemy-projectile collision", (
                 ]), collisions([])
             ),
             object(
-                id(1), type(proj), attrs([x(5), y(10)]),
+                id(1), type(proj),
                 actions([
                     % Moving to same target, arrives at
                     % (10, 10) in 1 frame
@@ -287,6 +299,7 @@ test("collision: simple enemy-projectile collision", (
                 ]), collisions([])
             )
         ]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(2),
         commands([]),
@@ -298,6 +311,7 @@ test("collision: simple enemy-projectile collision", (
     Context1 = ctx(state(
         frame(1),
         objects(Objs1),
+        attrs(_),
         status(_),
         next_id(_),
         commands(_),
@@ -317,11 +331,18 @@ test("collision: simple enemy-projectile collision", (
 test("performance: run game to frame 32 to reproduce \
 freeze (first collision)", (
     % Same initial state as game.pl
+    empty_assoc(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(x, 5), attr(y, 19)],
+              Attrs1),
+    put_assoc(1, Attrs1, [attr(x, 10), attr(y, 19)],
+              Attrs2),
+    put_assoc(2, Attrs2, [attr(x, 15), attr(y, 19)],
+              EmptyAttrs),
     InitialContext = ctx(state(
         frame(0),
         objects([
             object(
-                id(0), type(tower), attrs([x(5), y(19)]),
+                id(0), type(tower),
                 actions([
                     loop([
                         wait(3),
@@ -332,7 +353,7 @@ freeze (first collision)", (
                 ]), collisions([])
             ),
             object(
-                id(1), type(tower), attrs([x(10), y(19)]),
+                id(1), type(tower),
                 actions([
                     loop([
                         wait(3),
@@ -343,7 +364,7 @@ freeze (first collision)", (
                 ]), collisions([])
             ),
             object(
-                id(2), type(tower), attrs([x(15), y(19)]),
+                id(2), type(tower),
                 actions([
                     loop([
                         wait(3),
@@ -354,7 +375,7 @@ freeze (first collision)", (
                 ]), collisions([])
             ),
             object(
-                id(3), type(static), attrs([]),
+                id(3), type(static),
                 actions([
                     loop([
                         wait(5),
@@ -365,6 +386,7 @@ freeze (first collision)", (
                 ]), collisions([])
             )
         ]),
+        attrs(EmptyAttrs),
         status(playing),
         next_id(4),
         commands([]),
@@ -378,6 +400,7 @@ freeze (first collision)", (
     FinalContext = ctx(state(
         frame(32),
         objects(_),
+        attrs(_),
         status(_),
         next_id(_),
         commands(_),
