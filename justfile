@@ -79,6 +79,8 @@ lint-all:
     @just lint prolog/types/constraints.pl || exit 1
     @echo "Linting types/accessors.pl..."
     @just lint prolog/types/accessors.pl || exit 1
+    @echo "Linting resolve_action.pl..."
+    @just lint prolog/resolve_action.pl || exit 1
     @echo "Linting execute_action.pl..."
     @just lint prolog/execute_action.pl || exit 1
     @echo "Linting execute_action_fwd_test.pl..."
@@ -101,6 +103,7 @@ lint-all:
 lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine_test.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/resolve_action.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action_fwd_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action_bwd_test.pl

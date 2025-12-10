@@ -9,8 +9,7 @@
     append/3,
     select/3,
     member/2,
-    findall/3,
-    maplist/3
+    findall/3
 ]).
 :- use_module(library(assoc), [
     gen_assoc/3,
@@ -20,6 +19,7 @@
 :- use_module('./types/validation', [action_validation/1]).
 :- use_module('./types/accessors').
 :- use_module('./types/adv_accessors').
+:- use_module('./resolve_action', [resolve_action/4]).
 :- use_module('./util/util', [select_many/3]).
 
 % :- use_module('xod/xod', [validate/2]).
@@ -58,50 +58,6 @@ is_builtin(parallel_all_running(_)).
 is_builtin(parallel_race_running(_)).
 is_builtin(trigger_state_change(_)).
 is_builtin(define_action(_, _)).
-
-% ==========================================================
-% Value Resolution
-% ==========================================================
-% Resolve all value specs in an action
-resolve_action(Ctx, MyID, ActionIn, ActionOut) :-
-    ActionIn =.. [Functor|Args],
-    maplist(resolve_arg(Ctx, MyID), Args,
-            ResolvedArgs),
-    ActionOut =.. [Functor|ResolvedArgs].
-
-% Resolve individual arguments
-resolve_arg(Ctx, MyID, attr(Path), V) :-
-    ground(Path),  % Only resolve if path is ground
-    !,
-    resolve_path(Ctx, MyID, Path, V).
-
-% Lists need recursive resolution
-resolve_arg(Ctx, MyID, List, ResolvedList) :-
-    List = [_|_], !,
-    maplist(resolve_arg(Ctx, MyID), List,
-            ResolvedList).
-resolve_arg(_Ctx, _MyID, [], []).
-
-% Pass through primitives and other terms
-resolve_arg(_Ctx, _MyID, Other, Other).
-
-% ==========================================================
-% Path Resolution (handles x/y/z chains)
-% ==========================================================
-% Simple attribute (no path)
-resolve_path(Ctx, MyID, AttrName, Value) :-
-    atom(AttrName),  % Not a / term
-    !,
-    ctx_attr_val(Ctx, MyID/AttrName, Value).
-
-% Path with / separator (handles nested / like a/b/c)
-resolve_path(Ctx, MyID, FirstAttr/RestPath, Value) :-
-    !,
-    % FirstAttr might itself be a path (like a/b),
-    % so resolve it
-    resolve_path(Ctx, MyID, FirstAttr, NextID),
-    % Continue from that object (RestPath may be nested)
-    resolve_path(Ctx, NextID, RestPath, Value).
 
 % ==========================================================
 % execute_action/5
