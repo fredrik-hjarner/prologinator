@@ -26,6 +26,30 @@ execute_action:execute_action_impl(
         Colls
     )])
 ) :-
+    execute_move_to(
+        Ctx,
+        CtxOut,
+        TargetX,
+        TargetY,
+        Frames,
+        ID,
+        Rest,
+        NewActions
+    ).
+
+% ==========================================================
+% execute_move_to/8
+% ==========================================================
+execute_move_to(
+    Ctx,
+    CtxOut,
+    TargetX,
+    TargetY,
+    Frames,
+    ID,
+    Rest,
+    NewActions
+) :-
     % Get current position from attribute store
     % Fails if object doesn't have x/y attributes
     ctx_attr_val(Ctx, ID/x, CurrX),

@@ -18,6 +18,12 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
+    execute_loop(Ctx, Actions, ObjIn, ObjOut).
+
+% ==========================================================
+% execute_loop/4
+% ==========================================================
+execute_loop(_Ctx, Actions, ObjIn, ObjOut) :-
     obj_acns(ObjIn, [_|Rest]),
     append(Actions, [loop(Actions)], Expanded),
     append(Expanded, Rest, NewActions),

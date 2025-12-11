@@ -19,6 +19,24 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
+    execute_define_action(
+        Ctx,
+        Signature,
+        Body,
+        ObjIn,
+        ObjOut
+    ).
+
+% ==========================================================
+% execute_define_action/5
+% ==========================================================
+execute_define_action(
+    _Ctx,
+    Signature,
+    Body,
+    ObjIn,
+    ObjOut
+) :-
     % Store the macro definition
     assertz(execute_action:user_action(Signature, Body)),
     % Remove this action from queue

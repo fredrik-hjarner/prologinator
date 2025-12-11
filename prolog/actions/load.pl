@@ -27,6 +27,12 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
+    execute_load(Ctx, Path, ObjIn, ObjOut).
+
+% ==========================================================
+% execute_load/4
+% ==========================================================
+execute_load(_Ctx, Path, ObjIn, ObjOut) :-
     obj_acns(ObjIn, [_|Rest]),
     % Convert Path (list of chars) to atom for open/3
     % Path must be a string (list of chars), not an atom

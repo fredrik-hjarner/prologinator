@@ -18,6 +18,16 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new(MaybeObjectOut)
 ) :-
+    execute_parallel_all(
+        CtxOld, CtxNew, ChildActions, ObjIn, MaybeObjectOut
+    ).
+
+% ==========================================================
+% execute_parallel_all/5
+% ==========================================================
+execute_parallel_all(
+    CtxOld, CtxNew, ChildActions, ObjIn, MaybeObjectOut
+) :-
     obj_acns(ObjIn, [_|Rest]),
     tick_all(
         CtxOld,
@@ -55,6 +65,16 @@ execute_action:execute_action_impl(
     action(parallel_all_running(Children)),
     obj_old(Obj),
     obj_new(NewObj)
+) :-
+    execute_parallel_all_running(
+        CtxOld, CtxNew, Children, Obj, NewObj
+    ).
+
+% ==========================================================
+% execute_parallel_all_running/5
+% ==========================================================
+execute_parallel_all_running(
+    CtxOld, CtxNew, Children, Obj, NewObj
 ) :-
     execute_action:execute_action(
         ctx_old(CtxOld),

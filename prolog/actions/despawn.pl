@@ -19,6 +19,12 @@ execute_action:execute_action_impl(
     obj_old(object(id(ID), _, _, _)),
     obj_new([])
 ) :-
+    execute_despawn(CtxIn, CtxOut, ID).
+
+% ==========================================================
+% execute_despawn/3
+% ==========================================================
+execute_despawn(CtxIn, CtxOut, ID) :-
     % Remove object's attributes from store
     ctx_attrs(CtxIn, AttrStore),
     ( gen_assoc(ID, AttrStore, _Attrs) ->

@@ -22,6 +22,12 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
+    execute_wait_key_held(Ctx, KeyCode, ObjIn, ObjOut).
+
+% ==========================================================
+% execute_wait_key_held/4
+% ==========================================================
+execute_wait_key_held(Ctx, KeyCode, ObjIn, ObjOut) :-
     obj_acns(ObjIn, [_|Rest]),
     
     ( key_held(Ctx, KeyCode) ->

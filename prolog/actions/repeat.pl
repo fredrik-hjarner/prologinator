@@ -25,6 +25,12 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
+    execute_repeat(Ctx, Times, Acts, ObjIn, ObjOut).
+
+% ==========================================================
+% execute_repeat/5
+% ==========================================================
+execute_repeat(_Ctx, Times, Acts, ObjIn, ObjOut) :-
     obj_acns(ObjIn, [_|Rest]),
     Times #> 0,
     Times1 #= Times - 1,

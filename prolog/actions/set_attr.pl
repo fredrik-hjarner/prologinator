@@ -16,10 +16,14 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
-    obj_id(ObjIn, MyID),
-    obj_acns(ObjIn, [_|Rest]),
-    obj_acns_obj(ObjIn, Rest, ObjOut),
-    ctx_attr_val_ctx(Ctx, MyID/Key, Value, CtxOut).
+    execute_set_attr(
+        Ctx,
+        CtxOut,
+        Key,
+        Value,
+        ObjIn,
+        ObjOut
+    ).
 
 % set_attr/3 - Set attribute on specific object
 execute_action:execute_action_impl(
@@ -28,6 +32,44 @@ execute_action:execute_action_impl(
     action(set_attr(TargetID, Key, Value)),
     obj_old(ObjIn),
     obj_new([ObjOut])
+) :-
+    execute_set_attr(
+        Ctx,
+        CtxOut,
+        TargetID,
+        Key,
+        Value,
+        ObjIn,
+        ObjOut
+    ).
+
+% ==========================================================
+% execute_set_attr/6 (for set_attr/2 - self)
+% ==========================================================
+execute_set_attr(
+    Ctx,
+    CtxOut,
+    Key,
+    Value,
+    ObjIn,
+    ObjOut
+) :-
+    obj_id(ObjIn, MyID),
+    obj_acns(ObjIn, [_|Rest]),
+    obj_acns_obj(ObjIn, Rest, ObjOut),
+    ctx_attr_val_ctx(Ctx, MyID/Key, Value, CtxOut).
+
+% ==========================================================
+% execute_set_attr/7 (for set_attr/3 - target)
+% ==========================================================
+execute_set_attr(
+    Ctx,
+    CtxOut,
+    TargetID,
+    Key,
+    Value,
+    ObjIn,
+    ObjOut
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),

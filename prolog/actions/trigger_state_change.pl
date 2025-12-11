@@ -16,6 +16,16 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
+    execute_trigger_state_change(
+        CtxIn, CtxOut, Change, ObjIn, ObjOut
+    ).
+
+% ==========================================================
+% execute_trigger_state_change/5
+% ==========================================================
+execute_trigger_state_change(
+    CtxIn, CtxOut, Change, ObjIn, ObjOut
+) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),
     

@@ -18,6 +18,12 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
+    execute_list(Ctx, Actions, ObjIn, ObjOut).
+
+% ==========================================================
+% execute_list/4
+% ==========================================================
+execute_list(_Ctx, Actions, ObjIn, ObjOut) :-
     obj_acns(ObjIn, [_|Rest]),
     append(Actions, Rest, NewActions),
     obj_acns_obj(ObjIn, NewActions, ObjOut).

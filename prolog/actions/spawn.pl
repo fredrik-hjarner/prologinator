@@ -18,6 +18,30 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
+    execute_spawn(
+        CtxIn,
+        CtxOut,
+        Type,
+        X,
+        Y,
+        Actions,
+        ObjIn,
+        ObjOut
+    ).
+
+% ==========================================================
+% execute_spawn/7
+% ==========================================================
+execute_spawn(
+    CtxIn,
+    CtxOut,
+    Type,
+    X,
+    Y,
+    Actions,
+    ObjIn,
+    ObjOut
+) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),
     

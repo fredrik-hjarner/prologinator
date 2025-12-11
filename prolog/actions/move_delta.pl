@@ -32,6 +32,16 @@ execute_action:execute_action_impl(
         Colls
     )])
 ) :-
+    execute_move_delta(
+        Ctx, CtxOut, Frames, DX, DY, ID, Rest, NewActions
+    ).
+
+% ==========================================================
+% execute_move_delta/9
+% ==========================================================
+execute_move_delta(
+    Ctx, CtxOut, Frames, DX, DY, ID, Rest, NewActions
+) :-
     % Get current position from attribute store
     ( ctx_attr_val(Ctx, ID/x, CurrX),
       ctx_attr_val(Ctx, ID/y, CurrY) ->

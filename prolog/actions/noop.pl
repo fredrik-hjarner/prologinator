@@ -15,6 +15,12 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
+    execute_noop(Ctx, ObjIn, ObjOut).
+
+% ==========================================================
+% execute_noop/3
+% ==========================================================
+execute_noop(_Ctx, ObjIn, ObjOut) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut).
 

@@ -16,6 +16,12 @@ execute_action:execute_action_impl(
     obj_old(ObjIn),
     obj_new([ObjOut])
 ) :-
+    execute_wait(Ctx, N, ObjIn, ObjOut).
+
+% ==========================================================
+% execute_wait/4
+% ==========================================================
+execute_wait(_Ctx, N, ObjIn, ObjOut) :-
     obj_acns(ObjIn, [_|Rest]),
     wait_continue(N, Rest, NewActions),
     obj_acns_obj(ObjIn, NewActions, ObjOut).
