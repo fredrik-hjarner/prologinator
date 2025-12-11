@@ -214,3 +214,8 @@ ci:
 
 aider:
     aider --no-gitignore
+
+# Generate call graph for all Prolog files
+# Usage: just callgraph
+callgraph:
+	bun scripts/call_graph/callgraph.ts
