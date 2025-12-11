@@ -51,10 +51,11 @@ digraph G {
   "resolve_action" -> "resolve_arg";
   "resolve_arg" -> "resolve_path";
   "run_child" -> "execute_action";
+  "run_parallel_all_child" -> "execute_action";
   "tick" -> "detect_collisions";
   "tick" -> "increment_frame";
   "tick" -> "tick_all_objects";
-  "tick_all" -> "run_child";
+  "tick_all" -> "run_parallel_all_child";
   "tick_all" -> "update_obj_attrs";
   "tick_all_objects" -> "tick_objects_loop";
   "tick_object" -> "execute_action";

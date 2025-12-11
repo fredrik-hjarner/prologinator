@@ -102,12 +102,12 @@ tick_all(C, C, [], Obj, Obj, []).
 tick_all(
     CIn, COut, [Act|Acts], ObjIn, ObjFinal, [Res|Results]
 ) :-
-    run_child(CIn, CTemp, Act, ObjIn, Res),
+    run_parallel_all_child(CIn, CTemp, Act, ObjIn, Res),
     update_obj_attrs(ObjIn, Res, NextObj),
     tick_all(CTemp, COut, Acts, NextObj, ObjFinal, Results).
 
-% run_child(+CIn, -COut, +Act, +Obj, -Res)
-run_child(CIn, COut, Act, Obj, Res) :-
+% run_parallel_all_child(+CIn, -COut, +Act, +Obj, -Res)
+run_parallel_all_child(CIn, COut, Act, Obj, Res) :-
     obj_id(Obj, ID),
     obj_type(Obj, T),
     obj_collisions(Obj, C),
