@@ -20,25 +20,31 @@ execute_action:execute_action_impl(
     ctx_new(Ctx),  % Context unchanged
     action(wait_key_held(KeyCode)),
     obj_old(ObjIn),
-    obj_new([ObjOut])
+    result(Status, ObjOut)
 ) :-
-    execute_wait_key_held(Ctx, KeyCode, ObjIn, ObjOut).
+    execute_wait_key_held(
+        Ctx, KeyCode, ObjIn, Status, ObjOut
+    ).
 
 % ==========================================================
-% execute_wait_key_held/4
+% execute_wait_key_held/5
 % ==========================================================
-execute_wait_key_held(Ctx, KeyCode, ObjIn, ObjOut) :-
+execute_wait_key_held(
+    Ctx, KeyCode, ObjIn, Status, ObjOut
+) :-
     obj_acns(ObjIn, [_|Rest]),
     
     ( key_held(Ctx, KeyCode) ->
         % Key held: yield (action complete)
-        obj_acns_obj(ObjIn, Rest, ObjOut)
+        obj_acns_obj(ObjIn, Rest, ObjOut),
+        Status = completed
     ;
         % Key not held: keep waiting
         obj_acns_obj(
           ObjIn,
           [wait_key_held(KeyCode)|Rest],
           ObjOut
-        )
+        ),
+        Status = yielded
     ).
 

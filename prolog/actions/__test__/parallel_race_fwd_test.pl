@@ -48,7 +48,7 @@ test("parallel_race: stops on child completion", (
             [wait(5), noop, wait(10)]
         )),
         obj_old(Obj),
-        obj_new([NewObj])
+        result(completed, NewObj)
     ),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
@@ -84,7 +84,7 @@ done", (
             [wait(5), wait(10)]
         )),
         obj_old(Obj),
-        obj_new([NewObj])
+        result(completed, NewObj)
     ),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
@@ -119,14 +119,15 @@ despawns", (
         ctx_new(CtxNew),
         action(parallel_race([despawn, wait(10)])),
         obj_old(Obj),
-        obj_new(ObjOut)
+        result(ActionStatus, _ObjOut)
     ),
     ctx_status(CtxNew, Status),
     ctx_cmds(CtxNew, Commands),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (ObjOut = [] ; err_write("ObjOut != []")),
+    (ActionStatus = despawned
+    ; err_write("ActionStatus != despawned")),
     (Status = playing ; err_write("Status != playing")),
     (Commands = [] ; err_write("Commands != []"))
 )).

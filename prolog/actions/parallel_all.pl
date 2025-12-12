@@ -16,17 +16,17 @@ execute_action:execute_action_impl(
     ctx_new(CtxNew),
     action(parallel_all(ChildActions)),
     obj_old(ObjIn),
-    obj_new(MaybeObjectOut)
+    result(Status, ObjOut)
 ) :-
     execute_parallel_all(
-        CtxOld, CtxNew, ChildActions, ObjIn, MaybeObjectOut
+        CtxOld, CtxNew, ChildActions, ObjIn, Status, ObjOut
     ).
 
 % ==========================================================
-% execute_parallel_all/5
+% execute_parallel_all/6
 % ==========================================================
 execute_parallel_all(
-    CtxOld, CtxNew, ChildActions, ObjIn, MaybeObjectOut
+    CtxOld, CtxNew, ChildActions, ObjIn, Status, ObjOut
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     tick_all(
@@ -37,15 +37,16 @@ execute_parallel_all(
         _ObjFinal,
         ChildResults
     ),
-    ( member([], ChildResults) ->
-        MaybeObjectOut = []
+    ( member(result(despawned, _), ChildResults) ->
+        Status = despawned,
+        ObjOut = _
     ;
         filter_running_actions(
             ChildResults, RemainingActions
         ),
         ( RemainingActions = [] ->
-            obj_acns_obj(ObjIn, Rest, NewObj),
-            MaybeObjectOut = [NewObj]
+            obj_acns_obj(ObjIn, Rest, ObjOut),
+            Status = completed
         ;
             obj_acns_obj(
                 ObjIn,
@@ -53,9 +54,9 @@ execute_parallel_all(
                     parallel_all_running(RemainingActions)
                     |Rest
                 ],
-                NewObj
+                ObjOut
             ),
-            MaybeObjectOut = [NewObj]
+            Status = completed
         )
     ).
 
@@ -64,24 +65,24 @@ execute_action:execute_action_impl(
     ctx_new(CtxNew),
     action(parallel_all_running(Children)),
     obj_old(Obj),
-    obj_new(NewObj)
+    result(Status, ObjOut)
 ) :-
     execute_parallel_all_running(
-        CtxOld, CtxNew, Children, Obj, NewObj
+        CtxOld, CtxNew, Children, Obj, Status, ObjOut
     ).
 
 % ==========================================================
-% execute_parallel_all_running/5
+% execute_parallel_all_running/6
 % ==========================================================
 execute_parallel_all_running(
-    CtxOld, CtxNew, Children, Obj, NewObj
+    CtxOld, CtxNew, Children, Obj, Status, ObjOut
 ) :-
     execute_action:execute_action(
         ctx_old(CtxOld),
         ctx_new(CtxNew),
         action(parallel_all(Children)),
         obj_old(Obj),
-        obj_new(NewObj)
+        result(Status, ObjOut)
     ).
 
 % ==========================================================
@@ -103,7 +104,7 @@ tick_all(
     CIn, COut, [Act|Acts], ObjIn, ObjFinal, [Res|Results]
 ) :-
     run_parallel_all_child(CIn, CTemp, Act, ObjIn, Res),
-    update_obj_attrs(ObjIn, Res, NextObj),
+    ignore_child_result(ObjIn, Res, NextObj),
     tick_all(CTemp, COut, Acts, NextObj, ObjFinal, Results).
 
 % run_parallel_all_child(+CIn, -COut, +Act, +Obj, -Res)
@@ -123,30 +124,31 @@ run_parallel_all_child(CIn, COut, Act, Obj, Res) :-
         ctx_new(COut),
         action(Act),
         obj_old(Child),
-        obj_new(Res)
-    ).
+        result(Status, ObjTemp)
+    ),
+    Res = result(Status, ObjTemp).
 
-% update_obj_attrs(+Obj, +ResultList, -NewObj)
-% Updates object based on child result.
-%   - If result is an object, use it
-%   - If result is [] (despawned), keep old obj
-%   Attributes are in centralized store, so no need to copy
-%   them.
+% ignore_child_result(+Obj, +Result, -NewObj)
+% Ignores child result and returns the parent object
+% unchanged.
+% Attributes are in centralized store, so no need to copy
+% them.
+% The child updates Ctx directly, which is threaded via
+% tick_all.
 
-update_obj_attrs(
-    Obj, [object(_, _, _, _)], Obj
-).
-update_obj_attrs(Obj, [], Obj).
+ignore_child_result(Obj, result(_, _), Obj).
 
 % filter_running_actions(+Results, -Actions)
 % Recursively filters child results to extract actions
 %   from children that are still running.
 % Finished children (actions([])) and despawned
-%   children ([]) are skipped.
+%   children are skipped.
 
 filter_running_actions([], []).
 filter_running_actions([Res|Rs], Acc) :-
-    ( Res = [object(_, _, actions([A|_]), _)] ->
+    ( Res = result(
+        yielded, object(_, _, actions([A|_]), _)
+    ) ->
         % Child still running: include its action
         Acc = [A|RestAcc],
         filter_running_actions(Rs, RestAcc)

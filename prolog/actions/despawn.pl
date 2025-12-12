@@ -17,7 +17,7 @@ execute_action:execute_action_impl(
     ctx_new(CtxOut),
     action(despawn),
     obj_old(object(id(ID), _, _, _)),
-    obj_new([])
+    result(despawned, _)
 ) :-
     execute_despawn(CtxIn, CtxOut, ID).
 

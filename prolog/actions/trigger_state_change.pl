@@ -14,7 +14,7 @@ execute_action:execute_action_impl(
     ctx_new(CtxOut),
     action(trigger_state_change(Change)),
     obj_old(ObjIn),
-    obj_new([ObjOut])
+    result(completed, ObjOut)
 ) :-
     execute_trigger_state_change(
         CtxIn, CtxOut, Change, ObjIn, ObjOut

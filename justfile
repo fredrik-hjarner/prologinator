@@ -105,10 +105,6 @@ lint-all:
     @just lint prolog/macros.pl || exit 1
     @echo "Linting test_macros.pl..."
     @just lint prolog/test_macros.pl || exit 1
-    @echo "Linting yields.pl..."
-    @just lint prolog/yields.pl || exit 1
-    @echo "Linting yields_test.pl..."
-    @just lint prolog/yields_test.pl || exit 1
     @echo "Linting xod/xod.pl..."
     @just lint prolog/xod/xod.pl || exit 1
     @echo "Linting actions/wait.pl..."
@@ -190,8 +186,6 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/collisions_fwd_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action_fwd_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/input_helpers.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/yields.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/yields_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/xod/xod.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/move_to.pl

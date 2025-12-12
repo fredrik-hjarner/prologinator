@@ -44,7 +44,7 @@ remaining", (
         ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(Status, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -52,12 +52,13 @@ remaining", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ( ObjOut = [object(
+    (Status = yielded ; err_write("Status != yielded")),
+    ( ObjOut = object(
         id(1),
         type(static),
         actions([move_to(10, 20, 2)|_]),
         collisions([])
-    )] ; err_write("ObjOut mismatch") ),
+    ) ; err_write("ObjOut mismatch") ),
     (NewX = 3 ; err_write("NewX != 3")),
     (NewY = 6 ; err_write("NewY != 6")),
     (Commands = [] ; err_write("Commands != []"))
@@ -87,7 +88,7 @@ remaining", (
         ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(Status, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -95,12 +96,13 @@ remaining", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    (Status = yielded ; err_write("Status != yielded")),
+    ObjOut = object(
         id(1),
         type(static),
         actions([move_to(0, 0, 2)|_]),
         collisions([])
-    )],
+    ),
     (NewX = 7 ; err_write("NewX != 7")),
     (NewY = 14 ; err_write("NewY != 14")),
     (Commands = [] ; err_write("Commands != []"))
@@ -129,7 +131,7 @@ test("move_to: single frame, arrives at target", (
         ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(Status, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_attr_val(CtxNew, 1/x, X),
@@ -137,12 +139,13 @@ test("move_to: single frame, arrives at target", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    (Status = yielded ; err_write("Status != yielded")),
+    ObjOut = object(
         id(1),
         type(static),
         actions([]),
         collisions([])
-    )],
+    ),
     (X = 5 ; err_write("X != 5")),
     (Y = 5 ; err_write("Y != 5")),
     (Commands = [] ; err_write("Commands != []"))
@@ -172,7 +175,7 @@ continues with remaining frames", (
         ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(Status, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_attr_val(CtxNew, 1/x, X),
@@ -180,12 +183,13 @@ continues with remaining frames", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    (Status = yielded ; err_write("Status != yielded")),
+    ObjOut = object(
         id(1),
         type(static),
         actions([move_to(10, 20, 2)|_]),
         collisions([])
-    )],
+    ),
     (X = 10 ; err_write("X != 10")),
     (Y = 20 ; err_write("Y != 20")),
     (Commands = [] ; err_write("Commands != []"))
@@ -208,7 +212,7 @@ test("move_to: negative target coordinates", (
         ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(Status, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -216,12 +220,13 @@ test("move_to: negative target coordinates", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    (Status = yielded ; err_write("Status != yielded")),
+    ObjOut = object(
         id(1),
         type(static),
         actions([move_to(-5, -10, 1)|_]),
         collisions([])
-    )],
+    ),
     (NewX = -2 ; err_write("NewX != -2")),
     (NewY = -5 ; err_write("NewY != -5")),
     (Commands = [] ; err_write("Commands != []"))

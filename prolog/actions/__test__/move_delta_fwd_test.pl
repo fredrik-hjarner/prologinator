@@ -42,7 +42,7 @@ test("move_delta: single frame moves and completes", (
         ctx_new(CtxNew),
         action(move_delta(1, 5, -3)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(yielded, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
@@ -50,15 +50,15 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = object(
+    expect(ObjOut = object(
         id(1),
         type(static),
         actions([]),
         collisions([])
-    ),
-    (X = 15 ; err_write("X != 15")),
-    (Y = 17 ; err_write("Y != 17")),
-    (Commands = [] ; err_write("Commands != []"))
+    ), 'ObjOut != object(id(1), type(static), actions(...'),
+    expect(X = 15, 'X != 15'),
+    expect(Y = 17, 'Y != 17'),
+    expect(Commands = [], 'Commands != []')
 )).
 
 test("move_delta: multiple frames continues", (
@@ -83,7 +83,7 @@ test("move_delta: multiple frames continues", (
         ctx_new(CtxNew),
         action(move_delta(3, 10, 5)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(yielded, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
@@ -122,7 +122,7 @@ test("move_delta: negative deltas work", (
         ctx_new(CtxNew),
         action(move_delta(2, -10, -5)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(yielded, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
@@ -163,7 +163,7 @@ test("move_delta: preserves other attributes", (
         ctx_new(CtxNew),
         action(move_delta(1, 5, -3)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(yielded, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),

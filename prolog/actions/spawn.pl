@@ -16,7 +16,7 @@ execute_action:execute_action_impl(
     ctx_new(CtxOut),
     action(spawn(Type, X, Y, Actions)),
     obj_old(ObjIn),
-    obj_new([ObjOut])
+    result(completed, ObjOut)
 ) :-
     execute_spawn(
         CtxIn,

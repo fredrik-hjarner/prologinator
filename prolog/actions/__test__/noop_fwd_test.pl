@@ -37,7 +37,7 @@ test("noop: removes self from action queue", (
         ctx_new(CtxNew),
         action(noop),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(ActionStatus, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_frame(CtxNew, Frame),
@@ -45,6 +45,8 @@ test("noop: removes self from action queue", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
+    (ActionStatus = completed
+    ; err_write("ActionStatus != completed")),
     ObjOut = object(
         id(0), type(static),
         actions([wait(1)]), collisions([])

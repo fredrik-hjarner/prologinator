@@ -29,15 +29,16 @@ object", (
         ctx_old(Ctx),
         ctx_new(CtxNew),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(Status, ObjOut)
     ),
     ctx_cmds(CtxNew, []),
-    ObjOut = [object(
+    Status = completed,
+    ObjOut = object(
         id(1),
         type(static),
         actions([]),
         collisions([])
-    )]
+    )
 )).
 
 test("tick_object: yielding action (wait) stops \
@@ -53,15 +54,16 @@ after one execution", (
         ctx_old(Ctx),
         ctx_new(CtxNew),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(Status, ObjOut)
     ),
     ctx_cmds(CtxNew, []),
-    ObjOut = [object(
+    Status = yielded,
+    ObjOut = object(
         id(1),
         type(static),
         actions([wait(4)]),
         collisions([])
-    )]
+    )
 )).
 
 test("tick_object: wait(0) is removed and execution \
@@ -77,15 +79,16 @@ continues until empty", (
         ctx_old(Ctx),
         ctx_new(CtxNew),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(Status, ObjOut)
     ),
     ctx_cmds(CtxNew, []),
-    ObjOut = [object(
+    Status = completed,
+    ObjOut = object(
         id(1),
         type(static),
         actions([]),
         collisions([])
-    )]
+    )
 )).
 
 % ==========================================================

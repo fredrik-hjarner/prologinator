@@ -14,7 +14,7 @@ execute_action:execute_action_impl(
     ctx_new(CtxOut),
     action(set_attr(Key, Value)),
     obj_old(ObjIn),
-    obj_new([ObjOut])
+    result(completed, ObjOut)
 ) :-
     execute_set_attr(
         Ctx,
@@ -31,7 +31,7 @@ execute_action:execute_action_impl(
     ctx_new(CtxOut),
     action(set_attr(TargetID, Key, Value)),
     obj_old(ObjIn),
-    obj_new([ObjOut])
+    result(completed, ObjOut)
 ) :-
     execute_set_attr(
         Ctx,

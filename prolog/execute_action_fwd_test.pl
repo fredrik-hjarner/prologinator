@@ -42,7 +42,7 @@ remaining", (
         ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(_, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -50,12 +50,12 @@ remaining", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ( ObjOut = [object(
+    ( ObjOut = object(
         id(1),
         type(static),
         actions([move_to(10, 20, 2)|_]),
         collisions([])
-    )] ; err_write("ObjOut mismatch") ),
+    ) ; err_write("ObjOut mismatch") ),
     (NewX = 3 ; err_write("NewX != 3")),
     (NewY = 6 ; err_write("NewY != 6")),
     (Commands = [] ; err_write("Commands != []"))
@@ -85,7 +85,7 @@ remaining", (
         ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(_, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -93,12 +93,12 @@ remaining", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    ObjOut = object(
         id(1),
         type(static),
         actions([move_to(0, 0, 2)|_]),
         collisions([])
-    )],
+    ),
     (NewX = 7 ; err_write("NewX != 7")),
     (NewY = 14 ; err_write("NewY != 14")),
     (Commands = [] ; err_write("Commands != []"))
@@ -127,7 +127,7 @@ test("move_to: single frame, arrives at target", (
         ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(_, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_attr_val(CtxNew, 1/x, X),
@@ -135,12 +135,12 @@ test("move_to: single frame, arrives at target", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    ObjOut = object(
         id(1),
         type(static),
         actions([]),
         collisions([])
-    )],
+    ),
     (X = 5 ; err_write("X != 5")),
     (Y = 5 ; err_write("Y != 5")),
     (Commands = [] ; err_write("Commands != []"))
@@ -170,7 +170,7 @@ continues with remaining frames", (
         ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(_, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_attr_val(CtxNew, 1/x, X),
@@ -178,12 +178,12 @@ continues with remaining frames", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    ObjOut = object(
         id(1),
         type(static),
         actions([move_to(10, 20, 2)|_]),
         collisions([])
-    )],
+    ),
     (X = 10 ; err_write("X != 10")),
     (Y = 20 ; err_write("Y != 20")),
     (Commands = [] ; err_write("Commands != []"))
@@ -206,7 +206,7 @@ test("move_to: negative target coordinates", (
         ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(_, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -214,12 +214,12 @@ test("move_to: negative target coordinates", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    ObjOut = object(
         id(1),
         type(static),
         actions([move_to(-5, -10, 1)|_]),
         collisions([])
-    )],
+    ),
     (NewX = -2 ; err_write("NewX != -2")),
     (NewY = -5 ; err_write("NewY != -5")),
     (Commands = [] ; err_write("Commands != []"))
@@ -250,19 +250,19 @@ to won", (
         ctx_new(CtxOut),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(_, ObjOut)
     ),
     ctx_cmds(CtxOut, Commands),
     ctx_status(CtxOut, Status),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    ObjOut = object(
         id(1),
         type(static),
         actions([]),
         collisions([])
-    )],
+    ),
     (Status = won ; err_write("Status != won")),
     (Commands = [] ; err_write("Commands != []"))
 )).
@@ -288,19 +288,19 @@ to lost", (
         ctx_new(CtxOut),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(_, ObjOut)
     ),
     ctx_cmds(CtxOut, Commands),
     ctx_status(CtxOut, Status),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    ObjOut = object(
         id(1),
         type(static),
         actions([]),
         collisions([])
-    )],
+    ),
     (Status = lost ; err_write("Status != lost")),
     (Commands = [] ; err_write("Commands != []"))
 )).
@@ -327,19 +327,19 @@ override lost", (
         ctx_new(CtxOut),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(_, ObjOut)
     ),
     ctx_cmds(CtxOut, Commands),
     ctx_status(CtxOut, Status),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    ObjOut = object(
         id(1),
         type(static),
         actions([]),
         collisions([])
-    )],
+    ),
     (Status = lost ; err_write("Status != lost")),
     (Commands = [] ; err_write("Commands != []"))
 )).
@@ -365,7 +365,7 @@ test("noop: removes self from action queue", (
         ctx_new(CtxNew),
         action(noop),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_frame(CtxNew, Frame),
@@ -401,7 +401,7 @@ test("list: expands actions into queue", (
         ctx_new(CtxNew),
         action(list([wait(1), move_to(5, 5, 2)])),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     ObjOut = object(
         id(0), type(static),
@@ -425,7 +425,7 @@ test("list: empty list removes itself", (
         ctx_new(_),
         action(list([])),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     ObjOut = object(
         id(0), type(static),
@@ -466,7 +466,7 @@ actions from executing", (
         ctx_new(CtxNew),
         action(despawn),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(_, ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_frame(CtxNew, Frame),
@@ -496,7 +496,7 @@ executing after despawn", (
         ctx_new(CtxNew),
         action(despawn),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(_, ObjOut)
     ),
     % Object must be despawned (empty list)
     ObjOut = [],
@@ -531,7 +531,7 @@ test("set_attr: set new attribute", (
         ctx_new(CtxNew),
         action(set_attr(hp, 100)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/hp, HP),
     ctx_attr_val(CtxNew, 1/x, X),
@@ -571,7 +571,7 @@ test("set_attr: replace existing attribute", (
         ctx_new(CtxNew),
         action(set_attr(hp, 50)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/hp, HP),
     ctx_attr_val(CtxNew, 1/x, X),
@@ -620,7 +620,7 @@ test("parallel_race: stops on child completion", (
             [wait(5), noop, wait(10)]
         )),
         obj_old(Obj),
-        obj_new([NewObj])
+        result(completed, NewObj)
     ),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
@@ -656,7 +656,7 @@ done", (
             [wait(5), wait(10)]
         )),
         obj_old(Obj),
-        obj_new([NewObj])
+        result(completed, NewObj)
     ),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
@@ -691,7 +691,7 @@ despawns", (
         ctx_new(CtxNew),
         action(parallel_race([despawn, wait(10)])),
         obj_old(Obj),
-        obj_new(ObjOut)
+        result(_, ObjOut)
     ),
     ctx_status(CtxNew, Status),
     ctx_cmds(CtxNew, Commands),
@@ -725,21 +725,21 @@ duplicates", (
         ctx_new(Ctx1),
         action(set_attr(hp, 100)),
         obj_old(ObjIn),
-        obj_new([Obj1])
+        result(completed, Obj1)
     ),
     execute_action(
         ctx_old(Ctx1),
         ctx_new(Ctx2),
         action(set_attr(hp, 75)),
         obj_old(Obj1),
-        obj_new([Obj2])
+        result(completed, Obj2)
     ),
     execute_action(
         ctx_old(Ctx2),
         ctx_new(CtxNew),
         action(set_attr(hp, 50)),
         obj_old(Obj2),
-        obj_new([_ObjOut])
+        result(completed, _ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/hp, HP),
     % ------------------------------------------------------
@@ -768,7 +768,7 @@ test("repeat: expands actions once and decrements", (
         ctx_new(CtxNew),
         action(repeat(3, [noop, set_attr(count, 1)])),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     % Should expand to: [noop, set_attr(count, 1),
     %   repeat(2, [noop, set_attr(count, 1)]), despawn]
@@ -801,7 +801,7 @@ test("repeat: last repetition doesn't add repeat", (
         ctx_new(CtxNew),
         action(repeat(1, [noop])),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     obj_acns(ObjOut, Actions),
     ctx_cmds(CtxNew, Commands),
@@ -844,7 +844,7 @@ test("repeat: multiple actions in repeat list", (
             set_attr(b, 2)
         ])),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     obj_acns(ObjOut, Actions),
     ctx_cmds(CtxNew, Commands),
@@ -887,7 +887,7 @@ test("move_delta: single frame moves and completes", (
         ctx_new(CtxNew),
         action(move_delta(1, 5, -3)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(yielded, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
@@ -928,7 +928,7 @@ test("move_delta: multiple frames continues", (
         ctx_new(CtxNew),
         action(move_delta(3, 10, 5)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(yielded, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
@@ -967,7 +967,7 @@ test("move_delta: negative deltas work", (
         ctx_new(CtxNew),
         action(move_delta(2, -10, -5)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(yielded, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
@@ -1005,7 +1005,7 @@ test("move_delta: preserves other attributes", (
         ctx_new(CtxNew),
         action(move_delta(1, 5, -3)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(yielded, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
@@ -1054,7 +1054,7 @@ test("value_resolution: move_to with attr() references", (
         action(move_to(attr(target_x),
                        attr(target_y), 5)),
         obj_old(ObjIn),
-        obj_new(_ObjOut)
+        result(_, _ObjOut)
     ),
     % Should start moving toward target
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -1082,7 +1082,7 @@ test("value_resolution: set_attr with attr() source", (
         ctx_new(CtxNew),
         action(set_attr(source_x, attr(x))),
         obj_old(ObjIn),
-        obj_new(_ObjOut)
+        result(_, _ObjOut)
     ),
     % source_x should now equal x
     ctx_attr_val(CtxNew, 1/source_x, 50),
@@ -1114,7 +1114,7 @@ test("value_resolution: path syntax parent_id/target_y", (
         action(set_attr(my_target_y,
                         attr(parent_id/target_y))),
         obj_old(ObjIn),
-        obj_new(_ObjOut)
+        result(_, _ObjOut)
     ),
     % Should copy parent's target_y (250) to my_target_y
     ctx_attr_val(CtxNew, 1/my_target_y, 250),
@@ -1152,7 +1152,7 @@ test("value_resolution: multi-hop path a/b/c", (
                         attr(first_id/second_id/
                               final_value))),
         obj_old(ObjIn),
-        obj_new(_ObjOut)
+        result(_, _ObjOut)
     ),
     % Should navigate: 1 -> first_id(2) -> second_id(3) ->
     % final_value(999)
@@ -1181,7 +1181,7 @@ test("value_resolution: spawn at attr() position", (
         action(spawn(enemy, attr(spawn_x),
                      attr(spawn_y), [])),
         obj_old(ObjIn),
-        obj_new(_ObjOut)
+        result(_, _ObjOut)
     ),
     % Should spawn enemy at (200, 300) - spawn immediately
     % creates object, so check it exists in context
@@ -1213,7 +1213,7 @@ test("value_resolution: mixed plain and attr() values", (
         action(move_to(attr(target_x), 200,
                        attr(speed))),
         obj_old(ObjIn),
-        obj_new(_ObjOut)
+        result(_, _ObjOut)
     ),
     % Should move toward target (100, 200) with speed=5
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -1246,7 +1246,7 @@ test("value_resolution: backward compatible plain values", (
         ctx_new(CtxNew),
         action(move_to(100, 200, 5)),
         obj_old(ObjIn),
-        obj_new(_ObjOut)
+        result(_, _ObjOut)
     ),
     % Should work exactly as before
     ctx_attr_val(CtxNew, 1/x, NewX),

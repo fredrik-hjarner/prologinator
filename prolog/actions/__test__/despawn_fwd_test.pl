@@ -48,14 +48,14 @@ actions from executing", (
         ctx_new(CtxNew),
         action(despawn),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(Status, _ObjOut)
     ),
     ctx_cmds(CtxNew, Commands),
     ctx_frame(CtxNew, Frame),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (ObjOut = [] ; err_write("ObjOut != []")),
+    (Status = despawned ; err_write("Status != despawned")),
     (Commands = [] ; err_write("Commands != []")),
     (Frame = 0 ; err_write("Frame != 0"))
 )).
@@ -78,10 +78,10 @@ executing after despawn", (
         ctx_new(CtxNew),
         action(despawn),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(Status, _ObjOut)
     ),
-    % Object must be despawned (empty list)
-    ObjOut = [],
+    % Object must be despawned
+    Status = despawned,
     % Despawn hint must be recorded
     % Status must remain playing (game_over did NOT execute)
     ctx_status(CtxNew, playing),

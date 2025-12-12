@@ -19,12 +19,12 @@ execute_action:execute_action_impl(
         actions([_|Rest]),
         Colls
     )),
-    obj_new([object(
+    result(Status, object(
         id(ID),
         type(Type),
         actions(NewActions),
         Colls
-    )])
+    ))
 ) :-
     execute_move_to(
         Ctx,
@@ -34,12 +34,29 @@ execute_action:execute_action_impl(
         Frames,
         ID,
         Rest,
+        Status,
         NewActions
     ).
 
 % ==========================================================
-% execute_move_to/8
+% execute_move_to/9
 % ==========================================================
+% 0 frames: teleport instantly to target
+execute_move_to(
+    Ctx,
+    CtxOut,
+    TargetX,
+    TargetY,
+    0,
+    ID,
+    Rest,
+    completed,
+    Rest
+) :-
+    ctx_attr_val_ctx(Ctx, ID/x, TargetX, Ctx1),
+    ctx_attr_val_ctx(Ctx1, ID/y, TargetY, CtxOut).
+
+% 1+ frames: compute step and continue or finish
 execute_move_to(
     Ctx,
     CtxOut,
@@ -48,8 +65,10 @@ execute_move_to(
     Frames,
     ID,
     Rest,
+    Status,
     NewActions
 ) :-
+    Frames #> 0,
     % Get current position from attribute store
     % Fails if object doesn't have x/y attributes
     ctx_attr_val(Ctx, ID/x, CurrX),
@@ -72,9 +91,14 @@ execute_move_to(
     ctx_attr_val_ctx(Ctx1, ID/y, NewY, CtxOut),
     ( Frames #> 1 ->
         Frames1 #= Frames - 1,
-        NewActions = [move_to(TargetX, TargetY, Frames1)|
-            Rest]
+        NewActions = [
+            move_to(TargetX, TargetY, Frames1)|Rest],
+        Status = yielded
     ;
-        NewActions = Rest  % Arrived
+        NewActions = Rest,  % Arrived
+        % We arrived, but this movement took 1 frame of
+        % time.
+        % We must yield execution to the next frame.
+        Status = yielded
     ).
 

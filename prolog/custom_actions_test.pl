@@ -68,7 +68,7 @@ test("define_action: stores action definition", (
             ])
         )),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     % ------------------------------------------------------
     % Assert
@@ -120,7 +120,7 @@ test("custom_action: zigzag expands and executes", (
         ctx_new(CtxNew),
         action(zigzag(30, 2)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     % ------------------------------------------------------
     % Assert
@@ -385,7 +385,7 @@ substituted", (
         ctx_new(CtxNew),
         action(move_pattern(10, 10, 20, 20, 5)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     % ------------------------------------------------------
     % Assert

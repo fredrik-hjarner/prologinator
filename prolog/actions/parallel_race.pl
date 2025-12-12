@@ -23,17 +23,17 @@ execute_action:execute_action_impl(
     ctx_new(CtxNew),
     action(parallel_race(ChildActions)),
     obj_old(ObjIn),
-    obj_new(MaybeObjectOut)
+    result(Status, ObjOut)
 ) :-
     execute_parallel_race(
-        CtxOld, CtxNew, ChildActions, ObjIn, MaybeObjectOut
+        CtxOld, CtxNew, ChildActions, ObjIn, Status, ObjOut
     ).
 
 % ==========================================================
-% execute_parallel_race/5
+% execute_parallel_race/6
 % ==========================================================
 execute_parallel_race(
-    CtxOld, CtxNew, ChildActions, ObjIn, MaybeObjectOut
+    CtxOld, CtxNew, ChildActions, ObjIn, FinalStatus, ObjOut
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     % Execute children until one finishes or despawns.
@@ -43,26 +43,27 @@ execute_parallel_race(
     %   - continue(RunningKids, FinalObj): No child done
     %     yet. Continue racing with RunningKids next tick.
     tick_race(CtxOld, CtxNew, ChildActions, ObjIn, Status),
-    ( Status = done(FinalObj, Despawned) ->
+    ( Status = done(_FinalObj, Despawned) ->
         ( Despawned = true ->
             % Child despawned: parent must also despawn
-            MaybeObjectOut = []
+            FinalStatus = despawned,
+            ObjOut = _
         ;
             % Child finished normally: proceed with parent
             %   actions (attributes already in store by ID)
-            obj_acns_obj(ObjIn, Rest, NewObj),
-            MaybeObjectOut = [NewObj]
+            obj_acns_obj(ObjIn, Rest, ObjOut),
+            FinalStatus = completed
         )
-    ; Status = continue(RunningKids, FinalObj) ->
+    ; Status = continue(RunningKids, _FinalObj) ->
         % Race continues: wrap remaining children in
         %   parallel_race_running for next tick
         % (attributes already in store by ID)
         obj_acns_obj(
             ObjIn,
             [parallel_race_running(RunningKids)|Rest],
-            NewObj
+            ObjOut
         ),
-        MaybeObjectOut = [NewObj]
+        FinalStatus = completed
     ).
 
 % Handle parallel_race_running triggered
@@ -78,24 +79,24 @@ execute_action:execute_action_impl(
     ctx_new(CtxNew),
     action(parallel_race_running(Children)),
     obj_old(Obj),
-    obj_new(NewObj)
+    result(Status, ObjOut)
 ) :-
     execute_parallel_race_running(
-        CtxOld, CtxNew, Children, Obj, NewObj
+        CtxOld, CtxNew, Children, Obj, Status, ObjOut
     ).
 
 % ==========================================================
-% execute_parallel_race_running/5
+% execute_parallel_race_running/6
 % ==========================================================
 execute_parallel_race_running(
-    CtxOld, CtxNew, Children, Obj, NewObj
+    CtxOld, CtxNew, Children, Obj, Status, ObjOut
 ) :-
     execute_action:execute_action(
         ctx_old(CtxOld),
         ctx_new(CtxNew),
         action(parallel_race(Children)),
         obj_old(Obj),
-        obj_new(NewObj)
+        result(Status, ObjOut)
     ).
 
 % ==========================================================
@@ -129,8 +130,8 @@ tick_race(CIn, COut, [Act|Acts], ObjIn, Status) :-
         % Winner found: stop immediately, don't process
         %   remaining children
         COut = CTemp,
-        update_obj_attrs(ObjIn, Res, FinalObj),
-        ( Res = [] ->
+        ignore_child_result(ObjIn, Res, FinalObj),
+        ( Res = result(despawned, _) ->
             Despawned = true
         ;
             Despawned = false
@@ -139,7 +140,7 @@ tick_race(CIn, COut, [Act|Acts], ObjIn, Status) :-
     ;
         % This child still running: continue with next
         %   sibling
-        update_obj_attrs(ObjIn, Res, NextObj),
+        ignore_child_result(ObjIn, Res, NextObj),
         tick_race(CTemp, COut, Acts, NextObj, RecStatus),
         ( RecStatus = continue(RestKids, FinalObj) ->
             % Race still going: collect this child's action
@@ -169,34 +170,37 @@ run_child(CIn, COut, Act, Obj, Res) :-
         ctx_new(COut),
         action(Act),
         obj_old(Child),
-        obj_new(Res)
-    ).
+        result(Status, ObjTemp)
+    ),
+    Res = result(Status, ObjTemp).
 
-% update_obj_attrs(+Obj, +ResultList, -NewObj)
-% Updates object based on child result.
-%   - If result is an object, use it
-%   - If result is [] (despawned), keep old obj
-%   Attributes are in centralized store, so no need to copy
-%   them.
+% ignore_child_result(+Obj, +Result, -NewObj)
+% Ignores child result and returns the parent object
+% unchanged.
+% Attributes are in centralized store, so no need to copy
+% them.
+% The child updates Ctx directly, which is threaded via
+% tick_race.
 
-update_obj_attrs(
-    Obj, [object(_, _, _, _)], Obj
-).
-update_obj_attrs(Obj, [], Obj).
+ignore_child_result(Obj, result(_, _), Obj).
 
-% is_child_done(+ResultList)
-% True if ResultList indicates the child is done:
-%   - [] means child despawned
-%   - [object(..., actions([]), ...)] means child
-%     finished (no remaining actions)
+% is_child_done(+Result)
+% True if Result indicates the child is done:
+%   - result(despawned, _) means child despawned
+%   - result(completed, object(..., actions([]), ...))
+%     means child finished (no remaining actions)
 
-is_child_done([]).
-is_child_done([object(_, _, actions([]), _)]).
+is_child_done(result(despawned, _)).
+is_child_done(result(
+    completed, object(_, _, actions([]), _)
+)).
 
-% extract_action(+ResultList, -Action)
+% extract_action(+Result, -Action)
 % Extracts the next action from a running child's
 %   result. The child is still running if it has
 %   actions remaining.
 
-extract_action([object(_, _, actions([A|_]), _)], A).
+extract_action(
+    result(yielded, object(_, _, actions([A|_]), _)), A
+).
 

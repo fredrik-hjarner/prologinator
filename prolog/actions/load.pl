@@ -25,7 +25,7 @@ execute_action:execute_action_impl(
     ctx_new(Ctx),
     action(load(Path)),
     obj_old(ObjIn),
-    obj_new([ObjOut])
+    result(completed, ObjOut)
 ) :-
     execute_load(Ctx, Path, ObjIn, ObjOut).
 

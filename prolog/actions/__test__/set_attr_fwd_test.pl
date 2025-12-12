@@ -40,7 +40,7 @@ test("set_attr: set new attribute", (
         ctx_new(CtxNew),
         action(set_attr(hp, 100)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/hp, HP),
     ctx_attr_val(CtxNew, 1/x, X),
@@ -80,7 +80,7 @@ test("set_attr: replace existing attribute", (
         ctx_new(CtxNew),
         action(set_attr(hp, 50)),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/hp, HP),
     ctx_attr_val(CtxNew, 1/x, X),
@@ -119,21 +119,21 @@ duplicates", (
         ctx_new(Ctx1),
         action(set_attr(hp, 100)),
         obj_old(ObjIn),
-        obj_new([Obj1])
+        result(completed, Obj1)
     ),
     execute_action(
         ctx_old(Ctx1),
         ctx_new(Ctx2),
         action(set_attr(hp, 75)),
         obj_old(Obj1),
-        obj_new([Obj2])
+        result(completed, Obj2)
     ),
     execute_action(
         ctx_old(Ctx2),
         ctx_new(CtxNew),
         action(set_attr(hp, 50)),
         obj_old(Obj2),
-        obj_new([_ObjOut])
+        result(completed, _ObjOut)
     ),
     ctx_attr_val(CtxNew, 1/hp, HP),
     % ------------------------------------------------------

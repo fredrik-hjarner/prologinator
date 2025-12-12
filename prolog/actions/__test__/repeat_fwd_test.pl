@@ -36,7 +36,7 @@ test("repeat: expands actions once and decrements", (
         ctx_new(CtxNew),
         action(repeat(3, [noop, set_attr(count, 1)])),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     % Should expand to: [noop, set_attr(count, 1),
     %   repeat(2, [noop, set_attr(count, 1)]), despawn]
@@ -69,7 +69,7 @@ test("repeat: last repetition doesn't add repeat", (
         ctx_new(CtxNew),
         action(repeat(1, [noop])),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     obj_acns(ObjOut, Actions),
     ctx_cmds(CtxNew, Commands),
@@ -112,7 +112,7 @@ test("repeat: multiple actions in repeat list", (
             set_attr(b, 2)
         ])),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     obj_acns(ObjOut, Actions),
     ctx_cmds(CtxNew, Commands),

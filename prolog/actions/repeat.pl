@@ -23,7 +23,7 @@ execute_action:execute_action_impl(
     ctx_new(Ctx),
     action(repeat(Times, Acts)),
     obj_old(ObjIn),
-    obj_new([ObjOut])
+    result(completed, ObjOut)
 ) :-
     execute_repeat(Ctx, Times, Acts, ObjIn, ObjOut).
 

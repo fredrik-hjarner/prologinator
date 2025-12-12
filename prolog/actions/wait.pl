@@ -14,22 +14,25 @@ execute_action:execute_action_impl(
     ctx_new(Ctx), % Context unchanged
     action(wait(N)),
     obj_old(ObjIn),
-    obj_new([ObjOut])
+    result(Status, ObjOut)
 ) :-
-    execute_wait(Ctx, N, ObjIn, ObjOut).
+    execute_wait(Ctx, N, ObjIn, Status, ObjOut).
 
 % ==========================================================
-% execute_wait/4
+% execute_wait/5
 % ==========================================================
-execute_wait(_Ctx, N, ObjIn, ObjOut) :-
+execute_wait(_Ctx, N, ObjIn, Status, ObjOut) :-
     obj_acns(ObjIn, [_|Rest]),
-    wait_continue(N, Rest, NewActions),
-    obj_acns_obj(ObjIn, NewActions, ObjOut).
-
-% Helper: Continue or finish wait action based on remaining
-% frames
-wait_continue(N, Rest, [wait(N1)|Rest]) :-
-    N #> 1,
-    N1 #= N - 1.
-wait_continue(N, Rest, Rest) :- N #=< 1.
+    ( N #> 0 ->
+        N1 #= N - 1,
+        ( N1 #> 0 ->
+            obj_acns_obj(ObjIn, [wait(N1)|Rest], ObjOut)
+        ;
+            obj_acns_obj(ObjIn, Rest, ObjOut)
+        ),
+        Status = yielded
+    ;
+        obj_acns_obj(ObjIn, Rest, ObjOut),
+        Status = completed
+    ).
 

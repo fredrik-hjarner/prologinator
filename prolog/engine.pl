@@ -17,7 +17,6 @@
     object_validation/1
 ]).
 :- use_module('./collisions', [detect_collisions/2]).
-:- use_module('./yields', [yields/2]).
 
 % ==========================================================
 % Execution Model: tick_object
@@ -31,12 +30,13 @@
 % -AllRevHints).
 
 % tick_object/4 threads the context.
-% Cmds are now appended directly to CtxNew.
+% Returns result(Status, Obj) where Status is completed,
+% yielded, or despawned.
 tick_object(
     ctx_old(Ctx),
     ctx_new(Ctx),
     obj_old(Obj),
-    obj_new([Obj])
+    result(completed, Obj)
 ) :-
     obj_acns(Obj, []), % guard.
     !. % TODO: Can this cut hurt bidirectionality?
@@ -45,7 +45,7 @@ tick_object(
     ctx_old(CtxOld),
     ctx_new(CtxNew),
     obj_old(ObjOld),
-    obj_new(ObjNew)
+    result(Status, ObjOut)
 ) :-
     object_validation(ObjOld),
     obj_acns(ObjOld, [Act|_Rest]),
@@ -54,26 +54,22 @@ tick_object(
         ctx_new(CtxTemp),
         action(Act),
         obj_old(ObjOld),
-        obj_new(ObjTempList)
+        result(ActStatus, ObjTemp)
     ),
-    if_(=(ObjTempList, []),
-        ( ObjNew = [],
-          CtxNew = CtxTemp
-        ),
-        if_(yields(Act),
-            ( ObjNew = ObjTempList,
-              CtxNew = CtxTemp
-            ),
-            ( % Action finished immediately (did not yield),
-              % recurse
-              ObjTempList = [ObjTemp],
-              tick_object(
-                  ctx_old(CtxTemp),
-                  ctx_new(CtxNew),
-                  obj_old(ObjTemp),
-                  obj_new(ObjNew)
-              )
-            )
+    ( ActStatus = despawned ->
+        Status = despawned,
+        ObjOut = _,
+        CtxNew = CtxTemp
+    ; ActStatus = yielded ->
+        Status = yielded,
+        ObjOut = ObjTemp,
+        CtxNew = CtxTemp
+    ; % ActStatus = completed
+        tick_object(
+            ctx_old(CtxTemp),
+            ctx_new(CtxNew),
+            obj_old(ObjTemp),
+            result(Status, ObjOut)
         )
     ).
 
@@ -125,14 +121,21 @@ tick_objects_loop(LastID, CtxIn, CtxOut) :-
             ctx_old(CtxIn),
             ctx_new(CtxTemp), % Contains spawns/side-effects
             obj_old(TargetObj),
-            obj_new(ObjResultList)
+            result(Status, ObjResult)
         ),
         
         % Update the context with the result of this
-        % specific object (Replace TargetObj with
-        % ObjResultList in CtxTemp)
-        update_object_in_context(
-            CtxTemp, TargetID, ObjResultList, CtxNext
+        % specific object based on status
+        ( Status = despawned ->
+            % Remove object from context
+            update_object_in_context(
+                CtxTemp, TargetID, [], CtxNext
+            )
+        ;
+            % Keep object (yielded or completed)
+            update_object_in_context(
+                CtxTemp, TargetID, [ObjResult], CtxNext
+            )
         ),
         
         % Recurse using the current TargetID as the new

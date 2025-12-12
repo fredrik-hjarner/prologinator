@@ -83,7 +83,7 @@ execute_action(
     ctx_new(CtxNew),
     action(Action),
     obj_old(ObjIn),
-    obj_new(ObjOut)
+    result(Status, ObjOut)
 ) :-
     % 1. Resolve value specs in action
     obj_id(ObjIn, MyID),
@@ -95,7 +95,7 @@ execute_action(
         ctx_new(CtxNew),
         action(ResolvedAction),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(Status, ObjOut)
     ).
 
 % ==========================================================
@@ -109,7 +109,7 @@ execute_action_resolved(
     ctx_new(CtxNew),
     action(Action),
     obj_old(ObjIn),
-    obj_new(ObjOut)
+    result(Status, ObjOut)
 ) :-
     % TODO: action_validation nowadays it almost useless
     %       since custom actions allow anything.
@@ -123,7 +123,7 @@ execute_action_resolved(
             ctx_new(CtxNew),
             action(Action),
             obj_old(ObjIn),
-            obj_new(ObjOut)
+            result(Status, ObjOut)
         )
     ; user_action(Action, Body) -> % absolute prolog voodoo!
         % It's a user-defined action!
@@ -137,7 +137,7 @@ execute_action_resolved(
             ctx_new(CtxNew),
             action(Body),
             obj_old(ObjIn),
-            obj_new(ObjOut)
+            result(Status, ObjOut)
         )
     ;
         % Unknown action

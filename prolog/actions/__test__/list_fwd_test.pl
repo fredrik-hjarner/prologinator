@@ -35,7 +35,7 @@ test("list: expands actions into queue", (
         ctx_new(CtxNew),
         action(list([wait(1), move_to(5, 5, 2)])),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     ObjOut = object(
         id(0), type(static),
@@ -59,7 +59,7 @@ test("list: empty list removes itself", (
         ctx_new(_),
         action(list([])),
         obj_old(ObjIn),
-        obj_new([ObjOut])
+        result(completed, ObjOut)
     ),
     ObjOut = object(
         id(0), type(static),

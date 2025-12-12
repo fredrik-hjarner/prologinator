@@ -20,26 +20,32 @@ execute_action:execute_action_impl(
     ctx_new(Ctx),  % Context unchanged
     action(wait_key_down(KeyCode)),
     obj_old(ObjIn),
-    obj_new([ObjOut])
+    result(Status, ObjOut)
 ) :-
-    execute_wait_key_down(Ctx, KeyCode, ObjIn, ObjOut).
+    execute_wait_key_down(
+        Ctx, KeyCode, ObjIn, Status, ObjOut
+    ).
 
 % ==========================================================
-% execute_wait_key_down/4
+% execute_wait_key_down/5
 % ==========================================================
-execute_wait_key_down(Ctx, KeyCode, ObjIn, ObjOut) :-
+execute_wait_key_down(
+    Ctx, KeyCode, ObjIn, Status, ObjOut
+) :-
     obj_acns(ObjIn, [_|Rest]),
     
     % Check if key was pressed THIS frame
     ( key_down(Ctx, KeyCode) ->
         % Key pressed: action complete
-        obj_acns_obj(ObjIn, Rest, ObjOut)
+        obj_acns_obj(ObjIn, Rest, ObjOut),
+        Status = completed
     ;
         % Key not pressed: keep waiting
         obj_acns_obj(
           ObjIn,
           [wait_key_down(KeyCode)|Rest],
           ObjOut
-        )
+        ),
+        Status = yielded
     ).
 

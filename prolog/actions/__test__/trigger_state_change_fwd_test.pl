@@ -41,19 +41,19 @@ to won", (
         ctx_new(CtxOut),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(completed, ObjOut)
     ),
     ctx_cmds(CtxOut, Commands),
     ctx_status(CtxOut, Status),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    ObjOut = object(
         id(1),
         type(static),
         actions([]),
         collisions([])
-    )],
+    ),
     (Status = won ; err_write("Status != won")),
     (Commands = [] ; err_write("Commands != []"))
 )).
@@ -79,19 +79,19 @@ to lost", (
         ctx_new(CtxOut),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(completed, ObjOut)
     ),
     ctx_cmds(CtxOut, Commands),
     ctx_status(CtxOut, Status),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    ObjOut = object(
         id(1),
         type(static),
         actions([]),
         collisions([])
-    )],
+    ),
     (Status = lost ; err_write("Status != lost")),
     (Commands = [] ; err_write("Commands != []"))
 )).
@@ -118,19 +118,19 @@ override lost", (
         ctx_new(CtxOut),
         action(Action),
         obj_old(ObjIn),
-        obj_new(ObjOut)
+        result(completed, ObjOut)
     ),
     ctx_cmds(CtxOut, Commands),
     ctx_status(CtxOut, Status),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = [object(
+    ObjOut = object(
         id(1),
         type(static),
         actions([]),
         collisions([])
-    )],
+    ),
     (Status = lost ; err_write("Status != lost")),
     (Commands = [] ; err_write("Commands != []"))
 )).
