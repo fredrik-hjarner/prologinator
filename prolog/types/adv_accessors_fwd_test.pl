@@ -4,11 +4,16 @@
     ctx_attr_val_ctx/4
 ]).
 :- use_module('./accessors').
+:- use_module('./constructors', [
+    ctx_with_attrs/2,
+    empty_attr_store/1
+]).
 :- use_module('../util/util', [err_write/1]).
 :- use_module(library(assoc), [
     empty_assoc/1,
     put_assoc/4
 ]).
+:- use_module(library(lists), [member/2]).
 
 % ==========================================================
 % Forward Tests for adv_accessors
@@ -23,16 +28,10 @@ test("ctx_attr_val: read existing attribute", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 5), attr(y, 10)], Attrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(Attrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(1, EmptyAttrs0,
+        [attr(x, 5), attr(y, 10)], Attrs),
+    ctx_with_attrs(Attrs, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -41,23 +40,16 @@ test("ctx_attr_val: read existing attribute", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X = 5; err_write("X != 5")),
-    (Y = 10; err_write("Y != 10"))
+    expect(X = 5),
+    expect(Y = 10)
 )).
 
 test("ctx_attr_val: fails when object doesn't exist", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs),
+    ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
     % Act & Assert
     % ------------------------------------------------------
@@ -68,36 +60,24 @@ test("ctx_attr_val: fails when attribute doesn't exist", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
+    empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 5)], Attrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(Attrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    ctx_with_attrs(Attrs, Ctx),
     % ------------------------------------------------------
     % Act & Assert
     % ------------------------------------------------------
     \+ ctx_attr_val(Ctx, 1/y, _)
 )).
 
-test("ctx_attr_val: enumerate Value from ObjectID and Key", (
+test("ctx_attr_val: enumerate Value from ObjectID and \
+Key", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 5), attr(y, 10)], Attrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(Attrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(1, EmptyAttrs0,
+        [attr(x, 5), attr(y, 10)], Attrs),
+    ctx_with_attrs(Attrs, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -105,27 +85,22 @@ test("ctx_attr_val: enumerate Value from ObjectID and Key", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    member(5, Vals),
-    \+ member(10, Vals)
+    expect(member(5, Vals)),
+    expect(\+ member(10, Vals))
 )).
 
 % ==========================================================
-% Mode: ctx_attr_val_ctx(+CtxIn, +ObjectID/+Key, +Value, -CtxOut)
+% Mode: ctx_attr_val_ctx(+CtxIn, +ObjectID/+Key,
+%   +Value, -CtxOut)
 % ==========================================================
 
-test("ctx_attr_val_ctx: create new attribute on new object", (
+test("ctx_attr_val_ctx: create new attribute on new \
+object", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs),
-    CtxIn = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs),
+    ctx_with_attrs(EmptyAttrs, CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -134,23 +109,16 @@ test("ctx_attr_val_ctx: create new attribute on new object", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X = 5 ; err_write("X!=5"))
+    expect(X = 5)
 )).
 
 test("ctx_attr_val_ctx: add attribute to existing object", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
+    empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 5)], AttrsIn),
-    CtxIn = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(AttrsIn),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    ctx_with_attrs(AttrsIn, CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -160,24 +128,18 @@ test("ctx_attr_val_ctx: add attribute to existing object", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X = 5 ; err_write("X!=5")),
-    (Y = 10 ; err_write("Y!=10"))
+    expect(X = 5),
+    expect(Y = 10)
 )).
 
 test("ctx_attr_val_ctx: replace existing attribute", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 5), attr(y, 10)], AttrsIn),
-    CtxIn = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(AttrsIn),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(1, EmptyAttrs0,
+        [attr(x, 5), attr(y, 10)], AttrsIn),
+    ctx_with_attrs(AttrsIn, CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -187,23 +149,17 @@ test("ctx_attr_val_ctx: replace existing attribute", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X = 20 ; err_write("X!=20")),
-    (Y = 10 ; err_write("Y!=10"))
+    expect(X = 20),
+    expect(Y = 10)
 )).
 
-test("ctx_attr_val_ctx: multiple updates preserve other attributes", (
+test("ctx_attr_val_ctx: multiple updates preserve \
+other attributes", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs),
-    Ctx0 = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs),
+    ctx_with_attrs(EmptyAttrs, Ctx0),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -216,24 +172,17 @@ test("ctx_attr_val_ctx: multiple updates preserve other attributes", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X = 5 ; err_write("X!=5")),
-    (Y = 10 ; err_write("Y!=10")),
-    (HP = 100 ; err_write("HP!=100"))
+    expect(X = 5),
+    expect(Y = 10),
+    expect(HP = 100)
 )).
 
 test("ctx_attr_val_ctx: multiple objects independent", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs),
-    Ctx0 = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs),
+    ctx_with_attrs(EmptyAttrs, Ctx0),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -244,7 +193,7 @@ test("ctx_attr_val_ctx: multiple objects independent", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X1 = 5 ; err_write("X1!=5")),
-    (X2 = 10 ; err_write("X2!=10"))
+    expect(X1 = 5),
+    expect(X2 = 10)
 )).
 

@@ -1,6 +1,7 @@
 % Validation Schemas Module (v2)
 % Defines xod schemas for game types
-% Callers use: validate(Term, validation2:state_schema), etc.
+% Callers use: validate(Term, validation2:state_schema),
+% etc.
 
 :- module(validation2, [
     % Primitive schemas
@@ -60,7 +61,9 @@
 % ==========================================================
 
 % Object type: static, enemy, proj, player, tower
-object_type_schema(enum([static, enemy, proj, player, tower])).
+object_type_schema(enum([
+    static, enemy, proj, player, tower
+])).
 
 % Game status: playing, won, lost
 game_status_schema(enum([playing, won, lost])).
@@ -88,8 +91,7 @@ state_change_content_schema(schema(game_over_schema)).
 % ==========================================================
 
 % Action: various action types (union of all action schemas)
-% Note: despawn_schema (enum) is checked first because it's an atom,
-% not a compound term, so it should be matched before struct schemas
+% Note: despawn_schema checked first (atom, not compound)
 action_schema(union([
     schema(despawn_schema),
     schema(wait_schema),
@@ -130,12 +132,12 @@ loop_schema(struct(loop, [
     actions(list(schema(action_schema)))
 ])).
 
-% Trigger state change: trigger_state_change(Change) where Change is game_over
+% Trigger state change: trigger_state_change(Change)
 trigger_state_change_schema(struct(trigger_state_change, [
     change(schema(state_change_content_schema))
 ])).
 
-% Parallel: parallel_all(Children) where Children is list of actions
+% Parallel: parallel_all(Children) where Children is list
 parallel_all_schema(struct(parallel_all, [
     children(list(schema(action_schema)))
 ])).
@@ -154,7 +156,7 @@ parallel_race_running_schema(struct(parallel_race_running, [
 % Command Schemas
 % ==========================================================
 
-% Command: spawn_request or state_change (union of command schemas)
+% Command: spawn_request or state_change (union)
 command_schema(union([
     schema(spawn_request_schema),
     schema(state_change_schema)
@@ -167,7 +169,7 @@ spawn_request_schema(struct(spawn_request, [
     actions(list(schema(action_schema)))
 ])).
 
-% State change command: state_change(Change) where Change is game_over
+% State change command: state_change(Change)
 state_change_schema(struct(state_change, [
     change(schema(state_change_content_schema))
 ])).
@@ -207,7 +209,8 @@ collisions_schema(struct(collisions, [
     value(list(any))
 ])).
 
-% Object: object(id(ID), type(Type), attrs(Attrs), actions(Actions), collisions(Colls))
+% Object: object(id(ID), type(Type), attrs(Attrs),
+%   actions(Actions), collisions(Colls))
 object_schema(struct(object, [
     id(schema(id_schema)),
     type(schema(type_schema)),
@@ -220,8 +223,9 @@ object_schema(struct(object, [
 % State Schema
 % ==========================================================
 
-% State: state(frame(Frame), objects(Objects), status(Status), 
-% Each argument is a wrapped term like frame(Frame), so we validate:
+% State: state(frame(Frame), objects(Objects),
+%   status(Status), ...
+% Each argument is wrapped term like frame(Frame), validate:
 % - frame(Frame) where Frame is integer >= 0
 % - objects(Objects) where Objects is list of objects
 % - status(Status) where Status is playing/won/lost
@@ -229,28 +233,31 @@ object_schema(struct(object, [
 % - commands(Commands) where Commands is list
 
 % Wrapped term schemas: frame(Frame), objects(Objects), etc.
-% These are structs with arity 1 where the single arg is the value
-% For frame(Frame), we validate that it's frame/1 and Frame is integer
+% These are structs with arity 1 (single arg is value)
+% For frame(Frame), validate frame/1 and Frame is integer
 frame_schema(struct(frame, [
     value(integer(0, _))
 ])).
 
-% For objects(Objects), we validate that it's objects/1 and Objects is a list
+% For objects(Objects), validate objects/1 and
+%   Objects is list
 objects_schema(struct(objects, [
     value(list(schema(object_schema)))
 ])).
 
-% For status(Status), we validate that it's status/1 and Status is enum
+% For status(Status), validate status/1 and Status is enum
 status_schema(struct(status, [
     value(schema(game_status_schema))
 ])).
 
-% For next_id(NextID), we validate that it's next_id/1 and NextID is integer
+% For next_id(NextID), validate next_id/1 and
+%   NextID is integer
 next_id_schema(struct(next_id, [
     value(integer(1, _))
 ])).
 
-% For commands(Commands), we validate that it's commands/1 and Commands is a list
+% For commands(Commands), validate commands/1 and
+%   Commands is list
 commands_schema(struct(commands, [
     value(list(schema(command_schema)))
 ])).
@@ -417,7 +424,9 @@ test("game_state_validation: invalid status fails", (
         next_id(1),
         commands([])
     ),
-    expect_exception(validate(State, validation2:state_schema))
+    expect_exception(
+        validate(State, validation2:state_schema)
+    )
 )).
 
 test("game_state_validation: non-integer frame fails", (
@@ -428,7 +437,9 @@ test("game_state_validation: non-integer frame fails", (
         next_id(1),
         commands([])
     ),
-    expect_exception(validate(State, validation2:state_schema))
+    expect_exception(
+        validate(State, validation2:state_schema)
+    )
 )).
 
 % TODO: xod does not support such validation.
@@ -448,7 +459,9 @@ test("game_state_validation: non-integer frame fails", (
 %         commands([]),
 %         
 %     ),
-%     expect_exception(validate(State, validation2:state_schema))
+%     expect_exception(
+%         validate(State, validation2:state_schema)
+%     )
 % )).
 
 test("object_validation: wrong structure (ID not \
@@ -460,7 +473,9 @@ wrapped) throws", (
         actions([]),
         collisions([])
     ),
-    expect_exception(validate(Obj, validation2:object_schema))
+    expect_exception(
+        validate(Obj, validation2:object_schema)
+    )
 )).
 
 test("object_validation: invalid object type fails", (
@@ -471,24 +486,34 @@ test("object_validation: invalid object type fails", (
         actions([]),
         collisions([])
     ),
-    expect_exception(validate(Obj, validation2:object_schema))
+    expect_exception(
+        validate(Obj, validation2:object_schema)
+    )
 )).
 
 test("command_validation: invalid spawn type fails", (
     Cmd = spawn_request(invalid_type, pos(0, 0), []),
-    expect_exception(validate(Cmd, validation2:command_schema))
+    expect_exception(
+        validate(Cmd, validation2:command_schema)
+    )
 )).
 
 test("command_validation: invalid pos in spawn fails", (
     Cmd = spawn_request(static, not_a_pos, []),
-    expect_exception(validate(Cmd, validation2:command_schema))
+    expect_exception(
+        validate(Cmd, validation2:command_schema)
+    )
 )).
 
 test("pos_validation: non-integer coords fail via action", (
     Action1 = spawn(static, pos(not_int, 10), []),
-    expect_exception(validate(Action1, validation2:action_schema)),
+    expect_exception(
+        validate(Action1, validation2:action_schema)
+    ),
     Action2 = spawn(static, pos(10, not_int), []),
-    expect_exception(validate(Action2, validation2:action_schema))
+    expect_exception(
+        validate(Action2, validation2:action_schema)
+    )
 )).
 
 test("action_validation: invalid wait fails", (
@@ -499,18 +524,28 @@ test("action_validation: invalid wait fails", (
 
 test("action_validation: invalid move_to fails", (
     Action1 = move_to(not_int,10,5),
-    expect_exception(validate(Action1, validation2:action_schema)),
+    expect_exception(
+        validate(Action1, validation2:action_schema)
+    ),
     Action2 = move_to(10,not_int,5),
-    expect_exception(validate(Action2, validation2:action_schema)),
+    expect_exception(
+        validate(Action2, validation2:action_schema)
+    ),
     Action3 = move_to(10,10,not_int),
-    expect_exception(validate(Action3, validation2:action_schema))
+    expect_exception(
+        validate(Action3, validation2:action_schema)
+    )
 )).
 
 test("action_validation: invalid spawn action fails", (
     Action1 = spawn(invalid_type, pos(0, 0), []),
-    expect_exception(validate(Action1, validation2:action_schema)),
+    expect_exception(
+        validate(Action1, validation2:action_schema)
+    ),
     Action2 = spawn(static, not_a_pos, []),
-    expect_exception(validate(Action2, validation2:action_schema))
+    expect_exception(
+        validate(Action2, validation2:action_schema)
+    )
 )).
 
 % ----------------------------------------------------------
@@ -528,7 +563,9 @@ test("game_state_validation: wrong arity throws", (
         status(playing),
         next_id(1)
     ),
-    expect_exception(validate(State, validation2:state_schema))
+    expect_exception(
+        validate(State, validation2:state_schema)
+    )
 )).
 
 test("game_state_validation: wrong functor throws", (
@@ -540,14 +577,18 @@ test("game_state_validation: wrong functor throws", (
         next_id(1),
         commands([])
     ),
-    expect_exception(validate(State, validation2:state_schema))
+    expect_exception(
+        validate(State, validation2:state_schema)
+    )
 )).
 
 test("object_validation: wrong arity throws", (
     Obj = object(
         id(0), type(static), attrs([]), actions([])
     ),
-    expect_exception(validate(Obj, validation2:object_schema))
+    expect_exception(
+        validate(Obj, validation2:object_schema)
+    )
 )).
 
 test("object_validation: wrong functor throws", (
@@ -558,47 +599,65 @@ test("object_validation: wrong functor throws", (
         actions([]),
         collisions([])
     ),
-    expect_exception(validate(Obj, validation2:object_schema))
+    expect_exception(
+        validate(Obj, validation2:object_schema)
+    )
 )).
 
 test("spawn_request_validation: wrong arity throws", (
     Cmd = spawn_request(enemy, pos(0, 0)),
-    expect_exception(validate(Cmd, validation2:spawn_request_schema))
+    expect_exception(
+        validate(Cmd, validation2:spawn_request_schema)
+    )
 )).
 
 test("spawn_request_validation: wrong functor throws", (
     Cmd = not_spawn_request(enemy, pos(0, 0), []),
-    expect_exception(validate(Cmd, validation2:spawn_request_schema))
+    expect_exception(
+        validate(Cmd, validation2:spawn_request_schema)
+    )
 )).
 
 test("state_change_validation: wrong structure throws", (
     Cmd = not_state_change(game_over(won)),
-    expect_exception(validate(Cmd, validation2:state_change_schema))
+    expect_exception(
+        validate(Cmd, validation2:state_change_schema)
+    )
 )).
 
 test("pos_validation: wrong arity throws", (
     Pos = pos(0),
-    expect_exception(validate(Pos, validation2:pos_schema))
+    expect_exception(
+        validate(Pos, validation2:pos_schema)
+    )
 )).
 
 test("pos_validation: wrong functor throws", (
     Pos = not_pos(0, 0),
-    expect_exception(validate(Pos, validation2:pos_schema))
+    expect_exception(
+        validate(Pos, validation2:pos_schema)
+    )
 )).
 
 test("action_validation: wrong structure throws", (
     Action = not_an_action(1, 2, 3),
-    expect_exception(validate(Action, validation2:action_schema))
+    expect_exception(
+        validate(Action, validation2:action_schema)
+    )
 )).
 
 test("action_validation: move_to wrong arity throws", (
     Action = move_to(10, 20),
-    expect_exception(validate(Action, validation2:action_schema))
+    expect_exception(
+        validate(Action, validation2:action_schema)
+    )
 )).
 
 test("action_validation: spawn wrong arity throws", (
     Action = spawn(enemy, pos(0, 0)),
-    expect_exception(validate(Action, validation2:action_schema))
+    expect_exception(
+        validate(Action, validation2:action_schema)
+    )
 )).
 
 test("action_validation: despawn", (
@@ -612,7 +671,8 @@ test("action_validation: despawn", (
 % unbound variables in actions, which is needed for
 % backward execution/inference in execute_action.pl
 
-test("action_validation: spawn with unbound variables passes", (
+test("action_validation: spawn with unbound variables \
+passes", (
     Action = spawn(Type, Pos, Actions),
     % Type, Pos, and Actions are unbound - should pass
     validate(Action, validation2:action_schema),
@@ -622,7 +682,8 @@ test("action_validation: spawn with unbound variables passes", (
     var(Actions)
 )).
 
-test("action_validation: loop with unbound actions passes", (
+test("action_validation: loop with unbound actions \
+passes", (
     Action = loop(Actions),
     % Actions is unbound - should pass
     validate(Action, validation2:action_schema),
@@ -630,7 +691,8 @@ test("action_validation: loop with unbound actions passes", (
     var(Actions)
 )).
 
-test("action_validation: trigger_state_change with unbound change passes", (
+test("action_validation: trigger_state_change with \
+unbound change passes", (
     Action = trigger_state_change(Change),
     % Change is unbound - should pass
     validate(Action, validation2:action_schema),
@@ -646,7 +708,8 @@ test("action_validation: wait with unbound N passes", (
     var(N)
 )).
 
-test("action_validation: move_to with unbound coordinates passes", (
+test("action_validation: move_to with unbound coordinates \
+passes", (
     Action = move_to(X, Y, Frames),
     % X, Y, and Frames are unbound - should pass
     validate(Action, validation2:action_schema),
@@ -656,9 +719,11 @@ test("action_validation: move_to with unbound coordinates passes", (
     var(Frames)
 )).
 
-test("action_validation: spawn with partially bound variables passes", (
+test("action_validation: spawn with partially bound \
+variables passes", (
     Action = spawn(enemy, Pos, Actions),
-    % Pos and Actions are unbound, Type is bound - should pass
+    % Pos and Actions are unbound, Type is bound -
+    %   should pass
     validate(Action, validation2:action_schema),
     % Verify unbound variables are still unbound
     var(Pos),

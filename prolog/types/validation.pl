@@ -69,8 +69,9 @@
 % format_/2: Outputs format message only if
 % VALIDATION_ERR_MSG is not set to "false"
 format_(Format, Args) :-
-    ( getenv("VALIDATION_ERR_MSG", "false") ->
-        true  % Suppress output
+    ( catch(getenv("VALIDATION_ERR_MSG", Value), _, fail),
+      Value = "false" ->
+        true  % Suppress when set to "false"
     ;
         format(Format, Args)  % Output normally
     ).
@@ -346,6 +347,19 @@ state_change_validation_helper(game_over(lost)).
 % Helper validation predicates
 % ==========================================================
 
+% Helper: Check if term is an integer or evaluates to an
+% integer
+% Handles both direct integers (20) and arithmetic
+% expressions (-(20), -Amp, etc.)
+integer_or_evaluable(Term) :-
+    ( integer(Term) ->
+        true
+    ; catch((Eval is Term, integer(Eval)), _, fail) ->
+        true
+    ;
+        fail
+    ).
+
 object_type_validation(static).
 object_type_validation(enemy).
 object_type_validation(proj).
@@ -516,7 +530,7 @@ action_validation_helper(Term) :-
         ; Term = move_delta(Frames, _DX, _DY) ->
             % Structure matches, validate content
             ( ground(Frames) ->
-                integer(Frames)
+                integer_or_evaluable(Frames)
             ;
                 true
             )

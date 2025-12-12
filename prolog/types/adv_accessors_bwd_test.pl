@@ -4,9 +4,12 @@
     ctx_attr_val_ctx/4
 ]).
 :- use_module('./accessors').
+:- use_module('./constructors', [
+    ctx_with_attrs/2,
+    empty_attr_store/1
+]).
 :- use_module('../util/util', [err_write/1]).
 :- use_module(library(assoc), [
-    empty_assoc/1,
     put_assoc/4
 ]).
 :- use_module(library(lists), [member/2]).
@@ -35,18 +38,11 @@ value", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
+    empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 5)], Attrs1),
     put_assoc(2, Attrs1, [attr(x, 10)], Attrs2),
     put_assoc(3, Attrs2, [attr(x, 5)], Attrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(Attrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    ctx_with_attrs(Attrs, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -64,16 +60,10 @@ value", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 5), attr(y, 10)], Attrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(Attrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(1, EmptyAttrs0,
+        [attr(x, 5), attr(y, 10)], Attrs),
+    ctx_with_attrs(Attrs, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -90,17 +80,10 @@ value", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 5), attr(y, 10), attr(hp, 100)],
-              Attrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(Attrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(1, EmptyAttrs0,
+        [attr(x, 5), attr(y, 10), attr(hp, 100)], Attrs),
+    ctx_with_attrs(Attrs, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -118,17 +101,10 @@ from known Key and Value", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
+    empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 5)], Attrs1),
     put_assoc(2, Attrs1, [attr(x, 10)], Attrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(Attrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    ctx_with_attrs(Attrs, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -136,24 +112,18 @@ from known Key and Value", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (ID = 1 ; err_write("ID!=1"))
+    expect(ID = 1)
 )).
 
-test("ctx_attr_val: enumerate ObjectID and Value from Key", (
+test("ctx_attr_val: enumerate ObjectID and Value from \
+Key", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
+    empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 5)], Attrs1),
     put_assoc(2, Attrs1, [attr(x, 10)], Attrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(Attrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    ctx_with_attrs(Attrs, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -165,20 +135,15 @@ test("ctx_attr_val: enumerate ObjectID and Value from Key", (
     member(2-10, Pairs)
 )).
 
-test("ctx_attr_val: enumerate Key and Value from ObjectID", (
+test("ctx_attr_val: enumerate Key and Value from \
+ObjectID", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 5), attr(y, 10)], Attrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(Attrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(1, EmptyAttrs0,
+        [attr(x, 5), attr(y, 10)], Attrs),
+    ctx_with_attrs(Attrs, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -194,17 +159,10 @@ test("ctx_attr_val: enumerate all from Value", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs0),
+    empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 5)], Attrs1),
     put_assoc(2, Attrs1, [attr(y, 5)], Attrs),
-    Ctx = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(Attrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    ctx_with_attrs(Attrs, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -217,13 +175,18 @@ test("ctx_attr_val: enumerate all from Value", (
 )).
 
 % ==========================================================
-% Mode: ctx_attr_val_ctx(+CtxIn, -ObjectID/-Key, +Value, -CtxOut)
+% Mode: ctx_attr_val_ctx(+CtxIn, -ObjectID/-Key,
+%   +Value, -CtxOut)
 % ==========================================================
 % NOTE: Untested modes with non-ground CtxIn:
-%   - ctx_attr_val_ctx(-CtxIn, +ObjectID/+Key, +Value, -CtxOut)
-%   - ctx_attr_val_ctx(-CtxIn, -ObjectID/+Key, +Value, -CtxOut)
-%   - ctx_attr_val_ctx(-CtxIn, +ObjectID/-Key, +Value, -CtxOut)
-%   - ctx_attr_val_ctx(-CtxIn, -ObjectID/-Key, +Value, -CtxOut)
+%   - ctx_attr_val_ctx(-CtxIn, +ObjectID/+Key,
+%       +Value, -CtxOut)
+%   - ctx_attr_val_ctx(-CtxIn, -ObjectID/+Key,
+%       +Value, -CtxOut)
+%   - ctx_attr_val_ctx(-CtxIn, +ObjectID/-Key,
+%       +Value, -CtxOut)
+%   - ctx_attr_val_ctx(-CtxIn, -ObjectID/-Key,
+%       +Value, -CtxOut)
 %   (All modes where CtxIn is non-ground are untested)
 
 test("ctx_attr_val_ctx: can use non-ground Key for \
@@ -231,15 +194,8 @@ writes (attr/2 format enables bidirectionality)", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs),
-    CtxIn = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs),
+    ctx_with_attrs(EmptyAttrs, CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -256,15 +212,8 @@ writes", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs),
-    CtxIn = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs),
+    ctx_with_attrs(EmptyAttrs, CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -276,20 +225,13 @@ writes", (
     ctx_attr_val(CtxOut, 1/x, 5)
 )).
 
-test("ctx_attr_val_ctx: can use non-ground ObjectID and Key \
-for writes", (
+test("ctx_attr_val_ctx: can use non-ground ObjectID \
+and Key for writes", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    empty_assoc(EmptyAttrs),
-    CtxIn = ctx(state(
-        frame(0),
-        objects([]),
-        attrs(EmptyAttrs),
-        status(playing),
-        next_id(1),
-        commands([])
-    )),
+    empty_attr_store(EmptyAttrs),
+    ctx_with_attrs(EmptyAttrs, CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------

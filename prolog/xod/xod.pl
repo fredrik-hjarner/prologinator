@@ -313,8 +313,9 @@ expect_exception(Goal) :-
 % format_/2: Outputs format message only if
 % VALIDATION_ERR_MSG is not set to "false"
 format_(Format, Args) :-
-    ( getenv("VALIDATION_ERR_MSG", "false") ->
-        true  % Suppress output
+    ( catch(getenv("VALIDATION_ERR_MSG", Value), _, fail),
+      Value = "false" ->
+        true  % Suppress when set to "false"
     ;
         format(Format, Args)  % Output normally
     ).
