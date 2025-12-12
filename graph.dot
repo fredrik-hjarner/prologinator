@@ -18,7 +18,6 @@ digraph G {
   "execute_action_impl" -> "execute_move_to";
   "execute_action_impl" -> "execute_noop";
   "execute_action_impl" -> "execute_parallel_all";
-  "execute_action_impl" -> "execute_parallel_all_running";
   "execute_action_impl" -> "execute_parallel_race";
   "execute_action_impl" -> "execute_parallel_race_running";
   "execute_action_impl" -> "execute_repeat";
@@ -32,13 +31,10 @@ digraph G {
   "execute_action_resolved" -> "builtin_action";
   "execute_action_resolved" -> "execute_action";
   "execute_action_resolved" -> "execute_action_impl";
-  "execute_parallel_all" -> "filter_running_actions";
-  "execute_parallel_all" -> "tick_all";
-  "execute_parallel_all_running" -> "execute_action";
+  "execute_parallel_all" -> "tick_children";
   "execute_parallel_race" -> "tick_race";
   "execute_parallel_race_running" -> "execute_action";
   "execute_trigger_state_change" -> "update_status";
-  "execute_wait" -> "wait_continue";
   "execute_wait_key_down" -> "key_down";
   "execute_wait_key_held" -> "key_held";
   "execute_wait_key_up" -> "key_up";
@@ -51,21 +47,18 @@ digraph G {
   "resolve_action" -> "resolve_arg";
   "resolve_arg" -> "resolve_path";
   "run_child" -> "execute_action";
-  "run_parallel_all_child" -> "execute_action";
   "tick" -> "detect_collisions";
   "tick" -> "increment_frame";
   "tick" -> "tick_all_objects";
-  "tick_all" -> "run_parallel_all_child";
-  "tick_all" -> "update_obj_attrs";
   "tick_all_objects" -> "tick_objects_loop";
+  "tick_children" -> "tick_object";
   "tick_object" -> "execute_action";
-  "tick_object" -> "yields";
   "tick_objects_loop" -> "find_next_object";
   "tick_objects_loop" -> "tick_object";
   "tick_objects_loop" -> "update_object_in_context";
   "tick_race" -> "extract_action";
+  "tick_race" -> "ignore_child_result";
   "tick_race" -> "is_child_done";
   "tick_race" -> "run_child";
-  "tick_race" -> "update_obj_attrs";
   "update_object_in_context" -> "replace_by_id";
 }

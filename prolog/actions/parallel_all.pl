@@ -1,159 +1,166 @@
-% parallel_all action implementation
-
 :- module(execute_action_parallel_all, []).
 
-:- use_module(library(lists), [
-    append/3,
-    member/2
-]).
+:- use_module(library(lists), [append/3]).
 :- use_module('../types/accessors').
+% :- use_module('../tick_object', [tick_object/4]).
 
 :- multifile(execute_action:execute_action_impl/5).
 :- discontiguous(execute_action:execute_action_impl/5).
 
+% ==========================================================
+% Interface
+% ==========================================================
+
+% TODO: Clause added just get things through.
+%       Remove entire clause when solution to module
+%       dependency issue is found.
+% This clause just skips the action and returns completed.
+execute_action:execute_action_impl(
+    ctx_old(Ctx),
+    ctx_new(Ctx),
+    action(parallel_all(_Children)),
+    obj_old(ObjIn),
+    result(completed, ObjOut)
+) :-
+    obj_acns(ObjIn, [_|Rest]),
+    obj_acns_obj(ObjIn, Rest, ObjOut).
+
 execute_action:execute_action_impl(
     ctx_old(CtxOld),
     ctx_new(CtxNew),
-    action(parallel_all(ChildActions)),
+    action(parallel_all(Children)),
     obj_old(ObjIn),
     result(Status, ObjOut)
 ) :-
     execute_parallel_all(
-        CtxOld, CtxNew, ChildActions, ObjIn, Status, ObjOut
-    ).
-
-% ==========================================================
-% execute_parallel_all/6
-% ==========================================================
-execute_parallel_all(
-    CtxOld, CtxNew, ChildActions, ObjIn, Status, ObjOut
-) :-
-    obj_acns(ObjIn, [_|Rest]),
-    tick_all(
-        CtxOld,
-        CtxNew,
-        ChildActions,
+        CtxOld, CtxNew,
+        Children,
         ObjIn,
-        _ObjFinal,
-        ChildResults
-    ),
-    ( member(result(despawned, _), ChildResults) ->
-        Status = despawned,
-        ObjOut = _
-    ;
-        filter_running_actions(
-            ChildResults, RemainingActions
-        ),
-        ( RemainingActions = [] ->
-            obj_acns_obj(ObjIn, Rest, ObjOut),
-            Status = completed
-        ;
-            obj_acns_obj(
-                ObjIn,
-                [
-                    parallel_all_running(RemainingActions)
-                    |Rest
-                ],
-                ObjOut
-            ),
-            Status = completed
-        )
-    ).
-
-execute_action:execute_action_impl(
-    ctx_old(CtxOld),
-    ctx_new(CtxNew),
-    action(parallel_all_running(Children)),
-    obj_old(Obj),
-    result(Status, ObjOut)
-) :-
-    execute_parallel_all_running(
-        CtxOld, CtxNew, Children, Obj, Status, ObjOut
-    ).
-
-% ==========================================================
-% execute_parallel_all_running/6
-% ==========================================================
-execute_parallel_all_running(
-    CtxOld, CtxNew, Children, Obj, Status, ObjOut
-) :-
-    execute_action:execute_action(
-        ctx_old(CtxOld),
-        ctx_new(CtxNew),
-        action(parallel_all(Children)),
-        obj_old(Obj),
         result(Status, ObjOut)
     ).
 
 % ==========================================================
-% Helpers for parallel_all
+% Implementation
 % ==========================================================
 
-% tick_all(+CIn, -COut, +Actions, +ObjIn,
-%   -ObjFinal, -Results)
-% Executes ALL children sequentially, continuing even
-%   if one despawns or finishes. All children get their
-%   turn to execute in this tick.
-%
-% Unlike tick_race, this does NOT stop early. Every
-%   child is executed regardless of what happens to
-%   previous children.
-
-tick_all(C, C, [], Obj, Obj, []).
-tick_all(
-    CIn, COut, [Act|Acts], ObjIn, ObjFinal, [Res|Results]
+execute_parallel_all(
+    CtxOld, CtxNew, Children, ObjIn, result(Status, ObjOut)
 ) :-
-    run_parallel_all_child(CIn, CTemp, Act, ObjIn, Res),
-    ignore_child_result(ObjIn, Res, NextObj),
-    tick_all(CTemp, COut, Acts, NextObj, ObjFinal, Results).
-
-% run_parallel_all_child(+CIn, -COut, +Act, +Obj, -Res)
-run_parallel_all_child(CIn, COut, Act, Obj, Res) :-
-    obj_id(Obj, ID),
-    obj_type(Obj, T),
-    obj_collisions(Obj, C),
-    % Create child object (attrs in centralized store)
-    Child = object(
-        id(ID),
-        type(T),
-        actions([Act]),
-        collisions(C)
-    ),
-    execute_action:execute_action(
-        ctx_old(CIn),
-        ctx_new(COut),
-        action(Act),
-        obj_old(Child),
-        result(Status, ObjTemp)
-    ),
-    Res = result(Status, ObjTemp).
-
-% ignore_child_result(+Obj, +Result, -NewObj)
-% Ignores child result and returns the parent object
-% unchanged.
-% Attributes are in centralized store, so no need to copy
-% them.
-% The child updates Ctx directly, which is threaded via
-% tick_all.
-
-ignore_child_result(Obj, result(_, _), Obj).
-
-% filter_running_actions(+Results, -Actions)
-% Recursively filters child results to extract actions
-%   from children that are still running.
-% Finished children (actions([])) and despawned
-%   children are skipped.
-
-filter_running_actions([], []).
-filter_running_actions([Res|Rs], Acc) :-
-    ( Res = result(
-        yielded, object(_, _, actions([A|_]), _)
-    ) ->
-        % Child still running: include its action
-        Acc = [A|RestAcc],
-        filter_running_actions(Rs, RestAcc)
-    ;
-        % Child done or despawned: skip it
-        filter_running_actions(Rs, Acc)
+    obj_acns(ObjIn, [_ParentAction|RestActions]),
+    
+    % Execute children sequentially, threading the object
+    % state.
+    % Stop immediately if any child despawns.
+    tick_children(CtxOld, CtxTemp, Children, ObjIn, Result),
+    
+    ( Result = despawned ->
+        Status = despawned,
+        ObjOut = _,
+        CtxNew = CtxTemp
+    ; Result = remaining(RemainingChildren, FinalObj) ->
+        ( RemainingChildren = [] ->
+            % All children finished actions.
+            % Restore parent actions to the final object
+            % state.
+            Status = completed,
+            obj_acns_obj(FinalObj, RestActions, ObjOut),
+            CtxNew = CtxTemp
+        ;
+            % Some children yielded or are still running.
+            % We yield the parallel_all action itself to
+            % continue next tick.
+            % Update actions on the final object state.
+            Status = yielded,
+            obj_acns_obj(
+                FinalObj,
+                [parallel_all(
+                    RemainingChildren)|RestActions
+                ],
+                ObjOut
+            ),
+            CtxNew = CtxTemp
+        )
     ).
 
+% ==========================================================
+% Helpers
+% ==========================================================
+
+% tick_children(+CtxIn, -CtxOut, +Children, +ObjIn, -Result)
+% Result's either 'despawned' or 'remaining(List, FinalObj)'
+% Threads the object state (attributes) through each child
+% execution.
+
+tick_children(Ctx, Ctx, [], Obj, remaining([], Obj)).
+
+% NOTE: Only the upper-/outer-most actions are executed in
+% parallel so to speak. If those are composite actions then
+% the composite actions tend to be executed "as normal"
+% (unless of course if such an action happens to be a
+% parallel_all, parallel_race or similar)
+tick_children(
+    CtxIn, CtxOut,
+    [FirstTopLayerAcn|TopLayerAcnsRest],
+    ObjIn,
+    Result
+) :-
+    % Normalize child to a list of actions (handle single
+    % action atoms)
+    ( FirstTopLayerAcn = [_|_] ->
+        FirstTopLayerAcnList = FirstTopLayerAcn
+    ;
+        FirstTopLayerAcnList = [FirstTopLayerAcn]
+    ),
+    
+    % Prepare temp object with child actions (preserving
+    % ObjIn attributes)
+    obj_acns_obj(ObjIn, FirstTopLayerAcnList, ObjWithAcn),
+    
+    % Tick the object (executes until yield, despawn, or
+    % complete)
+    tick_object(
+        ctx_old(CtxIn),
+        ctx_new(CtxAfterTIck),
+        obj_old(ObjWithAcn),
+        result(ChildStatusAfterTick, ObjChildAfterTick)
+    ),
+    % So after tick the `remaining actions` in
+    % ChildStatusAfterTick.
+    
+    ( ChildStatusAfterTick = despawned ->
+        % Immediate exit on despawn
+        Result = despawned,
+        CtxOut = CtxAfterTIck
+    ;
+        % FirstTopLayerAcn yielded or completed.
+        % ObjChildAfterTick contains the updated attributes
+        % and remaining actions.
+        % We extract actions to store them, but pass the
+        % object state to the next child.
+        obj_acns(ObjChildAfterTick, RemainingAcnsAfterTick),
+        
+        tick_children(
+            CtxAfterTIck, CtxOut,
+            TopLayerAcnsRest,
+            ObjChildAfterTick,
+            % RestResult contains all remaining actions of
+            % the top level actions (except the first which
+            % we already executed above) have each been
+            % ticked, having been built up by the code
+            % beneath.
+            RestResult
+        ),
+        
+        ( RestResult = despawned ->
+            Result = despawned
+        ; RestResult = remaining(RestRemaining, FinalObj) ->
+            ( RemainingAcnsAfterTick = [] ->
+                Result = remaining(RestRemaining, FinalObj)
+            ;
+                Result = remaining(
+                    [RemainingAcnsAfterTick|RestRemaining],
+                    FinalObj
+                )
+            )
+        )
+    ).

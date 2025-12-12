@@ -1,4 +1,4 @@
-:- module(engine, [tick/2, tick_object/4]).
+:- module(engine, [tick/2]).
 
 :- use_module(library(clpz)).
 :- use_module(library(lists), [
@@ -7,71 +7,13 @@
 ]).
 :- use_module(library(reif), [if_/3, (=)/3]).
 :- use_module(library(dif), [dif/2]).
-:- use_module('./execute_action', [
-    execute_action/5, user_action/2
-]).
 :- use_module('./types/accessors'). % import all. so many...
 :- use_module('./types/validation', [
     context_validation/1,
-    state_validation/1,
-    object_validation/1
+    state_validation/1
 ]).
 :- use_module('./collisions', [detect_collisions/2]).
-
-% ==========================================================
-% Execution Model: tick_object
-% ==========================================================
-
-% TODO: Add a tick_object wrapper that wraps a
-% tick_object_impl. though refactorings are needed first...
-
-% % forward execution
-% :- pred tick_object(+ObjIn, -ObjOut, -AllCommands,
-% -AllRevHints).
-
-% tick_object/4 threads the context.
-% Returns result(Status, Obj) where Status is completed,
-% yielded, or despawned.
-tick_object(
-    ctx_old(Ctx),
-    ctx_new(Ctx),
-    obj_old(Obj),
-    result(completed, Obj)
-) :-
-    obj_acns(Obj, []), % guard.
-    !. % TODO: Can this cut hurt bidirectionality?
-
-tick_object(
-    ctx_old(CtxOld),
-    ctx_new(CtxNew),
-    obj_old(ObjOld),
-    result(Status, ObjOut)
-) :-
-    object_validation(ObjOld),
-    obj_acns(ObjOld, [Act|_Rest]),
-    execute_action(
-        ctx_old(CtxOld),
-        ctx_new(CtxTemp),
-        action(Act),
-        obj_old(ObjOld),
-        result(ActStatus, ObjTemp)
-    ),
-    ( ActStatus = despawned ->
-        Status = despawned,
-        ObjOut = _,
-        CtxNew = CtxTemp
-    ; ActStatus = yielded ->
-        Status = yielded,
-        ObjOut = ObjTemp,
-        CtxNew = CtxTemp
-    ; % ActStatus = completed
-        tick_object(
-            ctx_old(CtxTemp),
-            ctx_new(CtxNew),
-            obj_old(ObjTemp),
-            result(Status, ObjOut)
-        )
-    ).
+:- use_module('./tick_object', [tick_object/4]).
 
 % ==========================================================
 % Main Tick Function
