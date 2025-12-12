@@ -202,5 +202,3 @@ ignored", (
     NewObjects = Objects  % No objects removed
 )).
 
-:- discontiguous(test/2).
-

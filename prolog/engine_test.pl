@@ -296,5 +296,3 @@ run_ticks(ctx_in(CtxIn), N, ctx_out(CtxOut)) :-
     tick(ctx_in(CtxIn), ctx_out(CtxNext)),
     N1 is N - 1,
     run_ticks(ctx_in(CtxNext), N1, ctx_out(CtxOut)).
-
-:- discontiguous(test/2).

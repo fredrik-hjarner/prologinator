@@ -462,8 +462,6 @@ test_rev_hint_schema(struct(rev_hint, [
 % TEST RUNNER
 % ================================================
 
-:- discontiguous(test/2).
-
 % Test: valid game_state passes
 test("valid game_state", (
     State = game_state(
