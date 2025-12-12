@@ -13,4 +13,7 @@
     "prolog.format.addSpace": true,
     // "prolog.linter.enableMsgInOutput": true,
     "prolog.linter.enableMsgInOutput": false,
+    "files.associations": {
+        "*.pp": "c"
+    }
 }

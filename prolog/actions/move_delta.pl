@@ -1,13 +1,5 @@
 % move_delta action implementation
 
-:- module(execute_action_move_delta, []).
-
-:- use_module(library(clpz)).
-:- use_module('../types/accessors').
-:- use_module('../types/adv_accessors').
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
 
 % move_delta(+Frames, +DX, +DY)
 % Mode: move_delta(+Frames, +DX, +DY)
@@ -15,7 +7,7 @@
 %   each frame for Frames frames
 % Yields: true when Frames > 0
 
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(Ctx),
     ctx_new(CtxOut),
     action(move_delta(Frames, DX, DY)),

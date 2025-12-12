@@ -1,15 +1,8 @@
 % set_attr action implementation
 
-:- module(execute_action_set_attr, []).
-
-:- use_module('../types/accessors').
-:- use_module('../types/adv_accessors').
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
 
 % set_attr/2 - Set attribute on self
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(Ctx),
     ctx_new(CtxOut),
     action(set_attr(Key, Value)),
@@ -26,7 +19,7 @@ execute_action:execute_action_impl(
     ).
 
 % set_attr/3 - Set attribute on specific object
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(Ctx),
     ctx_new(CtxOut),
     action(set_attr(TargetID, Key, Value)),

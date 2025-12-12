@@ -1,20 +1,3 @@
-:- module(engine, [tick/2]).
-
-:- use_module(library(clpz)).
-:- use_module(library(lists), [
-    append/3,
-    member/2
-]).
-:- use_module(library(reif), [if_/3, (=)/3]).
-:- use_module(library(dif), [dif/2]).
-:- use_module('./types/accessors'). % import all. so many...
-:- use_module('./types/validation', [
-    context_validation/1,
-    state_validation/1
-]).
-:- use_module('./collisions', [detect_collisions/2]).
-:- use_module('./tick_object', [tick_object/4]).
-
 % ==========================================================
 % Main Tick Function
 % ==========================================================
@@ -118,5 +101,4 @@ replace_by_id([Obj|Rest], TargetID, Replacement, Result) :-
         Result = [Obj|NewRest],
         replace_by_id(Rest, TargetID, Replacement, NewRest)
     ).
-
 

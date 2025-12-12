@@ -1,10 +1,6 @@
 :- module(collisions_fwd_test, []).
-:- use_module('./collisions', [detect_collisions/2]).
-:- use_module('./types/accessors').
-:- use_module('./types/constructors', [
-    ctx_with_attrs/2,
-    empty_attr_store/1
-]).
+
+:- use_module('../build/prologinator').
 :- use_module(library(assoc), [
     empty_assoc/1,
     put_assoc/4

@@ -1,5 +1,4 @@
 % Test file for macros.pl - isolated test bubble
-:- use_module('./macros').
 
 % Define some test constants
 define(max_players, 4).

@@ -1,13 +1,5 @@
 % wait_key_up action implementation
 
-:- module(execute_action_wait_key_up, []).
-
-:- use_module('../types/accessors').
-:- use_module('../types/adv_accessors').
-:- use_module('../input_helpers', [key_up/2]).
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
 
 % wait_key_up(+KeyCode)
 % Mode: wait_key_up(+KeyCode)
@@ -15,7 +7,7 @@
 %   (detects 'up' event for the key)
 % Yields: false (checks each frame)
 
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(Ctx),
     ctx_new(Ctx),  % Context unchanged
     action(wait_key_up(KeyCode)),

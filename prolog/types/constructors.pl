@@ -2,16 +2,6 @@
 % Provides constructors for common empty/default structures.
 % Useful for shortening test code substantially.
 
-:- module(constructors, [
-    empty_ctx/1,
-    ctx_with_attrs/2,
-    ctx_with_frame_attrs/3,
-    empty_attr_store/1
-]).
-
-:- use_module(library(assoc), [empty_assoc/1]).
-:- use_module('./accessors').
-
 % ==========================================================
 % Context Constructors
 % ==========================================================

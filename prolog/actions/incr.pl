@@ -1,16 +1,8 @@
 % incr action implementation
 
-:- module(execute_action_incr, []).
-
-:- use_module(library(clpz)).
-:- use_module('../types/accessors').
-:- use_module('../types/adv_accessors').
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
 
 % incr/2 - Increment attribute on self
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(Ctx),
     ctx_new(CtxOut),
     action(incr(Key, Amount)),
@@ -20,7 +12,7 @@ execute_action:execute_action_impl(
     execute_incr(Ctx, CtxOut, Key, Amount, ObjIn, ObjOut).
 
 % incr/3 - Increment attribute on specific object
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(Ctx),
     ctx_new(CtxOut),
     action(incr(TargetID, Key, Amount)),

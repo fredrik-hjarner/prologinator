@@ -63,11 +63,9 @@
 %    This tells you exactly where validation broke,
 %    in outer-to-inner order.
 %
-% 7. CROSS-MODULE SCHEMA LOOKUP
-%    Uses meta_predicate directive + Module
-%    threading so schemas can be defined in
-%    caller's module, not just here.
-%    Library "just works" when imported elsewhere.
+% 7. SCHEMA LOOKUP
+%    Schemas are looked up in the current module
+%    (prologinator in the monolithic build).
 %
 % 8. NO SPECIAL SYNTAX
 %    Schemas are pure Prolog terms. No DSLs,
@@ -121,47 +119,29 @@
 %
 % ================================================
 
-:- module(xod, [validate/2]).
-
-:- use_module(library(lists)).
-:- use_module(library(iso_ext), [forall/2]).
-:- use_module(library(format)).
-:- use_module(library(os), [getenv/2]).
-
-% Enable cross-module schema lookups.
-% The 2nd arg of validate/2 is a goal in the
-% caller's module context. Module is threaded
-% through all recursive calls.
-:- meta_predicate(validate(+, :)).
-
 % ================================================
 % ENTRY POINT
 % ================================================
 
 % validate(Term, SchemaName)
-% Looks up SchemaName in caller's context,
+% Looks up SchemaName in the current module context,
 % validates Term against it.
 % Throws validation_error if invalid.
 % Passes automatically if Term unbound.
-% Threads Module through to enable
-% cross-module schema lookup.
 
-validate(Term, Module:SchemaName) :-
-    call(Module:SchemaName, Schema),
-    validates_against(Term, Schema, [],
-                     Module).
+validate(Term, SchemaName) :-
+    call(SchemaName, Schema),
+    validates_against(Term, Schema, []).
 
 % ================================================
 % CORE SCHEMA INTERPRETER
 % ================================================
-% All clauses now take Module as 4th arg
-% to enable schema lookup in caller's module.
 
 % ANY: Always passes
-validates_against(_, any, _, _) :- !.
+validates_against(_, any, _) :- !.
 
 % INTEGER: Must be integer if bound
-validates_against(V, integer, Path, _) :-
+validates_against(V, integer, Path) :-
     check(V, integer(V), expected_integer,
           Path).
 
@@ -169,7 +149,7 @@ validates_against(V, integer, Path, _) :-
 % CRITICAL FIX: Check var BEFORE range check
 % to avoid instantiation error
 validates_against(V, integer(Min, Max),
-                  Path, _) :-
+                  Path) :-
     (var(V) ->
         true
     ;
@@ -182,11 +162,11 @@ validates_against(V, integer(Min, Max),
     ).
 
 % ATOM: Must be atom if bound
-validates_against(V, atom, Path, _) :-
+validates_against(V, atom, Path) :-
     check(V, atom(V), expected_atom, Path).
 
 % ENUM: Must be in options if bound
-validates_against(V, enum(Opts), Path, _) :-
+validates_against(V, enum(Opts), Path) :-
     (ground(V) ->
         check(V, memberchk(V, Opts),
               invalid_enum_option, Path)
@@ -195,40 +175,35 @@ validates_against(V, enum(Opts), Path, _) :-
     ).
 
 % LIST(Schema): List of items matching
-% Schema, if bound. Thread Module through.
+% Schema, if bound.
 validates_against(V, list(Schema),
-                  Path, Module) :-
+                  Path) :-
     check(V, is_list(V), expected_list,
           Path),
-    check_list_items(V, Schema, Path, 0,
-                    Module).
+    check_list_items(V, Schema, Path, 0).
 
 % STRUCT(Functor, Fields): Compound term
 % with correct functor and field schemas.
-% Thread Module through.
 validates_against(V, struct(Functor,
-                           Fields), Path,
-                  Module) :-
+                           Fields), Path) :-
     (var(V) ->
         true
     ;
         check_struct(V, Functor, Fields,
-                    Path, Module)
+                    Path)
     ).
 
 % SCHEMA(Name): Named reference lookup
-% in caller's module. Thread Module through.
+% in the current module.
 validates_against(V, schema(SchemaName),
-                  Path, Module) :-
+                  Path) :-
     (var(V) ->
         true
     ;
         (atom(SchemaName) ->
-            (call(Module:SchemaName,
-                 Definition) ->
+            (call(SchemaName, Definition) ->
                 validates_against(V,
-                    Definition, Path,
-                    Module)
+                    Definition, Path)
             ;
                 throw_error(Path,
                       unknown_schema,
@@ -248,25 +223,25 @@ validates_against(V, schema(SchemaName),
 % Example: union([wait_schema,
 %                 move_to_schema, ...])
 validates_against(V, union(Schemas),
-                  Path, Module) :-
+                  Path) :-
     (var(V) ->
         true
     ;
-        try_union_schemas(V, Schemas, Path, Module)
+        try_union_schemas(V, Schemas, Path)
     ).
 
-% try_union_schemas/4: Try each schema, catching
+% try_union_schemas/3: Try each schema, catching
 % exceptions. If any succeeds, we're done. If all
 % fail or throw, throw no_matching_union error.
-try_union_schemas(V, [], Path, _Module) :-
+try_union_schemas(V, [], Path) :-
     throw_error(Path, no_matching_union, V).
-try_union_schemas(V, [Schema|Rest], Path, Module) :-
-    ( catch(validates_against(V, Schema, Path, Module),
+try_union_schemas(V, [Schema|Rest], Path) :-
+    ( catch(validates_against(V, Schema, Path),
             validation_error(_, _, _),
             fail) ->
         true  % Schema matched, succeed
     ;
-        try_union_schemas(V, Rest, Path, Module)
+        try_union_schemas(V, Rest, Path)
     ).
 
 % ================================================
@@ -375,12 +350,12 @@ check_int_range(V, Min, Max, Path) :-
 % ================================================
 
 check_struct(V, ExpectedFunctor, Fields,
-            Path, Module) :-
+            Path) :-
     (compound(V) ->
         functor(V, ActualFunctor, Arity),
         (ActualFunctor == ExpectedFunctor ->
             check_struct_arity(V, Arity,
-                Fields, Path, Module)
+                Fields, Path)
         ;
             throw_error(Path,
                   wrong_functor,
@@ -391,11 +366,11 @@ check_struct(V, ExpectedFunctor, Fields,
     ).
 
 check_struct_arity(V, Arity, Fields,
-                   Path, Module) :-
+                   Path) :-
     length(Fields, FLen),
     (Arity == FLen ->
         check_struct_args(V, 1, Fields,
-                         Path, Module)
+                         Path)
     ;
         throw_error(Path,
               struct_arity_mismatch(FLen),
@@ -403,30 +378,29 @@ check_struct_arity(V, Arity, Fields,
     ).
 
 % Iterate through struct arguments using arg/3
-check_struct_args(_, _, [], _, _).
+check_struct_args(_, _, [], _).
 check_struct_args(V, Idx, [F|Fs],
-                 Path, Module) :-
+                 Path) :-
     arg(Idx, V, Val),
     F =.. [FieldName, Schema],
     validates_against(Val, Schema,
-        [FieldName|Path], Module),
+        [FieldName|Path]),
     NextIdx is Idx + 1,
     check_struct_args(V, NextIdx, Fs,
-                     Path, Module).
+                     Path).
 
 % ================================================
 % HELPERS: List Validation
-% Thread Module through.
 % ================================================
 
-check_list_items([], _, _, _, _).
+check_list_items([], _, _, _).
 check_list_items([Item|Rest], Schema,
-                 Path, Index, Module) :-
+                 Path, Index) :-
     validates_against(Item, Schema,
-        [[Index]|Path], Module),
+        [[Index]|Path]),
     NextIndex is Index + 1,
     check_list_items(Rest, Schema, Path,
-                    NextIndex, Module).
+                    NextIndex).
 
 % ================================================
 % SCHEMA DEFINITIONS
@@ -582,55 +556,55 @@ test("invalid object type throws", (
 test("integer range in bounds", (
     validates_against(50,
                      integer(0, 100),
-                     [], user)
+                     [])
 )).
 
 % Test: integer range - zero lower
 test("integer range zero lower bound", (
     validates_against(0,
                      integer(0, 100),
-                     [], user)
+                     [])
 )).
 
 % Test: integer range - unbounded upper
 test("integer range unbounded upper", (
     validates_against(1000000,
                      integer(0, _),
-                     [], user)
+                     [])
 )).
 
 % Test: integer range - unbound passes
 test("integer range unbound passes", (
     validates_against(_,
                      integer(0, 100),
-                     [], user)
+                     [])
 )).
 
 % Test: integer range - too high throws
 test("integer range too high throws", (
     expect_exception(validates_against(150,
                                      integer(0, 100),
-                                     [], user))
+                                     []))
 )).
 
 % Test: empty list passes
 test("empty list passes", (
     validates_against([], list(integer),
-                     [], user)
+                     [])
 )).
 
 % Test: valid integer list
 test("valid integer list", (
     validates_against([1, 2, 3, 4],
                      list(integer),
-                     [], user)
+                     [])
 )).
 
 % Test: list with invalid item throws
 test("list with invalid item throws", (
     expect_exception(validates_against([1, not_int, 3],
                                       list(integer),
-                                      [], user))
+                                      []))
 )).
 
 % Test: enum valid option
@@ -638,53 +612,52 @@ test("enum valid option", (
     validates_against(playing,
                      enum([playing, won,
                           lost]),
-                     [], user)
+                     [])
 )).
 
 % Test: enum invalid option throws
 test("enum invalid option throws", (
     expect_exception(validates_against(invalid,
                                       enum([a, b, c]),
-                                      [], user))
+                                      []))
 )).
 
 % Test: any always passes
 test("any always passes", (
-    validates_against(anything, any, [],
-                     user)
+    validates_against(anything, any, [])
 )).
 
 % Test: any with unbound passes
 test("any with unbound passes", (
-    validates_against(_, any, [], user)
+    validates_against(_, any, [])
 )).
 
 % Test: union - first schema matches
 test("union first schema matches", (
     validates_against(50,
         union([integer(0, 100), atom]),
-        [], user)
+        [])
 )).
 
 % Test: union - second schema matches
 test("union second schema matches", (
     validates_against(my_atom,
         union([integer, atom]),
-        [], user)
+        [])
 )).
 
 % Test: union - unbound passes
 test("union with unbound passes", (
     validates_against(_,
         union([integer, atom]),
-        [], user)
+        [])
 )).
 
 % Test: union - no schema matches throws
 test("union no schema matches throws", (
     expect_exception(validates_against(3.14,
         union([integer, atom]),
-        [], user))
+        []))
 )).
 
 % run_tests :-

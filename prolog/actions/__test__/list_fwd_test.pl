@@ -1,11 +1,8 @@
 :- module(list_fwd_test, []).
-:- use_module('../../execute_action', [execute_action/5]).
-:- use_module('../../types/accessors').
-:- use_module('../../types/adv_accessors').
-:- use_module('../../types/constructors').
-:- use_module('../../util/util', [
-    err_write/1, err_format/2
-]).
+
+:- use_module('../../../build/prologinator').
+:- use_module('../../../prolog/util/test_util').
+
 :- use_module(library(lists), [member/2]).
 :- use_module(library(assoc), [
     empty_assoc/1,

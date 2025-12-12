@@ -1,12 +1,3 @@
-:- module(execute_action_parallel_all, []).
-
-:- use_module(library(lists), [append/3]).
-:- use_module('../types/accessors').
-% :- use_module('../tick_object', [tick_object/4]).
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
-
 % ==========================================================
 % Interface
 % ==========================================================
@@ -15,17 +6,17 @@
 %       Remove entire clause when solution to module
 %       dependency issue is found.
 % This clause just skips the action and returns completed.
-execute_action:execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx),
-    action(parallel_all(_Children)),
-    obj_old(ObjIn),
-    result(completed, ObjOut)
-) :-
-    obj_acns(ObjIn, [_|Rest]),
-    obj_acns_obj(ObjIn, Rest, ObjOut).
+% execute_action_impl(
+%     ctx_old(Ctx),
+%     ctx_new(Ctx),
+%     action(parallel_all(_Children)),
+%     obj_old(ObjIn),
+%     result(completed, ObjOut)
+% ) :-
+%     obj_acns(ObjIn, [_|Rest]),
+%     obj_acns_obj(ObjIn, Rest, ObjOut).
 
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(CtxOld),
     ctx_new(CtxNew),
     action(parallel_all(Children)),

@@ -1,12 +1,7 @@
 :- module(engine_test, []).
-% use_module/1 imports ALL the exported stuff.
-:- use_module('./engine').
-:- use_module('./tick_object').
-:- use_module('./types/accessors').
-:- use_module('./types/constructors', [
-    empty_ctx/1,
-    ctx_with_attrs/2
-]).
+
+:- use_module('../build/prologinator').
+
 :- use_module(library(lists), [member/2, length/2]).
 :- use_module(library(assoc), [
     empty_assoc/1,

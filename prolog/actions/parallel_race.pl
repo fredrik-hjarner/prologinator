@@ -1,14 +1,5 @@
 % parallel_race action implementation
 
-:- module(execute_action_parallel_race, []).
-
-:- use_module(library(lists), [
-    append/3
-]).
-:- use_module('../types/accessors').
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
 
 % parallel_race(+ChildActions)
 % Mode: parallel_race(+ChildActions)
@@ -18,7 +9,7 @@
 %   completes).
 % Yields: false
 
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(CtxOld),
     ctx_new(CtxNew),
     action(parallel_race(ChildActions)),
@@ -74,7 +65,7 @@ execute_parallel_race(
 % Description: Continue racing when
 %   children didn't all finish
 
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(CtxOld),
     ctx_new(CtxNew),
     action(parallel_race_running(Children)),
@@ -91,7 +82,7 @@ execute_action:execute_action_impl(
 execute_parallel_race_running(
     CtxOld, CtxNew, Children, Obj, Status, ObjOut
 ) :-
-    execute_action:execute_action(
+    execute_action(
         ctx_old(CtxOld),
         ctx_new(CtxNew),
         action(parallel_race(Children)),
@@ -165,7 +156,7 @@ run_child(CIn, COut, Act, Obj, Res) :-
         actions([Act]),
         collisions(C)
     ),
-    execute_action:execute_action(
+    execute_action(
         ctx_old(CIn),
         ctx_new(COut),
         action(Act),

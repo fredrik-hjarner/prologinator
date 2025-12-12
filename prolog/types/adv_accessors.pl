@@ -4,18 +4,6 @@
 % away the details of storage and retrieval from assoc
 % trees.
 
-:- module(adv_accessors, [
-    ctx_attr_val/3,
-    ctx_attr_val_ctx/4
-]).
-
-:- use_module(library(assoc), [
-    gen_assoc/3,
-    put_assoc/4
-]).
-:- use_module(library(lists), [member/2, select/3]).
-:- use_module('./accessors').
-
 % ==========================================================
 % Attribute Store Helpers
 % ==========================================================

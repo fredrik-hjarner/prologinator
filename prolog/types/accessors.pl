@@ -6,12 +6,6 @@
 % ensure consistent access to nested structures and make
 % refactoring easier.
 
-:- use_module(library(assoc), [
-    empty_assoc/1,
-    put_assoc/4,
-    del_assoc/4
-]).
-
 % Conventions:
 % For getters the functors start with the "thing" we get
 % from, then comes _ followed by all "stuff" we want to get.
@@ -21,48 +15,6 @@
 % "thing" in the end.
 % Rationale for covention:
 % The functor immediately tells you what to put where.
-
-:- module(accessors, [
-    % Context accessors
-    ctx_frame/2,
-    ctx_frame_ctx/3,
-    ctx_objs/2,
-    ctx_objs_ctx/3,
-    ctx_attrs/2,
-    ctx_attrs_ctx/3,
-    ctx_state/2,
-    ctx_state_ctx/3,
-    ctx_cmds/2,
-    ctx_cmds_ctx/3,
-    ctx_objs_cmds/3,
-    ctx_objs_cmds_ctx/4,
-    ctx_objs_attrs/3,
-    ctx_objs_attrs_ctx/4,
-    ctx_status/2,
-    ctx_status_ctx/3,
-    ctx_status_cmds/3,
-    ctx_status_cmds_ctx/4,
-    ctx_nextid/2,
-    ctx_nextid_ctx/3,
-    ctx_nextid_cmds_ctx/4,
-    ctx_objs_nextid_cmds/4,
-    ctx_objs_nextid_cmds_ctx/5,
-    ctx_input/2,
-    ctx_input_ctx/3,
-    ctx_events/2,
-    ctx_held/2,
-    % State accessors
-    state_status_state/3,
-    state_attrs/2,
-    state_attrs_state/3,
-    % Object accessors
-    obj_id/2,
-    obj_acns/2,
-    obj_type/2,
-    obj_collisions/2,
-    obj_id_type/3,
-    obj_acns_obj/3
-]).
 
 % ==========================================================
 % Context Accessors
@@ -330,5 +282,4 @@ obj_acns_obj(
     object(id(ID), type(Type), actions(NewActions),
            collisions(Colls))
 ).
-
 

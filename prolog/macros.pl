@@ -1,15 +1,6 @@
-:- module(macros, [run_tests/0]).
-:- use_module(library(lists), [maplist/3]).
-
-% 1. Explicitly allow dynamic definition
-%    (Correct Syntax: use parentheses)
-:- dynamic(macro_val/2).
-
-% 2. Hook into global expansion safely
-%    (Correct Syntax: use parentheses)
-%    Without multifile, loading this file will crash if
-%    clpz/dcgs are used.
-:- multifile(user:term_expansion/2).
+% Explicitly allow dynamic definition
+% (Correct Syntax: use parentheses)
+% NOTE: dynamic declaration is now in prolog/dynamic.pl
 
 % ==========================================================
 % Recursive Replacement Logic
@@ -66,7 +57,7 @@ user:term_expansion(TermIn, TermOut) :-
     % term_expansion clauses
     \+ (TermIn = (:- _)),
     \+ (functor(TermIn, ':-', _)),
-    \+ (functor(TermIn, user:term_expansion, _)),
+    \+ (functor(TermIn, term_expansion, _)),
     \+ (functor(TermIn, replace_macros, _)),
     replace_macros(TermIn, TermOut),
     TermIn \== TermOut.

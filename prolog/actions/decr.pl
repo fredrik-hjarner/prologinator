@@ -1,16 +1,8 @@
 % decr action implementation
 
-:- module(execute_action_decr, []).
-
-:- use_module(library(clpz)).
-:- use_module('../types/accessors').
-:- use_module('../types/adv_accessors').
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
 
 % decr/2 - Decrement attribute on self
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(Ctx),
     ctx_new(CtxOut),
     action(decr(Key, Amount)),
@@ -20,7 +12,7 @@ execute_action:execute_action_impl(
     execute_decr(Ctx, CtxOut, Key, Amount, ObjIn, ObjOut).
 
 % decr/3 - Decrement attribute on specific object
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(Ctx),
     ctx_new(CtxOut),
     action(decr(TargetID, Key, Amount)),

@@ -1,8 +1,6 @@
 % Built-in Actions Module
 % Defines which actions are built-in (with arity checking)
 
-:- module(builtin_actions, [builtin_action/1]).
-
 % Check if an action is a built-in action (with arity
 % checking)
 builtin_action(wait(_)).

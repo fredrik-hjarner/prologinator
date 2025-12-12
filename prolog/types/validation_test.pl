@@ -3,23 +3,14 @@
 
 :- module(validation_test, []).
 
+:- use_module('../../build/prologinator').
+:- use_module('../../prolog/util/test_util').
+
 :- use_module(library(format)).
 :- use_module(library(assoc), [
     empty_assoc/1,
     put_assoc/4
 ]).
-:- use_module('./validation', [
-    context_validation/1,
-    state_validation/1,
-    object_validation/1,
-    game_status_validation/1,
-    command_validation/1,
-    action_validation/1
-]).
-:- use_module('./constructors', [
-    ctx_with_frame_attrs/3
-]).
-:- use_module('./accessors').
 
 % test/2 clauses are intentionally separated by other code
 :- discontiguous(test/2).
@@ -275,7 +266,6 @@ test("action_validation: invalid spawn action fails", (
     expect_exception(action_validation(Action2))
 )).
 
-
 % ----------------------------------------------------------
 % Structure mismatch tests
 % ----------------------------------------------------------
@@ -349,7 +339,6 @@ test("pos_validation: wrong functor throws", (
     Pos = not_pos(0, 0),
     expect_exception(pos_validation(Pos))
 )).
-
 
 test("action_validation: wrong structure throws", (
     % User-defined actions are now allowed (they're callable

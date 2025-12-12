@@ -1,17 +1,8 @@
 % spawn action implementation
 
-:- module(execute_action_spawn, []).
-
-:- use_module(library(clpz)).
-:- use_module(library(lists), [append/3]).
-:- use_module('../types/accessors').
-:- use_module('../types/adv_accessors').
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
 
 % IMMEDIATELY spawns the object into the context
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(CtxIn),
     ctx_new(CtxOut),
     action(spawn(Type, X, Y, Actions)),

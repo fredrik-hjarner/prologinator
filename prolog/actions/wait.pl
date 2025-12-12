@@ -1,15 +1,6 @@
 % wait action implementation
 
-:- module(execute_action_wait, []).
-
-:- use_module(library(clpz)).
-:- use_module('../types/accessors').
-:- use_module('../types/adv_accessors').
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
-
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(Ctx),
     ctx_new(Ctx), % Context unchanged
     action(wait(N)),

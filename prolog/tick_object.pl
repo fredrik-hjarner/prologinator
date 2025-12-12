@@ -1,13 +1,3 @@
-:- module(tick_object, [tick_object/4]).
-
-:- use_module('./execute_action', [
-    execute_action/5
-]).
-:- use_module('./types/accessors'). % import all. so many...
-:- use_module('./types/validation', [
-    object_validation/1
-]).
-
 % ==========================================================
 % Execution Model: tick_object
 % ==========================================================

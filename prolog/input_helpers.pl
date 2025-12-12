@@ -1,25 +1,6 @@
 % Input Helper Predicates
 % Utilities for checking key events in actions
 
-:- module(input_helpers, [
-    % Short forms (recommended):
-    key_down/2,
-    key_up/2,
-    key_held/2,
-    % Verbose aliases:
-    key_pressed_this_frame/2,
-    key_released_this_frame/2,
-    key_down_this_frame/2,
-    key_up_this_frame/2,
-    key_is_held/2
-]).
-
-:- use_module(library(lists), [member/2]).
-:- use_module('./types/accessors', [
-    ctx_events/2,
-    ctx_held/2
-]).
-
 % ==========================================================
 % Key Event Queries (this frame only)
 % ==========================================================

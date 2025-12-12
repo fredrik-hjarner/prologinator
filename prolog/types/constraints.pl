@@ -2,29 +2,6 @@
 % Defines all regular types for the game engine
 % Based on type_constraint_predicates.md v2 + all addendums
 
-:- module(constraints, [
-    % constraints
-    state_constraint/1,
-    object_constraint/1,
-    game_status_constraint/1,
-    command_constraint/1,
-    action_constraint/1,
-    pos_constraint/1,
-    attr_constraint/1,
-    collision_constraint/1
-]).
-
-:- use_module(library(clpz)).
-:- use_module(library(lists), [
-    maplist/2,
-    maplist/3,
-    length/2
-]).
-:- use_module(library(between), [between/3]).
-:- use_module(library(time), [time/1]).
-:- use_module(library(format), [format/2]).
-:- use_module('./accessors', [obj_id/2]).
-
 % ==========================================================
 % Helper Predicates (from Addendums 1 & 2)
 % ==========================================================
@@ -52,7 +29,6 @@ bounded_list_of(Goal, List, MaxLen) :-
    maplist(Goal, List)
 ).
 
-
 % bounded_list_of_depth/4 - for recursive structures
 % (Addendum 1)
 bounded_list_of_depth(Goal, List, MaxLen, DepthLeft) :-
@@ -65,7 +41,6 @@ maplist_with_depth(_, [], _).
 maplist_with_depth(Goal, [H|T], DepthLeft) :-
     call(Goal, H, DepthLeft),
     maplist_with_depth(Goal, T, DepthLeft).
-
 
 % last/2 - get last element of a list (for Addendum 4)
 last([X], X).
@@ -255,7 +230,6 @@ command_constraint(state_change(Change)) :-
 state_change_constraint(game_over(won)).
 state_change_constraint(game_over(lost)).
 
-
 % ==========================================================
 % collision_constraint/1 Constraint
 % ==========================================================
@@ -264,10 +238,6 @@ state_change_constraint(game_over(lost)).
 % This is a permissive placeholder that accepts any term
 
 collision_constraint(_).
-
-
-
-
 
 %
 % Random helpers

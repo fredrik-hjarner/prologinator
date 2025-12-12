@@ -1,14 +1,8 @@
 :- module(adv_accessors_bwd_test, []).
-:- use_module('./adv_accessors', [
-    ctx_attr_val/3,
-    ctx_attr_val_ctx/4
-]).
-:- use_module('./accessors').
-:- use_module('./constructors', [
-    ctx_with_attrs/2,
-    empty_attr_store/1
-]).
-:- use_module('../util/util', [err_write/1]).
+
+:- use_module('../../build/prologinator').
+:- use_module('../../prolog/util/test_util').
+
 :- use_module(library(assoc), [
     put_assoc/4
 ]).

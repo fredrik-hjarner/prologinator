@@ -17,7 +17,7 @@
 %               ...
 %           ;
 %               % Structure doesn't match - throw
-%               format_("ERROR: ...", [Term]),
+%               val_format("ERROR: ...", [Term]),
 %               throw(error(type_error(...), ...))
 %           )
 %       ;
@@ -44,31 +44,12 @@
 %   with appropriate error
 % ==========================================================
 
-:- module(validation, [
-    context_validation/1,
-    state_validation/1,
-    object_validation/1,
-    game_status_validation/1,
-    command_validation/1,
-    action_validation/1
-]).
-
-:- use_module(library(format)).
-:- use_module(library(lists), [length/2]).
-:- use_module('../util/util', [is_list/1]).
-:- use_module('../builtin_actions', [builtin_action/1]).
-:- use_module(library(assoc), [
-    empty_assoc/1,
-    put_assoc/4
-]).
-:- use_module(library(os), [getenv/2]).
-
 % ==========================================================
 % Helper: Conditional format output
 % ==========================================================
-% format_/2: Outputs format message only if
+% val_format/2: Outputs format message only if
 % VALIDATION_ERR_MSG is not set to "false"
-format_(Format, Args) :-
+val_format(Format, Args) :-
     ( catch(getenv("VALIDATION_ERR_MSG", Value), _, fail),
       Value = "false" ->
         true  % Suppress when set to "false"
@@ -100,7 +81,7 @@ input_validation(Term) :-
         ( input_validation_helper(Term) ->
             true
         ;
-            format_("ERROR: Invalid input:~n  ~w~n",
+            val_format("ERROR: Invalid input:~n  ~w~n",
                    [Term]),
             throw(error(type_error(input, Term),
                         input_validation/1))
@@ -132,7 +113,7 @@ state_validation(Term) :-
         ( state_validation_helper(Term) ->
             true
         ;
-            format_("ERROR: Invalid game_state:~n  ~w~n",
+            val_format("ERROR: Invalid game_state:~n  ~w~n",
                    [Term]),
             throw(error(type_error(game_state, Term),
                         state_validation/1))
@@ -174,7 +155,7 @@ state_validation_helper(Term) :-
             NextID > MaxID
         ;
             % Structure doesn't match - throw
-            format_(
+            val_format(
                 "ERROR: Invalid game_state structure:\n  \
  ~w~n",
                 [Term]
@@ -213,7 +194,7 @@ object_validation(Term) :-
         ( object_validation_helper(Term) ->
             true
         ;
-            format_("ERROR: Invalid object:~n  ~w~n",
+            val_format("ERROR: Invalid object:~n  ~w~n",
                    [Term]),
             throw(error(type_error(object, Term),
                         object_validation/1))
@@ -238,7 +219,7 @@ object_validation_helper(Term) :-
             length(Actions, _)
         ;
             % Structure doesn't match - throw
-            format_(
+            val_format(
                 "ERROR: Invalid object structure:~n  \
 ~w~n",
                 [Term]
@@ -260,9 +241,9 @@ game_status_validation(Term) :-
         ) ->
             true
         ;
-            format_("ERROR: Invalid game_status:~n  ~w~n",
-                   [Term]),
-            throw(error(type_error(game_status, Term),
+           val_format("ERROR: Invalid game_status:~n  ~w~n",
+                  [Term]),
+           throw(error(type_error(game_status, Term),
                         game_status_validation/1))
     ;
         true
@@ -275,7 +256,7 @@ command_validation(Term) :-
           ) ->
               true
           ;
-              format_("ERROR: Invalid command:~n  ~w~n",
+              val_format("ERROR: Invalid command:~n  ~w~n",
                      [Term]),
               throw(error(type_error(command, Term),
                           command_validation/1))
@@ -297,7 +278,7 @@ spawn_request_validation(Term) :-
             length(Acts, _)
         ;
             % Structure doesn't match - throw
-            format_(
+            val_format(
                 "ERROR: Invalid spawn_request \
 structure:~n  ~w~n",
                 [Term]
@@ -326,7 +307,7 @@ state_change_validation(Term) :-
             )
         ;
             % Structure doesn't match - throw
-            format_(
+            val_format(
                 "ERROR: Invalid state_change structure:~n  \
 ~w~n",
                 [Term]
@@ -374,7 +355,7 @@ pos_validation(Term) :-
             integer(Y)
         ;
             % Structure doesn't match - throw
-            format_(
+            val_format(
                 "ERROR: Invalid pos structure:~n  ~w~n",
                 [Term]
             ),
@@ -393,7 +374,7 @@ action_validation(Term) :-
         ( action_validation_helper(Term) ->
             true
         ;
-            format_("ERROR: Invalid action:~n  ~w~n",
+            val_format("ERROR: Invalid action:~n  ~w~n",
                    [Term]),
             throw(error(type_error(action, Term),
                         action_validation/1))
@@ -573,7 +554,7 @@ action_validation_helper(Term) :-
             true
         ;
             % No pattern matched - throw
-            format_(
+            val_format(
                 "ERROR: Invalid action structure:~n  \
 ~w~n",
                 [Term]

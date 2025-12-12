@@ -1,17 +1,6 @@
 % Collision Detection Module
 % Handles collision detection between game objects
 
-:- module(collisions, [detect_collisions/2]).
-
-:- use_module(library(lists), [
-    findall/3, member/2, list_to_set/2, append/3
-]).
-:- use_module(library(assoc), [
-    gen_assoc/3,
-    del_assoc/4
-]).
-:- use_module('./types/accessors').
-
 % ==========================================================
 % Collision Detection (simplified - grid-based)
 % ==========================================================

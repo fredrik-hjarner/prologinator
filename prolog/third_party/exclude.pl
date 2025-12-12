@@ -5,10 +5,6 @@
 % Copyright (C): 2016-2024 Markus Triska
 % License: MIT-style (see clpz.pl for full license text)
 
-:- module(exclude, [exclude/3]).
-
-:- meta_predicate(exclude(1, ?, ?)).
-
 %% exclude(+Goal, +List, -Filtered).
 %
 % Filter elements from List where Goal succeeds, returning Filtered.

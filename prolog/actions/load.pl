@@ -1,18 +1,5 @@
 % load action implementation
 
-:- module(execute_action_load, []).
-
-:- use_module(library(lists), [
-    append/3
-]).
-:- use_module(library(charsio), [atom_chars/2]).
-:- use_module(library(iso_ext)).
-:- use_module('../types/accessors').
-:- use_module('../types/adv_accessors').
-:- use_module('../util/util', [is_list/1]).
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
 
 % load(+Path)
 % Mode: load(+Path)
@@ -20,7 +7,7 @@
 %   and prepends them to the action queue
 % Yields: false (expands immediately)
 
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(Ctx),
     ctx_new(Ctx),
     action(load(Path)),

@@ -1,15 +1,8 @@
 % trigger_state_change action implementation
 
-:- module(execute_action_trigger_state_change, []).
-
-:- use_module('../types/accessors').
-:- use_module('../types/adv_accessors').
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
 
 % IMMEDIATELY updates status in context
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(CtxIn),
     ctx_new(CtxOut),
     action(trigger_state_change(Change)),

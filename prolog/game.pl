@@ -2,31 +2,6 @@
 % Usage: just run game (or: ciaosh -l game.pl -e "main" -t
 % halt)
 
-:- module(game, [main/0]).
-
-:- use_module(library(lists), [member/2, select/3]).
-:- use_module(library(between), [between/3]).
-:- use_module(library(charsio), [
-    get_single_char/1,
-    atom_chars/2
-]).
-:- use_module(library(os), [getenv/2]).
-:- use_module(library(assoc), [
-    empty_assoc/1,
-    put_assoc/4,
-    get_assoc/3,
-    list_to_assoc/2
-]).
-:- use_module('./engine', [tick/2]).
-:- use_module('./types/constraints', [
-    state_constraint/1,
-    object_constraint/1
-]).
-:- use_module('./types/accessors').
-:- use_module('./types/adv_accessors', [
-    ctx_attr_val/3
-]).
-
 % ==========================================================
 % Main Game Loop
 % ==========================================================
@@ -49,7 +24,7 @@ main :-
               %        in InputFile??
               consult(InputFileAtom),
               % Try user module first, then current module
-              ( catch(user:input_timeline(TimelineList), _, 
+              ( catch(input_timeline(TimelineList), _, 
                       input_timeline(TimelineList)) ->
                   list_to_assoc(TimelineList, Timeline)
               ;

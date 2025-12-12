@@ -1,11 +1,6 @@
 % Value Resolution Module
 % Resolves attr() references in actions before execution
 
-:- module(resolve_action, [resolve_action/4]).
-
-:- use_module(library(lists), [maplist/3]).
-:- use_module('./types/adv_accessors', [ctx_attr_val/3]).
-
 % ==========================================================
 % Value Resolution
 % ==========================================================

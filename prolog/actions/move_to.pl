@@ -1,15 +1,6 @@
 % move_to action implementation
 
-:- module(execute_action_move_to, []).
-
-:- use_module(library(clpz)).
-:- use_module('../types/accessors').
-:- use_module('../types/adv_accessors').
-
-:- multifile(execute_action:execute_action_impl/5).
-:- discontiguous(execute_action:execute_action_impl/5).
-
-execute_action:execute_action_impl(
+execute_action_impl(
     ctx_old(Ctx),
     ctx_new(CtxOut), % Context may change due to attrs
     action(move_to(TargetX, TargetY, Frames)),

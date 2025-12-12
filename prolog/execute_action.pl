@@ -2,54 +2,21 @@
 % Handles execution of all game actions
 % Core interface - implementations are in separate modules
 
-:- module(execute_action, [
-    execute_action/5,
-    execute_action_impl/5,
-    user_action/2
-]).
-
-:- use_module('./types/validation', [action_validation/1]).
-:- use_module('./types/accessors').
-:- use_module('./types/adv_accessors').
-:- use_module('./resolve_action', [resolve_action/4]).
-:- use_module('./builtin_actions', [builtin_action/1]).
-
 % Multifile declaration for execute_action_impl/5
 % MUST be declared before loading implementation modules
 % Implementation clauses are provided by the modules below
-:- multifile(execute_action_impl/5).
-:- discontiguous(execute_action_impl/5).
+% NOTE: discontiguous declaration is now in
+% prolog/discontiguous.pl
 
 % Load all action implementation modules (after multifile
 %   declaration)
-:- use_module('./actions/wait').
-:- use_module('./actions/move_to').
-:- use_module('./actions/move_delta').
-:- use_module('./actions/despawn').
-:- use_module('./actions/noop').
-:- use_module('./actions/define_action').
-:- use_module('./actions/set_attr').
-:- use_module('./actions/incr').
-:- use_module('./actions/decr').
-:- use_module('./actions/log').
-:- use_module('./actions/spawn').
-:- use_module('./actions/loop').
-:- use_module('./actions/list').
-:- use_module('./actions/repeat').
-:- use_module('./actions/load').
-:- use_module('./actions/trigger_state_change').
-:- use_module('./actions/wait_key_down').
-:- use_module('./actions/wait_key_up').
-:- use_module('./actions/wait_key_held').
-:- use_module('./actions/parallel_all').
-:- use_module('./actions/parallel_race').
 
 % ==========================================================
 % Custom Actions: Runtime Expansion
 % ==========================================================
 
 % Dynamic predicate to store user-defined action definitions
-:- dynamic(user_action/2).
+% NOTE: dynamic declaration is now in prolog/dynamic.pl
 
 % ==========================================================
 % execute_action/5

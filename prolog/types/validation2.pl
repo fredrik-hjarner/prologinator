@@ -1,60 +1,13 @@
 % Validation Schemas Module (v2)
 % Defines xod schemas for game types
-% Callers use: validate(Term, validation2:state_schema),
+% Callers use: validate(Term, state_schema),
 % etc.
-
-:- module(validation2, [
-    % Primitive schemas
-    object_type_schema/1,
-    game_status_schema/1,
-    pos_schema/1,
-    % State change schemas
-    game_over_schema/1,
-    state_change_content_schema/1,
-    % Action schemas
-    action_schema/1,
-    wait_schema/1,
-    move_to_schema/1,
-    despawn_schema/1,
-    spawn_action_schema/1,
-    loop_schema/1,
-    trigger_state_change_schema/1,
-    parallel_all_schema/1,
-    parallel_all_running_schema/1,
-    parallel_race_running_schema/1,
-    % Command schemas
-    command_schema/1,
-    spawn_request_schema/1,
-    state_change_schema/1,
-    % Rev hint schemas
-    % Object schemas
-    id_schema/1,
-    type_schema/1,
-    attrs_schema/1,
-    actions_schema/1,
-    collisions_schema/1,
-    object_schema/1,
-    % State schemas
-    frame_schema/1,
-    objects_schema/1,
-    status_schema/1,
-    next_id_schema/1,
-    commands_schema/1,
-    state_schema/1,
-    context_schema/1
-]).
-
-:- use_module('../xod/xod', [validate/2]).
-:- use_module(library(assoc), [
-    empty_assoc/1,
-    put_assoc/4
-]).
 
 % ==========================================================
 % SCHEMA DEFINITIONS
 % ==========================================================
 % These schemas match the structure used in validation.pl
-% Usage: validate(Term, validation2:state_schema), etc.
+% Usage: validate(Term, state_schema), etc.
 
 % ==========================================================
 % Primitive Schemas
@@ -178,7 +131,6 @@ state_change_schema(struct(state_change, [
 % Rev Hint Schemas
 % ==========================================================
 
-
 % ==========================================================
 % Object Schema
 % ==========================================================
@@ -297,7 +249,7 @@ test("game_state_validation: valid state passes", (
         next_id(1),
         commands([])
     ),
-    validate(State, validation2:state_schema)
+    validate(State, state_schema)
 )).
 
 test("game_state_validation: complex state with \
@@ -328,7 +280,7 @@ multiple objects and commands", (
             spawn_request(enemy, pos(0, 0), [])
         ])
     ),
-    validate(State, validation2:state_schema)
+    validate(State, state_schema)
 )).
 
 test("context_validation: complex context with multiple \
@@ -379,7 +331,7 @@ objects and commands", (
             ])
         ])
     )),
-    validate(Ctx, validation2:context_schema)
+    validate(Ctx, context_schema)
 )).
 
 % ----------------------------------------------------------
@@ -425,7 +377,7 @@ test("game_state_validation: invalid status fails", (
         commands([])
     ),
     expect_exception(
-        validate(State, validation2:state_schema)
+        validate(State, state_schema)
     )
 )).
 
@@ -438,7 +390,7 @@ test("game_state_validation: non-integer frame fails", (
         commands([])
     ),
     expect_exception(
-        validate(State, validation2:state_schema)
+        validate(State, state_schema)
     )
 )).
 
@@ -460,7 +412,7 @@ test("game_state_validation: non-integer frame fails", (
 %         
 %     ),
 %     expect_exception(
-%         validate(State, validation2:state_schema)
+%         validate(State, state_schema)
 %     )
 % )).
 
@@ -474,7 +426,7 @@ wrapped) throws", (
         collisions([])
     ),
     expect_exception(
-        validate(Obj, validation2:object_schema)
+        validate(Obj, object_schema)
     )
 )).
 
@@ -487,64 +439,64 @@ test("object_validation: invalid object type fails", (
         collisions([])
     ),
     expect_exception(
-        validate(Obj, validation2:object_schema)
+        validate(Obj, object_schema)
     )
 )).
 
 test("command_validation: invalid spawn type fails", (
     Cmd = spawn_request(invalid_type, pos(0, 0), []),
     expect_exception(
-        validate(Cmd, validation2:command_schema)
+        validate(Cmd, command_schema)
     )
 )).
 
 test("command_validation: invalid pos in spawn fails", (
     Cmd = spawn_request(static, not_a_pos, []),
     expect_exception(
-        validate(Cmd, validation2:command_schema)
+        validate(Cmd, command_schema)
     )
 )).
 
 test("pos_validation: non-integer coords fail via action", (
     Action1 = spawn(static, pos(not_int, 10), []),
     expect_exception(
-        validate(Action1, validation2:action_schema)
+        validate(Action1, action_schema)
     ),
     Action2 = spawn(static, pos(10, not_int), []),
     expect_exception(
-        validate(Action2, validation2:action_schema)
+        validate(Action2, action_schema)
     )
 )).
 
 test("action_validation: invalid wait fails", (
     expect_exception(
-        validate(wait(not_int), validation2:action_schema)
+        validate(wait(not_int), action_schema)
     )
 )).
 
 test("action_validation: invalid move_to fails", (
     Action1 = move_to(not_int,10,5),
     expect_exception(
-        validate(Action1, validation2:action_schema)
+        validate(Action1, action_schema)
     ),
     Action2 = move_to(10,not_int,5),
     expect_exception(
-        validate(Action2, validation2:action_schema)
+        validate(Action2, action_schema)
     ),
     Action3 = move_to(10,10,not_int),
     expect_exception(
-        validate(Action3, validation2:action_schema)
+        validate(Action3, action_schema)
     )
 )).
 
 test("action_validation: invalid spawn action fails", (
     Action1 = spawn(invalid_type, pos(0, 0), []),
     expect_exception(
-        validate(Action1, validation2:action_schema)
+        validate(Action1, action_schema)
     ),
     Action2 = spawn(static, not_a_pos, []),
     expect_exception(
-        validate(Action2, validation2:action_schema)
+        validate(Action2, action_schema)
     )
 )).
 
@@ -564,7 +516,7 @@ test("game_state_validation: wrong arity throws", (
         next_id(1)
     ),
     expect_exception(
-        validate(State, validation2:state_schema)
+        validate(State, state_schema)
     )
 )).
 
@@ -578,7 +530,7 @@ test("game_state_validation: wrong functor throws", (
         commands([])
     ),
     expect_exception(
-        validate(State, validation2:state_schema)
+        validate(State, state_schema)
     )
 )).
 
@@ -587,7 +539,7 @@ test("object_validation: wrong arity throws", (
         id(0), type(static), attrs([]), actions([])
     ),
     expect_exception(
-        validate(Obj, validation2:object_schema)
+        validate(Obj, object_schema)
     )
 )).
 
@@ -600,68 +552,68 @@ test("object_validation: wrong functor throws", (
         collisions([])
     ),
     expect_exception(
-        validate(Obj, validation2:object_schema)
+        validate(Obj, object_schema)
     )
 )).
 
 test("spawn_request_validation: wrong arity throws", (
     Cmd = spawn_request(enemy, pos(0, 0)),
     expect_exception(
-        validate(Cmd, validation2:spawn_request_schema)
+        validate(Cmd, spawn_request_schema)
     )
 )).
 
 test("spawn_request_validation: wrong functor throws", (
     Cmd = not_spawn_request(enemy, pos(0, 0), []),
     expect_exception(
-        validate(Cmd, validation2:spawn_request_schema)
+        validate(Cmd, spawn_request_schema)
     )
 )).
 
 test("state_change_validation: wrong structure throws", (
     Cmd = not_state_change(game_over(won)),
     expect_exception(
-        validate(Cmd, validation2:state_change_schema)
+        validate(Cmd, state_change_schema)
     )
 )).
 
 test("pos_validation: wrong arity throws", (
     Pos = pos(0),
     expect_exception(
-        validate(Pos, validation2:pos_schema)
+        validate(Pos, pos_schema)
     )
 )).
 
 test("pos_validation: wrong functor throws", (
     Pos = not_pos(0, 0),
     expect_exception(
-        validate(Pos, validation2:pos_schema)
+        validate(Pos, pos_schema)
     )
 )).
 
 test("action_validation: wrong structure throws", (
     Action = not_an_action(1, 2, 3),
     expect_exception(
-        validate(Action, validation2:action_schema)
+        validate(Action, action_schema)
     )
 )).
 
 test("action_validation: move_to wrong arity throws", (
     Action = move_to(10, 20),
     expect_exception(
-        validate(Action, validation2:action_schema)
+        validate(Action, action_schema)
     )
 )).
 
 test("action_validation: spawn wrong arity throws", (
     Action = spawn(enemy, pos(0, 0)),
     expect_exception(
-        validate(Action, validation2:action_schema)
+        validate(Action, action_schema)
     )
 )).
 
 test("action_validation: despawn", (
-    validate(despawn, validation2:action_schema)
+    validate(despawn, action_schema)
 )).
 
 % ==========================================================
@@ -675,7 +627,7 @@ test("action_validation: spawn with unbound variables \
 passes", (
     Action = spawn(Type, Pos, Actions),
     % Type, Pos, and Actions are unbound - should pass
-    validate(Action, validation2:action_schema),
+    validate(Action, action_schema),
     % Verify it's still unbound after validation
     var(Type),
     var(Pos),
@@ -686,7 +638,7 @@ test("action_validation: loop with unbound actions \
 passes", (
     Action = loop(Actions),
     % Actions is unbound - should pass
-    validate(Action, validation2:action_schema),
+    validate(Action, action_schema),
     % Verify it's still unbound after validation
     var(Actions)
 )).
@@ -695,7 +647,7 @@ test("action_validation: trigger_state_change with \
 unbound change passes", (
     Action = trigger_state_change(Change),
     % Change is unbound - should pass
-    validate(Action, validation2:action_schema),
+    validate(Action, action_schema),
     % Verify it's still unbound after validation
     var(Change)
 )).
@@ -703,7 +655,7 @@ unbound change passes", (
 test("action_validation: wait with unbound N passes", (
     Action = wait(N),
     % N is unbound - should pass
-    validate(Action, validation2:action_schema),
+    validate(Action, action_schema),
     % Verify it's still unbound after validation
     var(N)
 )).
@@ -712,7 +664,7 @@ test("action_validation: move_to with unbound coordinates \
 passes", (
     Action = move_to(X, Y, Frames),
     % X, Y, and Frames are unbound - should pass
-    validate(Action, validation2:action_schema),
+    validate(Action, action_schema),
     % Verify they're still unbound after validation
     var(X),
     var(Y),
@@ -724,7 +676,7 @@ variables passes", (
     Action = spawn(enemy, Pos, Actions),
     % Pos and Actions are unbound, Type is bound -
     %   should pass
-    validate(Action, validation2:action_schema),
+    validate(Action, action_schema),
     % Verify unbound variables are still unbound
     var(Pos),
     var(Actions)
