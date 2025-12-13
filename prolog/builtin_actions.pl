@@ -28,4 +28,5 @@ builtin_action(log(_)).
 builtin_action(wait_key_down(_)).
 builtin_action(wait_key_up(_)).
 builtin_action(wait_key_held(_)).
+builtin_action(wait_until(_)).
 

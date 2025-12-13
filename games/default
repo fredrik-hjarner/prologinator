@@ -7,6 +7,7 @@
     
     % Spawn player at center - responds to input
     spawn(player, 10, 10, [
+        set_attr(displayChar, 64),  % '@'
         log("Player spawned!"),
         parallel_all([
             % Right arrow (39) - move right
@@ -40,9 +41,11 @@
     % Define a custom action for spawning towers
     define_action(spawn_tower(X, Y), list([
         spawn(tower, X, Y, [
+            set_attr(displayChar, 84),  % 'T'
             loop([
                 wait(5),
                 spawn(proj, X, Y, [
+                    set_attr(displayChar, 42),  % '*'
                     move_delta(20, 0, -1)
                 ])
             ])
@@ -61,6 +64,7 @@
         loop([
             wait(8),
             spawn(enemy, 0, 10, [
+                set_attr(displayChar, 69),  % 'E'
                 move_delta(30, 1, 0)
             ])
         ])

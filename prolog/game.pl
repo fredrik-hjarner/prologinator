@@ -235,11 +235,13 @@ render(ctx_in(Ctx)) :-
     ctx_frame(Ctx, Frame),
     ctx_status(Ctx, Status),
     ctx_objs(Ctx, Objects),
+    length(Objects, ObjCount),
     
     % Header
     write('=== Tower Defense ==='), nl,
     write('Frame: '), write(Frame),
-    write(' | Status: '), write(Status), nl,
+    write(' | Status: '), write(Status),
+    write(' | Objects: '), write(ObjCount), nl,
     write('================================'), nl, nl,
     
     % Render grid (20x20)
@@ -261,7 +263,7 @@ build_position_map_loop(Ctx, [Obj|Rest], MapIn, MapOut) :-
     obj_id(Obj, ID),
     ( ctx_attr_val(Ctx, ID/x, X),
       ctx_attr_val(Ctx, ID/y, Y),
-      get_symbol(Obj, Symbol) ->
+      get_symbol(Ctx, ID, Symbol) ->
         Pos = pos(X, Y),
         put_assoc(Pos, MapIn, Symbol, MapTemp)
     ;
@@ -280,26 +282,21 @@ render_grid_rows(_, Y) :-
 render_grid_row(PosMap, Y, X) :-
     X =< 19,
     Pos = pos(X, Y),
-    ( get_assoc(Pos, PosMap, Symbol) ->
-        true
+    ( get_assoc(Pos, PosMap, CharCode) ->
+        put_code(CharCode)
     ;
-        char_code(Symbol, 46)  % '.'
+        put_code(46)  % '.'
     ),
-    write(Symbol),
-    ( X = 19 -> nl ; write(' ') ),
+    ( X = 19 -> nl ; put_code(32) ),  % space
     X1 is X + 1,
     render_grid_row(PosMap, Y, X1).
 render_grid_row(_, _, X) :-
     X > 19.
 
-get_symbol(Obj, Symbol) :-
-    obj_type(Obj, Type),
-    (   Type = tower -> char_code(Symbol, 84)  % 'T'
-    ;   Type = enemy -> char_code(Symbol, 69)  % 'E'
-    ;   Type = proj -> char_code(Symbol, 42)   % '*'
-    ;   Type = player -> char_code(Symbol, 64)  % '@'
-    ;   char_code(Symbol, 63)                 % '?'
-    ).
-get_symbol(_, Dot) :-
-    char_code(Dot, 46).  % '.'
+get_symbol(Ctx, ID, Symbol) :-
+    % Get displayChar attribute (character code as integer)
+    % If attribute doesn't exist, predicate fails
+    % (object not displayed)
+    ctx_attr_val(Ctx, ID/displayChar, Symbol),
+    integer(Symbol).
 

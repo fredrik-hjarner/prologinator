@@ -199,15 +199,18 @@ test("collision: simple enemy-projectile collision", (
         )
     ], Ctx1),
     ctx_nextid_ctx(Ctx1, 2, InitialContext),
-    % Run 2 frames - collision should happen at frame 1 when
-    % both reach (10, 10)
+    % Run 1 frame - collision should happen when both reach
+    % (10, 10)
     tick(ctx_in(InitialContext), ctx_out(Context1)),
     ctx_frame(Context1, 1),
     ctx_objs(Context1, Objs1),
-    % After collision at frame 1, both objects should be
-    % removed
+    % After collision, both objects remain but have
+    % collision_id attributes
     length(Objs1, ObjCount),
-    ObjCount = 0
+    ObjCount = 2,
+    % Check collision_id attributes are set
+    ctx_attr_val(Context1, 0/collision_id, 1),
+    ctx_attr_val(Context1, 1/collision_id, 0)
 )).
 
 % ==========================================================

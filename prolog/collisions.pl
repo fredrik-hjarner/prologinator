@@ -1,104 +1,82 @@
 % Collision Detection Module
 % Handles collision detection between game objects
+% Sets collision_id attributes on colliding objects
 
 % ==========================================================
-% Collision Detection (simplified - grid-based)
+% Main entry: runs before tick_all_objects
 % ==========================================================
-% -list(game_object), -list(hint)).
-
-detect_collisions(ctx_old(CtxIn),ctx_new(CtxOut)) :-
-    % Extract objects and attrs from context
-    ctx_objs_attrs(CtxIn, Objects, AttrStore),
+detect_collisions(ctx_old(CtxIn), ctx_new(CtxOut)) :-
+    % 1. Clear old collision_id attributes
+    clear_all_collisions(CtxIn, Ctx1),
     
-    % Find collisions
+    % 2. Find all position overlaps
+    ctx_objs_attrs(Ctx1, Objects, AttrStore),
+    find_collision_pairs(Objects, AttrStore, Pairs),
+    % Pairs = [(5, 12), (5, 18), (8, 12), ...]
+    
+    % 3. Write collision_id for each object
+    write_collision_ids(Pairs, Ctx1, CtxOut).
+
+% ----------------------------------------------------------
+% Step 1: Clear collision_id attributes
+% ----------------------------------------------------------
+clear_all_collisions(CtxIn, CtxOut) :-
+    ctx_attrs(CtxIn, StoreIn),
+    ctx_objs(CtxIn, Objects),
+    foldl(clear_one_collision, 
+          Objects, 
+          StoreIn, 
+          StoreOut),
+    ctx_attrs_ctx(CtxIn, StoreOut, CtxOut).
+
+clear_one_collision(Obj, StoreIn, StoreOut) :-
+    obj_id(Obj, ID),
+    ( gen_assoc(ID, StoreIn, Attrs) ->
+        % Remove collision_id attribute if it exists
+        ( select(attr(collision_id, _), Attrs, NewAttrs) ->
+            put_assoc(ID, StoreIn, NewAttrs, StoreOut)
+        ;
+            StoreOut = StoreIn
+        )
+    ;
+        StoreOut = StoreIn
+    ).
+
+% ----------------------------------------------------------
+% Step 2: Find all collision pairs
+% ----------------------------------------------------------
+find_collision_pairs(Objects, AttrStore, Pairs) :-
     findall(
-        collision(ID1, ID2),
+        (ID1, ID2),
         (
             member(Obj1, Objects),
             obj_id(Obj1, ID1),
             member(Obj2, Objects),
             obj_id(Obj2, ID2),
-            ID1 @< ID2,
-            gen_assoc(ID1, AttrStore, A1),
-            gen_assoc(ID2, AttrStore, A2),
-            member(attr(x, X1), A1),
-            member(attr(y, Y1), A1),
-            member(attr(x, X2), A2),
-            member(attr(y, Y2), A2),
-            collides_at(X1, Y1, X2, Y2)
+            ID1 @< ID2,  % Avoid duplicates
+            same_position(AttrStore, ID1, ID2)
         ),
-        Collisions
-    ),
-    
-    % Handle collisions and get IDs to remove
-    handle_collisions(
-        Objects, Collisions, NewObjects, ToRemoveIDs
-    ),
-    
-    % Clean up attributes for removed objects
-    cleanup_attributes(
-        AttrStore, ToRemoveIDs, NewAttrStore
-    ),
-    
-    % Update context with new objects and cleaned attrs
-    ctx_objs_attrs_ctx(
-        CtxIn,
-        NewObjects, NewAttrStore,
-        CtxOut
+        Pairs
     ).
 
-collides_at(X, Y, X, Y).
+same_position(AttrStore, ID1, ID2) :-
+    gen_assoc(ID1, AttrStore, Attrs1),
+    gen_assoc(ID2, AttrStore, Attrs2),
+    member(attr(x, X), Attrs1),
+    member(attr(y, Y), Attrs1),
+    member(attr(x, X), Attrs2),
+    member(attr(y, Y), Attrs2).
 
-% TODO: I dont like that what happens at collision is
-% hard-coded like this.
-%       should be dynamic.
-handle_collisions(
-    Objects,
-    Collisions,
-    NewObjects,
-    ToRemoveIDs
-) :-
-    findall(
-        (ProjID, EnemyID),
-        (
-            member(collision(ProjID, EnemyID), Collisions),
-            member(Obj1, Objects),
-            obj_id_type(Obj1, ProjID, proj),
-            member(Obj2, Objects),
-            obj_id_type(Obj2, EnemyID, enemy)
-        ;
-            member(collision(EnemyID, ProjID), Collisions),
-            member(Obj1, Objects),
-            obj_id_type(Obj1, EnemyID, enemy),
-            member(Obj2, Objects),
-            obj_id_type(Obj2, ProjID, proj)
-        ),
-        ToRemove
-    ),
-    findall(
-        ID,
-        (member((A, B), ToRemove), (ID = A ; ID = B)),
-        AllIDs
-    ),
-    list_to_set(AllIDs, ToRemoveIDs),
-    remove_objects(Objects, ToRemoveIDs, NewObjects).
-
-% Clean up attributes for removed objects
-cleanup_attributes(Attrs, [], Attrs).
-cleanup_attributes(Attrs, [ID|Rest], Result) :-
-    ( gen_assoc(ID, Attrs, _) ->
-        del_assoc(ID, Attrs, _, Temp)
-    ;
-        Temp = Attrs
-    ),
-    cleanup_attributes(Temp, Rest, Result).
-
-remove_objects([], _, []).
-remove_objects([Obj|Rest], ToRemove, NewObjs) :-
-    obj_id(Obj, ID),
-    ( member(ID, ToRemove) ->
-        remove_objects(Rest, ToRemove, NewObjs)
-    ;
-        NewObjs = [Obj|RestObjs],
-        remove_objects(Rest, ToRemove, RestObjs)
-    ).
+% ----------------------------------------------------------
+% Step 3: Write collision_id (last wins)
+% ----------------------------------------------------------
+write_collision_ids([], Ctx, Ctx).
+write_collision_ids([(ID1, ID2)|Rest], 
+                    CtxIn, CtxOut) :-
+    % Write both directions
+    ctx_attr_val_ctx(CtxIn, ID1/collision_id, 
+                     ID2, Ctx1),
+    ctx_attr_val_ctx(Ctx1, ID2/collision_id, 
+                     ID1, Ctx2),
+    % Continue (later writes override)
+    write_collision_ids(Rest, Ctx2, CtxOut).

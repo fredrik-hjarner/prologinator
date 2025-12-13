@@ -56,6 +56,7 @@
 #include "../prolog/actions/wait_key_down.pl"
 #include "../prolog/actions/wait_key_up.pl"
 #include "../prolog/actions/wait_key_held.pl"
+#include "../prolog/actions/wait_until.pl"
 #include "../prolog/actions/parallel_all.pl"
 #include "../prolog/actions/parallel_race.pl"
 

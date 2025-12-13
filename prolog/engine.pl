@@ -4,19 +4,19 @@
 tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
     context_validation(CtxIn),
     
-    % 1. Tick Physics & Logic
-    % Iterates by ID, allowing new spawns to be picked up
-    % immediately.
-    tick_all_objects(ctx_in(CtxIn), ctx_out(CtxPhys)),
-    context_validation(CtxPhys),
-    
-    % 2. Resolve Collisions
-    % Removes objects, adds collision hints.
-    detect_collisions(ctx_old(CtxPhys), ctx_new(CtxColl)),
+    % 1. Detect collisions BEFORE ticking
+    % (so objects can react)
+    detect_collisions(ctx_old(CtxIn), ctx_new(CtxColl)),
     context_validation(CtxColl),
     
+    % 2. Tick Physics & Logic
+    % Iterates by ID, allowing new spawns to be picked up
+    % immediately.
+    tick_all_objects(ctx_in(CtxColl), ctx_out(CtxPhys)),
+    context_validation(CtxPhys),
+    
     % 3. Increment Frame
-    increment_frame(CtxColl, CtxOut).
+    increment_frame(CtxPhys, CtxOut).
 
 % ==========================================================
 % Pipeline Stages

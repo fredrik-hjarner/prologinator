@@ -64,6 +64,8 @@ lint-all:
     @just lint prolog/builtin_actions.pl || exit 1
     @echo "Linting execute_action.pl..."
     @just lint prolog/execute_action.pl || exit 1
+    @echo "Linting actions/wait_until.pl..."
+    @just lint prolog/actions/wait_until.pl || exit 1
     @echo "Linting actions/__test__/move_to_fwd_test.pl..."
     @just lint prolog/actions/__test__/move_to_fwd_test.pl || exit 1
     @echo "Linting actions/__test__/trigger_state_change_fwd_test.pl..."
@@ -90,6 +92,8 @@ lint-all:
     @just lint prolog/actions/__test__/wait_key_up_fwd_test.pl || exit 1
     @echo "Linting actions/__test__/wait_key_held_fwd_test.pl..."
     @just lint prolog/actions/__test__/wait_key_held_fwd_test.pl || exit 1
+    @echo "Linting actions/__test__/wait_until_fwd_test.pl..."
+    @just lint prolog/actions/__test__/wait_until_fwd_test.pl || exit 1
     @echo "All files passed linting!"
 
 # lint the max length of files.
@@ -112,6 +116,7 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/wait_key_down_fwd_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/wait_key_up_fwd_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/wait_key_held_fwd_test.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/wait_until_fwd_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/collisions.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/game.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/macros.pl
@@ -150,6 +155,7 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait_key_down.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait_key_up.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait_key_held.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait_until.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel_all.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel_race.pl
 

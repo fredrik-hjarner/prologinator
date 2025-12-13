@@ -48,7 +48,7 @@ different positions", (
 % --------------------------------------------------------
 
 test("collisions: enemy and projectile at same position \
-are both removed", (
+get collision_id attributes", (
     empty_attr_store(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0, [attr(x, 10), attr(y, 10)],
               Attrs1),
@@ -67,12 +67,21 @@ are both removed", (
         ctx_old(CtxIn),
         ctx_new(CtxOut)
     ),
+    % Objects remain
     ctx_objs(CtxOut, NewObjects),
-    NewObjects = []  % Both objects removed
+    NewObjects = [
+        object(id(0), type(enemy), actions([]),
+               collisions([])),
+        object(id(1), type(proj), actions([]),
+               collisions([]))
+    ],
+    % But collision_id attributes are set
+    ctx_attr_val(CtxOut, 0/collision_id, 1),
+    ctx_attr_val(CtxOut, 1/collision_id, 0)
 )).
 
-test("collisions: enemy and projectile collision removes \
-only colliding objects", (
+test("collisions: enemy and projectile collision sets \
+collision_id only on colliding objects", (
     empty_attr_store(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0, [attr(x, 10), attr(y, 10)],
               Attrs1),
@@ -95,18 +104,30 @@ only colliding objects", (
         ctx_old(CtxIn),
         ctx_new(CtxOut)
     ),
+    % All objects remain
     ctx_objs(CtxOut, NewObjects),
-    NewObjects = [object(id(2), type(enemy), actions([]),
-                         collisions([]))]
-    % Only non-colliding object remains
+    NewObjects = [
+        object(id(0), type(enemy), actions([]),
+               collisions([])),
+        object(id(1), type(proj), actions([]),
+               collisions([])),
+        object(id(2), type(enemy), actions([]),
+               collisions([]))
+    ],
+    % Collision IDs set only for colliding objects (0 and 1)
+    ctx_attr_val(CtxOut, 0/collision_id, 1),
+    ctx_attr_val(CtxOut, 1/collision_id, 0),
+    % Object 2 has no collision_id (fails if it exists)
+    \+ ctx_attr_val(CtxOut, 2/collision_id, _)
 )).
 
 % --------------------------------------------------------
-% Tests: No collision between non-projectile types
+% Tests: Collision detection is type-agnostic
+% All positional overlaps get collision_id attributes
 % --------------------------------------------------------
 
-test("collisions: enemy and enemy at same position do \
-not collide", (
+test("collisions: enemy and enemy at same position get \
+collision_id", (
     empty_attr_store(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0, [attr(x, 10), attr(y, 10)],
               Attrs1),
@@ -125,12 +146,16 @@ not collide", (
         ctx_old(CtxIn),
         ctx_new(CtxOut)
     ),
+    % Objects remain
     ctx_objs(CtxOut, NewObjects),
-    NewObjects = Objects  % No objects removed
+    NewObjects = Objects,
+    % Both get collision_id attributes
+    ctx_attr_val(CtxOut, 0/collision_id, 1),
+    ctx_attr_val(CtxOut, 1/collision_id, 0)
 )).
 
 test("collisions: projectile and projectile at same \
-position do not collide", (
+position get collision_id", (
     empty_attr_store(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0, [attr(x, 10), attr(y, 10)],
               Attrs1),
@@ -149,8 +174,12 @@ position do not collide", (
         ctx_old(CtxIn),
         ctx_new(CtxOut)
     ),
+    % Objects remain
     ctx_objs(CtxOut, NewObjects),
-    NewObjects = Objects  % No objects removed
+    NewObjects = Objects,
+    % Both get collision_id attributes
+    ctx_attr_val(CtxOut, 0/collision_id, 1),
+    ctx_attr_val(CtxOut, 1/collision_id, 0)
 )).
 
 % --------------------------------------------------------
