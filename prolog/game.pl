@@ -20,12 +20,11 @@ main :-
           ( catch(getenv("INPUTS", InputFile), _, fail) ->
               % Convert InputFile (list of chars) to atom
               atom_chars(InputFileAtom, InputFile),
-              % TODO: Hm relies on input_timeline existing
-              %        in InputFile??
+              % Consult loads into user module
               consult(InputFileAtom),
-              % Try user module first, then current module
-              ( catch(input_timeline(TimelineList), _, 
-                      input_timeline(TimelineList)) ->
+              % Call from user module
+              ( catch(user:input_timeline(TimelineList), _, 
+                      fail) ->
                   list_to_assoc(TimelineList, Timeline)
               ;
                   throw('input_timeline not found in file')

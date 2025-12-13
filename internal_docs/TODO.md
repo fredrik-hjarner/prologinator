@@ -1,3 +1,29 @@
+# Callback när attr ändras på sig själv eller annan.
+
+Ska man kunna lyssna på när ett attribut 
+ändras/updateras? Internt kan det vara ett dirty-fält som
+lever en frame eller nåt.
+
+# Move as much as possible into attributes
+
+I.e. have as little as possible as fields on the Game Object
+
+# Maybe an object HAVING actions is incorrect abstraction?
+
+Because that coupling/abstraction breaks apart in some
+actions (parallel_all, parallel_race and similar).
+
+# Maybe id and attr_id should be separate?
+
+So that you can for example spawn a new object (i.e.
+function generator) that is connected to the same attrs?
+
+# In stdlib I could maybe add some kinda persistent move
+
+like support for dx dy:
+
+`wait_key_down(w), set_attr(dy, -1), set_attr(dx, 0) `
+
 # Make xod:validate/2 into xod:validate/3 with debug msg
 
 Yup. It's very hard to see what's wrong and where.

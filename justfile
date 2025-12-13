@@ -2,15 +2,15 @@ default:
 	@just --list
 
 # Run the monolithic build with Scryer Prolog
-# Usage: just game (uses games/default, no input file)
+# Usage: just game (uses games/default, games/input_demo.pl)
 # Usage: just game ./games/my_game
 # Usage: just game ./games/my_game ./games/my_input
-game GAME='games/default' INPUTS='': build
+# Usage: just game ./games/my_game '' (no input timeline)
+game GAME='games/default' INPUTS='games/input_demo.pl': build
 	@if [ -z "{{INPUTS}}" ]; then \
 		GAME={{GAME}} scryer-prolog build/prologinator.pl -g "main, halt"; \
 	else \
-		INPUTS_ABS=$(realpath "{{INPUTS}}" 2>/dev/null || echo "$(pwd)/{{INPUTS}}"); \
-		GAME={{GAME}} INPUTS="$$INPUTS_ABS" scryer-prolog build/prologinator.pl -g "main, halt"; \
+		GAME={{GAME}} INPUTS={{INPUTS}} scryer-prolog build/prologinator.pl -g "main, halt"; \
 	fi
 
 test MODULE: build
@@ -84,6 +84,12 @@ lint-all:
     @just lint prolog/actions/__test__/move_delta_fwd_test.pl || exit 1
     @echo "Linting actions/__test__/value_resolution_fwd_test.pl..."
     @just lint prolog/actions/__test__/value_resolution_fwd_test.pl || exit 1
+    @echo "Linting actions/__test__/wait_key_down_fwd_test.pl..."
+    @just lint prolog/actions/__test__/wait_key_down_fwd_test.pl || exit 1
+    @echo "Linting actions/__test__/wait_key_up_fwd_test.pl..."
+    @just lint prolog/actions/__test__/wait_key_up_fwd_test.pl || exit 1
+    @echo "Linting actions/__test__/wait_key_held_fwd_test.pl..."
+    @just lint prolog/actions/__test__/wait_key_held_fwd_test.pl || exit 1
     @echo "All files passed linting!"
 
 # lint the max length of files.
@@ -103,6 +109,9 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/repeat_fwd_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/move_delta_fwd_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/value_resolution_fwd_test.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/wait_key_down_fwd_test.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/wait_key_up_fwd_test.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/wait_key_held_fwd_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/collisions.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/game.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/macros.pl

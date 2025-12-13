@@ -81,13 +81,15 @@ done", (
             [wait(5), wait(10)]
         )),
         obj_old(Obj),
-        result(completed, NewObj)
+        result(Status, NewObj)
     ),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Actions = [parallel_race_running([wait(4), wait(9)])|_]
+    (Status = yielded
+     ; err_write("Status != yielded")),
+    (Actions = [parallel_race([wait(4), wait(9)])|_]
      ;
      err_write("Actions wrong"))
 )).
@@ -129,3 +131,71 @@ despawns", (
     (Commands = [] ; err_write("Commands != []"))
 )).
 
+% TODO: Complete and fix this test.
+% % Test: parallel_all despawns when a child despawns
+% test("parallel_race: despawns when child despawns", (
+%     % ----------------------------------------------------
+%     % Arrange
+%     % ----------------------------------------------------
+%     ParAcn = parallel_all([
+%         loop([
+%             wait(1), incr(a, 1)
+%         ]),
+%         loop([
+%             wait(2), incr(b, 1)
+%         ]),
+%         wait(10) % 1*10 = 2*5
+%     ]),
+%     Actions = list([
+%         ParAcn,
+%         despawn
+%     ]),
+%     ObjIn = object(
+%         id(1),
+%         type(static),
+%         actions([Actions]),
+%         collisions([])
+%     ),
+%     empty_attr_store(EmptyAttrs0),
+%     put_assoc(
+%         1,EmptyAttrs0,[attr(a, 0), attr(b, 0)], EmptyAttrs
+%     ),
+%     ctx_with_attrs(EmptyAttrs, Ctx),
+%     % ----------------------------------------------------
+%     % Act - Frame 0 -> 1
+%     % ----------------------------------------------------
+%     execute_action(
+%         ctx_old(Ctx), ctx_new(CtxNew),
+%         action(Actions),
+%         obj_old(ObjIn),
+%         result(Status, ObjOut)
+%     ),
+%     % ----------------------------------------------------
+%     % Assert - frame 1
+%     % ----------------------------------------------------
+%     expect(Status = yielded),
+%     % a should be 0, b should be 0
+%     expect(ctx_attr_val(CtxNew, 1/a, 0)),
+%     expect(ctx_attr_val(CtxNew, 1/b, 0)),
+%     % ----------------------------------------------------
+%     % Act - Frame 1 -> 9 (8 more ticks)
+%     % ----------------------------------------------------
+%     tick_n(8, CtxNew, ObjOut, CtxFinal, ObjFinal),
+%     % ----------------------------------------------------
+%     % Assert - frame 9
+%     % ----------------------------------------------------
+%     % state should be ehm despawned
+%     obj_acns(ObjFinal, Frame9Actions),
+%     write_term(Frame9Actions, []), nl,
+%     % ----------------------------------------------------
+%     % Act - Frame 9 -> 10 (9 more ticks)
+%     % ----------------------------------------------------
+%     tick_n(1, CtxFinal, ObjFinal, Ctx10, Obj10),
+%     % ----------------------------------------------------
+%     % Assert - frame 10
+%     % ----------------------------------------------------
+%     % state should be ehm despawned
+%     obj_acns(Obj10, Frame10Actions),
+%     write_term(Frame10Actions, []), nl
+%     % expect(ctx_status(CtxFinal, despawned))
+% )).

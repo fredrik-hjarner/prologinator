@@ -17,7 +17,8 @@
 % Tests: list
 % ==========================================================
 
-test("list: expands actions into queue", (
+test("list: executes actions and yields when child \
+yields", (
     ObjIn = object(
         id(0), type(static),
         actions([
@@ -32,13 +33,18 @@ test("list: expands actions into queue", (
         ctx_new(CtxNew),
         action(list([wait(1), move_to(5, 5, 2)])),
         obj_old(ObjIn),
-        result(completed, ObjOut)
+        result(Status, ObjOut)
     ),
-    ObjOut = object(
-        id(0), type(static),
-        actions([wait(1), move_to(5, 5, 2), wait(3)]),
-        collisions([])
-    ),
+    % list now executes actions immediately using
+    % tick_object
+    % wait(1) yields and removes itself, so list yields
+    % with remaining actions: [move_to(5, 5, 2)]
+    Status = yielded,
+    obj_acns(ObjOut, Actions),
+    % Remaining actions should be wrapped back in list
+    Actions = [
+        list([move_to(5, 5, 2)]), wait(3)
+    ],
     ctx_cmds(CtxNew, []),
     ctx_frame(CtxNew, 0),
     ctx_status(CtxNew, playing)

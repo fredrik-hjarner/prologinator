@@ -148,10 +148,12 @@ tick_children(
             ( RemainingAcnsAfterTick = [] ->
                 Result = remaining(RestRemaining, FinalObj)
             ;
-                Result = remaining(
-                    [RemainingAcnsAfterTick|RestRemaining],
-                    FinalObj
-                )
+                append(
+                    RemainingAcnsAfterTick,
+                    RestRemaining,
+                    AllRemaining
+                ),
+                Result = remaining(AllRemaining, FinalObj)
             )
         )
     ).

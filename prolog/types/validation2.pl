@@ -53,8 +53,7 @@ action_schema(union([
     schema(loop_schema),
     schema(trigger_state_change_schema),
     schema(parallel_all_schema),
-    schema(parallel_all_running_schema),
-    schema(parallel_race_running_schema)
+    schema(parallel_all_running_schema)
 ])).
 
 % Wait frames: wait(N) where N is integer
@@ -100,10 +99,6 @@ parallel_all_running_schema(struct(parallel_all_running, [
     children(list(schema(action_schema)))
 ])).
 
-% Parallel race running: parallel_race_running(Children)
-parallel_race_running_schema(struct(parallel_race_running, [
-    children(list(schema(action_schema)))
-])).
 
 % ==========================================================
 % Command Schemas

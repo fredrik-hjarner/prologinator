@@ -21,7 +21,6 @@ builtin_action(noop).
 builtin_action(parallel_all(_)).
 builtin_action(parallel_race(_)).
 builtin_action(parallel_all_running(_)).
-builtin_action(parallel_race_running(_)).
 builtin_action(trigger_state_change(_)).
 builtin_action(define_action(_, _)).
 builtin_action(load(_)).

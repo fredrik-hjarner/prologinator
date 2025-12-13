@@ -488,14 +488,6 @@ action_validation_helper(Term) :-
             ;
                 true
             )
-        ; Term = parallel_race_running(Children) ->
-            % Structure matches, validate
-            %   content
-            ( ground(Children) ->
-                length(Children, _)
-            ;
-                true
-            )
         ; Term = repeat(Times, Acts) ->
             % Structure matches, validate content
             ( ground(Times) ->

@@ -385,7 +385,7 @@ test("noop: removes self from action queue", (
 % Tests: list
 % ==========================================================
 
-test("list: expands actions into queue", (
+test("list: executes actions immediately", (
     ObjIn = object(
         id(0), type(static),
         actions([
@@ -400,11 +400,13 @@ test("list: expands actions into queue", (
         ctx_new(CtxNew),
         action(list([wait(1), move_to(5, 5, 2)])),
         obj_old(ObjIn),
-        result(completed, ObjOut)
+        result(Status, ObjOut)
     ),
+    % list now executes immediately, wait(1) yields
+    Status = yielded,
     ObjOut = object(
         id(0), type(static),
-        actions([wait(1), move_to(5, 5, 2), wait(3)]),
+        actions([list([move_to(5, 5, 2)]), wait(3)]),
         collisions([])
     ),
     ctx_cmds(CtxNew, []),
@@ -655,13 +657,15 @@ done", (
             [wait(5), wait(10)]
         )),
         obj_old(Obj),
-        result(completed, NewObj)
+        result(Status, NewObj)
     ),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Actions = [parallel_race_running([wait(4), wait(9)])|_]
+    (Status = yielded
+     ; err_write("Status != yielded")),
+    (Actions = [parallel_race([wait(4), wait(9)])|_]
      ;
      err_write("Actions wrong"))
 )).

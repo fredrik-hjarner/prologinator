@@ -195,14 +195,6 @@ action_constraint(
         action_constraint, Children, 100, DepthLeft1
     ).
 
-action_constraint(
-    parallel_race_running(Children), DepthLeft
-) :-
-    DepthLeft #> 0,
-    DepthLeft1 #= DepthLeft - 1,
-    bounded_list_of_depth(
-        action_constraint, Children, 100, DepthLeft1
-    ).
 
 % ==========================================================
 % pos_constraint/1 Constraint

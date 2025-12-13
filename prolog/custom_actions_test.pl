@@ -364,7 +364,9 @@ substituted", (
         actions([move_pattern(10, 10, 20, 20, 5)]),
         collisions([])
     ),
-    empty_attr_store(EmptyAttrs),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+              EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
     ctx_objs_ctx(Ctx0, [], Ctx1),
     ctx_nextid_ctx(Ctx1, 1, Ctx),
@@ -376,21 +378,21 @@ substituted", (
         ctx_new(CtxNew),
         action(move_pattern(10, 10, 20, 20, 5)),
         obj_old(ObjIn),
-        result(completed, ObjOut)
+        result(Status, ObjOut)
     ),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    % Should expand to list([move_to(10, 10, 5),
-    %   move_to(20, 20, 5)])
+    % Should expand to list([move_to(...), move_to(...)])
+    % The list action now executes immediately, so move_to
+    % will have started (yielded after 1 frame)
     obj_acns(ObjOut, Actions),
     expect(
-        (
-            member(list([move_to(10, 10, 5),
-                move_to(20, 20, 5)]), Actions)
-            ; member(move_to(10, 10, 5), Actions)
-                % Or already expanded
-        )
+        Status = yielded
+    ),
+    expect(
+        member(list([move_to(10, 10, _),
+            move_to(20, 20, 5)]), Actions)
     ),
     expect(ctx_cmds(CtxNew, []))
 )).
