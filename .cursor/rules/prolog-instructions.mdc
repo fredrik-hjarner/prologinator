@@ -39,3 +39,12 @@ that it's better to bypass it as much as possible. I do this
 by introducing a build step that concatenates all the files
 together with gpp into a single file. scryer-prolog is fed
 that one file, this all my code is in the same namespace.
+
+# Please use accessors and constructors
+
+Please use the accessors and constructors provided in the
+types/accessors.pl and types/constructors.pl files. That
+makes the code more robust when if I add or remove fields
+from entities. Feel free to refactor code you see to use
+accessors and constructors. Also if certain accessors or
+constructors are not available, feel free to add them.
