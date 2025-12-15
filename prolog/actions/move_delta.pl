@@ -52,8 +52,8 @@ execute_move_delta(
     CtxOut
 ) :-
     % Get current position from attribute store
-    ( ctx_attr_val(Ctx, ID/x, CurrX),
-      ctx_attr_val(Ctx, ID/y, CurrY) ->
+    ( ctx_attr_val(ID/x, CurrX, Ctx),
+      ctx_attr_val(ID/y, CurrY, Ctx) ->
         true
     ;
         % Default to 0,0 if not set
@@ -88,8 +88,8 @@ execute_move_delta(
 ) :-
     Frames #> 0,
     % Get current position from attribute store
-    ( ctx_attr_val(Ctx, ID/x, CurrX),
-      ctx_attr_val(Ctx, ID/y, CurrY) ->
+    ( ctx_attr_val(ID/x, CurrX, Ctx),
+      ctx_attr_val(ID/y, CurrY, Ctx) ->
         true
     ;
         % Default to 0,0 if not set

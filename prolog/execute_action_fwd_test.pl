@@ -44,8 +44,8 @@ remaining", (
         CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
-    ctx_attr_val(CtxNew, 1/x, NewX),
-    ctx_attr_val(CtxNew, 1/y, NewY),
+    ctx_attr_val(1/x, NewX, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -87,8 +87,8 @@ remaining", (
         CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
-    ctx_attr_val(CtxNew, 1/x, NewX),
-    ctx_attr_val(CtxNew, 1/y, NewY),
+    ctx_attr_val(1/x, NewX, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -129,8 +129,8 @@ test("move_to: single frame, arrives at target", (
         CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
-    ctx_attr_val(CtxNew, 1/x, X),
-    ctx_attr_val(CtxNew, 1/y, Y),
+    ctx_attr_val(1/x, X, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -172,8 +172,8 @@ continues with remaining frames", (
         CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
-    ctx_attr_val(CtxNew, 1/x, X),
-    ctx_attr_val(CtxNew, 1/y, Y),
+    ctx_attr_val(1/x, X, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -208,8 +208,8 @@ test("move_to: negative target coordinates", (
         CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
-    ctx_attr_val(CtxNew, 1/x, NewX),
-    ctx_attr_val(CtxNew, 1/y, NewY),
+    ctx_attr_val(1/x, NewX, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -534,9 +534,9 @@ test("set_attr: set new attribute", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(CtxNew, 1/hp, HP),
-    ctx_attr_val(CtxNew, 1/x, X),
-    ctx_attr_val(CtxNew, 1/y, Y),
+    ctx_attr_val(1/hp, HP, CtxNew),
+    ctx_attr_val(1/x, X, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew),
     ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
@@ -574,9 +574,9 @@ test("set_attr: replace existing attribute", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(CtxNew, 1/hp, HP),
-    ctx_attr_val(CtxNew, 1/x, X),
-    ctx_attr_val(CtxNew, 1/y, Y),
+    ctx_attr_val(1/hp, HP, CtxNew),
+    ctx_attr_val(1/x, X, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -744,7 +744,7 @@ duplicates", (
         Ctx2,
         CtxNew
     ),
-    ctx_attr_val(CtxNew, 1/hp, HP),
+    ctx_attr_val(1/hp, HP, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -892,8 +892,8 @@ test("move_delta: single frame moves and completes", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(CtxNew, 1/x, X),
-    ctx_attr_val(CtxNew, 1/y, Y),
+    ctx_attr_val(1/x, X, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew),
     ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
@@ -933,8 +933,8 @@ test("move_delta: multiple frames continues", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(CtxNew, 1/x, X),
-    ctx_attr_val(CtxNew, 1/y, Y),
+    ctx_attr_val(1/x, X, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew),
     obj_acns(ObjOut, Actions),
     ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
@@ -972,8 +972,8 @@ test("move_delta: negative deltas work", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(CtxNew, 1/x, X),
-    ctx_attr_val(CtxNew, 1/y, Y),
+    ctx_attr_val(1/x, X, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew),
     obj_acns(ObjOut, Actions),
     ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
@@ -1010,10 +1010,10 @@ test("move_delta: preserves other attributes", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(CtxNew, 1/x, X),
-    ctx_attr_val(CtxNew, 1/y, Y),
-    ctx_attr_val(CtxNew, 1/hp, HP),
-    ctx_attr_val(CtxNew, 1/speed, Speed),
+    ctx_attr_val(1/x, X, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew),
+    ctx_attr_val(1/hp, HP, CtxNew),
+    ctx_attr_val(1/speed, Speed, CtxNew),
     ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
@@ -1060,8 +1060,8 @@ test("value_resolution: move_to with attr() references", (
         CtxNew
     ),
     % Should start moving toward target
-    ctx_attr_val(CtxNew, 1/x, NewX),
-    ctx_attr_val(CtxNew, 1/y, NewY),
+    ctx_attr_val(1/x, NewX, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew),
     NewX > 0,
     NewY > 0
 )).
@@ -1088,8 +1088,8 @@ test("value_resolution: set_attr with attr() source", (
         CtxNew
     ),
     % source_x should now equal x
-    ctx_attr_val(CtxNew, 1/source_x, 50),
-    ctx_attr_val(CtxNew, 1/x, 50)
+    ctx_attr_val(1/source_x, 50, CtxNew),
+    ctx_attr_val(1/x, 50, CtxNew)
 )).
 
 test("value_resolution: path syntax parent_id/target_y", (
@@ -1120,8 +1120,8 @@ test("value_resolution: path syntax parent_id/target_y", (
         CtxNew
     ),
     % Should copy parent's target_y (250) to my_target_y
-    ctx_attr_val(CtxNew, 1/my_target_y, 250),
-    ctx_attr_val(CtxNew, 2/target_y, 250)
+    ctx_attr_val(1/my_target_y, 250, CtxNew),
+    ctx_attr_val(2/target_y, 250, CtxNew)
 )).
 
 test("value_resolution: multi-hop path a/b/c", (
@@ -1159,7 +1159,7 @@ test("value_resolution: multi-hop path a/b/c", (
     ),
     % Should navigate: 1 -> first_id(2) -> second_id(3) ->
     % final_value(999)
-    ctx_attr_val(CtxNew, 1/result, 999)
+    ctx_attr_val(1/result, 999, CtxNew)
 )).
 
 test("value_resolution: spawn at attr() position", (
@@ -1190,8 +1190,8 @@ test("value_resolution: spawn at attr() position", (
     % creates object, so check it exists in context
     ctx_objs(Objects, CtxNew),
     member(object(id(_ID), type(enemy), _, _), Objects),
-    ctx_attr_val(CtxNew, _ID/x, 200),
-    ctx_attr_val(CtxNew, _ID/y, 300)
+    ctx_attr_val(_ID/x, 200, CtxNew),
+    ctx_attr_val(_ID/y, 300, CtxNew)
 )).
 
 test("value_resolution: mixed plain and attr() values", (
@@ -1219,8 +1219,8 @@ test("value_resolution: mixed plain and attr() values", (
         CtxNew
     ),
     % Should move toward target (100, 200) with speed=5
-    ctx_attr_val(CtxNew, 1/x, NewX),
-    ctx_attr_val(CtxNew, 1/y, NewY),
+    ctx_attr_val(1/x, NewX, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew),
     NewX > 0,
     NewY > 0
 )).
@@ -1252,8 +1252,8 @@ test("value_resolution: backward compatible plain values", (
         CtxNew
     ),
     % Should work exactly as before
-    ctx_attr_val(CtxNew, 1/x, NewX),
-    ctx_attr_val(CtxNew, 1/y, NewY),
+    ctx_attr_val(1/x, NewX, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew),
     NewX > 0,
     NewY > 0
 )).

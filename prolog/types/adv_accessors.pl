@@ -13,14 +13,19 @@
 % Fails if the object or attribute doesn't exist. Uses
 % ctx_attrs to get the store, then looks up the object's
 % attributes and finds the matching key-value.
-% ctx_attr_val(+Ctx, +ObjectID/Key, -Value)
+% getter ctx_attr_val/4 for dcg use
 % Bidirectional: ObjectID and Key can be non-ground.
 % Uses attr(Key, Value) format internally for full
 % bidirectionality.
-ctx_attr_val(Ctx, ObjectID/Key, Value) :-
+ctx_attr_val(ObjectID/Key, Value, Ctx, Ctx) :-
     ctx_attrs(AttrStore, Ctx),
     gen_assoc(ObjectID, AttrStore, Attrs),
     member(attr(Key, Value), Attrs).
+
+% getter ctx_attr_val/3 for non-dcg use
+ctx_attr_val(ObjectID/Key, Value, Ctx) :-
+    % utilize dcg version
+    ctx_attr_val(ObjectID/Key, Value, Ctx, Ctx).
 
 % Updates or creates an attribute for an object in the
 % centralized store. Returns a new context with the updated

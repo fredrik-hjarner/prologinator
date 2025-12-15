@@ -175,8 +175,8 @@ despawns", (
 %     % ----------------------------------------------------
 %     expect(Status = yielded),
 %     % a should be 0, b should be 0
-%     expect(ctx_attr_val(CtxNew, 1/a, 0)),
-%     expect(ctx_attr_val(CtxNew, 1/b, 0)),
+%     expect(ctx_attr_val(1/a, 0, CtxNew)),
+%     expect(ctx_attr_val(1/b, 0, CtxNew)),
 %     % ----------------------------------------------------
 %     % Act - Frame 1 -> 9 (8 more ticks)
 %     % ----------------------------------------------------

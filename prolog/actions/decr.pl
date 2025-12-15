@@ -36,7 +36,7 @@ execute_decr(Key, Amount, ObjIn, ObjOut, Ctx, CtxOut) :-
     obj_id(ObjIn, MyID),
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),
-    ( ctx_attr_val(Ctx, MyID/Key, CurrentValue) ->
+    ( ctx_attr_val(MyID/Key, CurrentValue, Ctx) ->
         NewValue #= CurrentValue - Amount
     ;
         NewValue #= 0 - Amount
@@ -57,8 +57,7 @@ execute_decr(
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),
-    ( ctx_attr_val(Ctx, TargetID/Key,
-                   CurrentValue) ->
+    ( ctx_attr_val(TargetID/Key, CurrentValue, Ctx) ->
         NewValue #= CurrentValue - Amount
     ;
         NewValue #= 0 - Amount

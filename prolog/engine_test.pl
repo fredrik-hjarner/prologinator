@@ -209,8 +209,8 @@ test("collision: simple enemy-projectile collision", (
     length(Objs1, ObjCount),
     ObjCount = 2,
     % Check collision_id attributes are set
-    ctx_attr_val(Context1, 0/collision_id, 1),
-    ctx_attr_val(Context1, 1/collision_id, 0)
+    ctx_attr_val(0/collision_id, 1, Context1),
+    ctx_attr_val(1/collision_id, 0, Context1)
 )).
 
 % ==========================================================

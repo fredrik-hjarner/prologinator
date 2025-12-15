@@ -258,8 +258,8 @@ build_position_map(Ctx, Objects, PosMap) :-
 build_position_map_loop(_, [], Map, Map).
 build_position_map_loop(Ctx, [Obj|Rest], MapIn, MapOut) :-
     obj_id(Obj, ID),
-    ( ctx_attr_val(Ctx, ID/x, X),
-      ctx_attr_val(Ctx, ID/y, Y),
+    ( ctx_attr_val(ID/x, X, Ctx),
+      ctx_attr_val(ID/y, Y, Ctx),
       get_symbol(Ctx, ID, Symbol) ->
         Pos = pos(X, Y),
         put_assoc(Pos, MapIn, Symbol, MapTemp)
@@ -294,6 +294,6 @@ get_symbol(Ctx, ID, Symbol) :-
     % Get displayChar attribute (character code as integer)
     % If attribute doesn't exist, predicate fails
     % (object not displayed)
-    ctx_attr_val(Ctx, ID/displayChar, Symbol),
+    ctx_attr_val(ID/displayChar, Symbol, Ctx),
     integer(Symbol).
 

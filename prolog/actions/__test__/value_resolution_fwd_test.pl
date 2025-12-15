@@ -40,8 +40,8 @@ test("value_resolution: move_to with attr() references", (
         CtxNew
     ),
     % Should start moving toward target
-    ctx_attr_val(CtxNew, 1/x, NewX),
-    ctx_attr_val(CtxNew, 1/y, NewY),
+    ctx_attr_val(1/x, NewX, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew),
     NewX > 0,
     NewY > 0
 )).
@@ -68,8 +68,8 @@ test("value_resolution: set_attr with attr() source", (
         CtxNew
     ),
     % source_x should now equal x
-    ctx_attr_val(CtxNew, 1/source_x, 50),
-    ctx_attr_val(CtxNew, 1/x, 50)
+    ctx_attr_val(1/source_x, 50, CtxNew),
+    ctx_attr_val(1/x, 50, CtxNew)
 )).
 
 test("value_resolution: path syntax parent_id/target_y", (
@@ -100,8 +100,8 @@ test("value_resolution: path syntax parent_id/target_y", (
         CtxNew
     ),
     % Should copy parent's target_y (250) to my_target_y
-    ctx_attr_val(CtxNew, 1/my_target_y, 250),
-    ctx_attr_val(CtxNew, 2/target_y, 250)
+    ctx_attr_val(1/my_target_y, 250, CtxNew),
+    ctx_attr_val(2/target_y, 250, CtxNew)
 )).
 
 test("value_resolution: multi-hop path a/b/c", (
@@ -139,7 +139,7 @@ test("value_resolution: multi-hop path a/b/c", (
     ),
     % Should navigate: 1 -> first_id(2) -> second_id(3) ->
     % final_value(999)
-    ctx_attr_val(CtxNew, 1/result, 999)
+    ctx_attr_val(1/result, 999, CtxNew)
 )).
 
 test("value_resolution: spawn at attr() position", (
@@ -170,8 +170,8 @@ test("value_resolution: spawn at attr() position", (
     % creates object, so check it exists in context
     ctx_objs(Objects, CtxNew),
     member(object(id(_ID), type(enemy), _, _), Objects),
-    ctx_attr_val(CtxNew, _ID/x, 200),
-    ctx_attr_val(CtxNew, _ID/y, 300)
+    ctx_attr_val(_ID/x, 200, CtxNew),
+    ctx_attr_val(_ID/y, 300, CtxNew)
 )).
 
 test("value_resolution: mixed plain and attr() values", (
@@ -199,8 +199,8 @@ test("value_resolution: mixed plain and attr() values", (
         CtxNew
     ),
     % Should move toward target (100, 200) with speed=5
-    ctx_attr_val(CtxNew, 1/x, NewX),
-    ctx_attr_val(CtxNew, 1/y, NewY),
+    ctx_attr_val(1/x, NewX, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew),
     NewX > 0,
     NewY > 0
 )).
@@ -232,8 +232,8 @@ test("value_resolution: backward compatible plain values", (
         CtxNew
     ),
     % Should work exactly as before
-    ctx_attr_val(CtxNew, 1/x, NewX),
-    ctx_attr_val(CtxNew, 1/y, NewY),
+    ctx_attr_val(1/x, NewX, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew),
     NewX > 0,
     NewY > 0
 )).

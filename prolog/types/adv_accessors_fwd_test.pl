@@ -16,6 +16,7 @@
 
 % ==========================================================
 % Mode: ctx_attr_val(+Ctx, +ObjectID/+Key, -Value)
+% Note: Context is now the last argument (DCG-friendly)
 % ==========================================================
 
 test("ctx_attr_val: read existing attribute", (
@@ -29,8 +30,8 @@ test("ctx_attr_val: read existing attribute", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    ctx_attr_val(Ctx, 1/x, X),
-    ctx_attr_val(Ctx, 1/y, Y),
+    ctx_attr_val(1/x, X, Ctx),
+    ctx_attr_val(1/y, Y, Ctx),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -47,7 +48,7 @@ test("ctx_attr_val: fails when object doesn't exist", (
     % ------------------------------------------------------
     % Act & Assert
     % ------------------------------------------------------
-    \+ ctx_attr_val(Ctx, 1/x, _)
+    \+ ctx_attr_val(1/x, _, Ctx)
 )).
 
 test("ctx_attr_val: fails when attribute doesn't exist", (
@@ -60,7 +61,7 @@ test("ctx_attr_val: fails when attribute doesn't exist", (
     % ------------------------------------------------------
     % Act & Assert
     % ------------------------------------------------------
-    \+ ctx_attr_val(Ctx, 1/y, _)
+    \+ ctx_attr_val(1/y, _, Ctx)
 )).
 
 test("ctx_attr_val: enumerate Value from ObjectID and \
@@ -75,7 +76,7 @@ Key", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    findall(Val, ctx_attr_val(Ctx, 1/x, Val), Vals),
+    findall(Val, ctx_attr_val(1/x, Val, Ctx), Vals),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -99,7 +100,7 @@ object", (
     % Act
     % ------------------------------------------------------
     ctx_set_attr_val(1/x, 5, CtxIn, CtxOut),
-    ctx_attr_val(CtxOut, 1/x, X),
+    ctx_attr_val(1/x, X, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -117,8 +118,8 @@ test("ctx_set_attr_val: add attribute to existing object", (
     % Act
     % ------------------------------------------------------
     ctx_set_attr_val(1/y, 10, CtxIn, CtxOut),
-    ctx_attr_val(CtxOut, 1/x, X),
-    ctx_attr_val(CtxOut, 1/y, Y),
+    ctx_attr_val(1/x, X, CtxOut),
+    ctx_attr_val(1/y, Y, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -138,8 +139,8 @@ test("ctx_set_attr_val: replace existing attribute", (
     % Act
     % ------------------------------------------------------
     ctx_set_attr_val(1/x, 20, CtxIn, CtxOut),
-    ctx_attr_val(CtxOut, 1/x, X),
-    ctx_attr_val(CtxOut, 1/y, Y),
+    ctx_attr_val(1/x, X, CtxOut),
+    ctx_attr_val(1/y, Y, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -160,9 +161,9 @@ other attributes", (
     ctx_set_attr_val(1/x, 5, Ctx0, Ctx1),
     ctx_set_attr_val(1/y, 10, Ctx1, Ctx2),
     ctx_set_attr_val(1/hp, 100, Ctx2, CtxOut),
-    ctx_attr_val(CtxOut, 1/x, X),
-    ctx_attr_val(CtxOut, 1/y, Y),
-    ctx_attr_val(CtxOut, 1/hp, HP),
+    ctx_attr_val(1/x, X, CtxOut),
+    ctx_attr_val(1/y, Y, CtxOut),
+    ctx_attr_val(1/hp, HP, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -182,8 +183,8 @@ test("ctx_set_attr_val: multiple objects independent", (
     % ------------------------------------------------------
     ctx_set_attr_val(1/x, 5, Ctx0, Ctx1),
     ctx_set_attr_val(2/x, 10, Ctx1, CtxOut),
-    ctx_attr_val(CtxOut, 1/x, X1),
-    ctx_attr_val(CtxOut, 2/x, X2),
+    ctx_attr_val(1/x, X1, CtxOut),
+    ctx_attr_val(2/x, X2, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

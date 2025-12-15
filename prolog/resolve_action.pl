@@ -34,7 +34,7 @@ resolve_arg(_Ctx, _MyID, Other, Other).
 resolve_path(Ctx, MyID, AttrName, Value) :-
     atom(AttrName),  % Not a / term
     !,
-    ctx_attr_val(Ctx, MyID/AttrName, Value).
+    ctx_attr_val(MyID/AttrName, Value, Ctx).
 
 % Path with / separator (handles nested / like a/b/c)
 resolve_path(Ctx, MyID, FirstAttr/RestPath, Value) :-

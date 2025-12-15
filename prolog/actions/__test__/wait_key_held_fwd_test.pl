@@ -211,7 +211,7 @@ test("wait_key_held: in loop pattern", (
     % --------------------------------------------------
     % Should yield waiting for key
     expect(Status1 = yielded, 'Should yield'),
-    expect(ctx_attr_val(Ctx1, 1/x, 0),
+    expect(ctx_attr_val(1/x, 0, Ctx1),
         'x should still be 0'),
     % Loop expands body and adds itself back
     expect(obj_acns(Obj1, [

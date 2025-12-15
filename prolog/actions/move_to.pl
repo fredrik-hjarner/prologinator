@@ -62,8 +62,8 @@ execute_move_to(
     Frames #> 0,
     % Get current position from attribute store
     % Fails if object doesn't have x/y attributes
-    ctx_attr_val(Ctx, ID/x, CurrX),
-    ctx_attr_val(Ctx, ID/y, CurrY),
+    ctx_attr_val(ID/x, CurrX, Ctx),
+    ctx_attr_val(ID/y, CurrY, Ctx),
     % Compute step using integer division
     DX #= (TargetX - CurrX) // Frames,
     DY #= (TargetY - CurrY) // Frames,

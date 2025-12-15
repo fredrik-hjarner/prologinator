@@ -70,8 +70,8 @@ get collision_id attributes", (
                collisions([]))
     ],
     % But collision_id attributes are set
-    ctx_attr_val(CtxOut, 0/collision_id, 1),
-    ctx_attr_val(CtxOut, 1/collision_id, 0)
+    ctx_attr_val(0/collision_id, 1, CtxOut),
+    ctx_attr_val(1/collision_id, 0, CtxOut)
 )).
 
 test("collisions: enemy and projectile collision sets \
@@ -106,10 +106,10 @@ collision_id only on colliding objects", (
                collisions([]))
     ],
     % Collision IDs set only for colliding objects (0 and 1)
-    ctx_attr_val(CtxOut, 0/collision_id, 1),
-    ctx_attr_val(CtxOut, 1/collision_id, 0),
+    ctx_attr_val(0/collision_id, 1, CtxOut),
+    ctx_attr_val(1/collision_id, 0, CtxOut),
     % Object 2 has no collision_id (fails if it exists)
-    \+ ctx_attr_val(CtxOut, 2/collision_id, _)
+    \+ ctx_attr_val(2/collision_id, _, CtxOut)
 )).
 
 % --------------------------------------------------------
@@ -138,8 +138,8 @@ collision_id", (
     ctx_objs(NewObjects, CtxOut),
     NewObjects = Objects,
     % Both get collision_id attributes
-    ctx_attr_val(CtxOut, 0/collision_id, 1),
-    ctx_attr_val(CtxOut, 1/collision_id, 0)
+    ctx_attr_val(0/collision_id, 1, CtxOut),
+    ctx_attr_val(1/collision_id, 0, CtxOut)
 )).
 
 test("collisions: projectile and projectile at same \
@@ -163,8 +163,8 @@ position get collision_id", (
     ctx_objs(NewObjects, CtxOut),
     NewObjects = Objects,
     % Both get collision_id attributes
-    ctx_attr_val(CtxOut, 0/collision_id, 1),
-    ctx_attr_val(CtxOut, 1/collision_id, 0)
+    ctx_attr_val(0/collision_id, 1, CtxOut),
+    ctx_attr_val(1/collision_id, 0, CtxOut)
 )).
 
 % --------------------------------------------------------

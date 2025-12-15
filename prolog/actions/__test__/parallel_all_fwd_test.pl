@@ -74,9 +74,9 @@ attributes.", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(CtxNew, 1/x, NewX),
-    ctx_attr_val(CtxNew, 1/y, NewY),
-    ctx_attr_val(CtxNew, 1/z, NewZ),
+    ctx_attr_val(1/x, NewX, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew),
+    ctx_attr_val(1/z, NewZ, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -123,8 +123,8 @@ test("parallel_all: yields when child yields", (
         Ctx,
         CtxNew
     ),
-    expect(ctx_attr_val(CtxNew, 1/x, NewX)),
-    expect(ctx_attr_val(CtxNew, 1/y, NewY)),
+    expect(ctx_attr_val(1/x, NewX, CtxNew)),
+    expect(ctx_attr_val(1/y, NewY, CtxNew)),
     expect(obj_acns(ObjOut, Actions)),
     % ------------------------------------------------------
     % Assert
@@ -189,7 +189,7 @@ test("parallel_all: despawns when child despawns", (
     % Attributes should be removed from context when
     % despawned.
     % (despawn removes attributes from the store)
-    \+ ctx_attr_val(CtxNew, 1/x, _)
+    \+ ctx_attr_val(1/x, _, CtxNew)
 )).
 
 test("parallel_all: should continue until all complete", (
