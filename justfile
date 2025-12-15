@@ -38,7 +38,7 @@ lint FILE:
 	@! scryer-prolog {{FILE}} -g "halt" 2>&1 | grep -q "error" || { scryer-prolog {{FILE}} -g "halt" 2>&1; echo "ERROR: {{FILE}} has syntax errors"; exit 1; }
 
 # Check all Prolog files for syntax errors
-lint-all:
+lint-all: build
     @echo "Linting files..."
     @echo "Linting prologinator.pl..."
     @just lint build/prologinator.pl
@@ -97,7 +97,7 @@ lint-all:
     @echo "All files passed linting!"
 
 # lint the max length of files.
-lint-len:
+lint-len: build
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine_test.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/tick_object.pl

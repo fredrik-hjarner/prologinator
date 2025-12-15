@@ -60,13 +60,13 @@ async function collectTestFiles(
 // ==========================================================
 
 async function runTest(testFile: string): Promise<boolean> {
-    // Remove .pl extension for just test command
+    // Remove .pl extension for test script
     const modulePath = testFile.replace(/\.pl$/, "");
     
     console.log(`\n=== Testing ${testFile} ===`);
     
     const proc = spawn({
-        cmd: ["just", "test", modulePath],
+        cmd: ["./scripts/test.ts", modulePath],
         stdout: "inherit",
         stderr: "inherit"
     });
