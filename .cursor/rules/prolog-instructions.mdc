@@ -1,7 +1,7 @@
 ---
 description: Some rules for Prolog files
 globs: "*.pl"
-alwaysApply: false
+alwaysApply: true
 ---
 
 # Commands
@@ -9,16 +9,19 @@ alwaysApply: false
 - `just lint-len` to lint the length of the lines
 - `just lint-all` to lint all the files
 - `just test-all` to test all the files
-- `just test-all-verbose` to test all the files with verbose output
+- `just test-all-verbose` to test all the files with verbose
+   output
 - `just lint` to lint a single file
 - `just test` to test a single file
-- `just test-verbose` to test a single file with verbose output
+- `just test-verbose` to test a single file with verbose
+   output
 
-# Banned Tokens in Prolog Files
+# Discouraged Tokens in Prolog Files
 
-Instead of the banned tokens, use CLP(Z) constraints:
+Instead of the discouraged tokens, use CLP(Z) constraints:
 
-- Instead of `is`: Use CLP(Z) constraints like `#=` for equality
+- Instead of `is`: Use CLP(Z) constraints like `#=` for
+  equality
 - Instead of `<`: Use `#<` from CLP(Z)
 - Instead of `>`: Use `#>` from CLP(Z)
 - Instead of `=<`: Use `#=<` from CLP(Z)
@@ -28,3 +31,11 @@ Instead of the banned tokens, use CLP(Z) constraints:
 # Max 60 characters per line
 
 Yes.
+
+# This project is a one-file monolith
+
+Since Prolog's modules system is so bad I decided to
+that it's better to bypass it as much as possible. I do this
+by introducing a build step that concatenates all the files
+together with gpp into a single file. scryer-prolog is fed
+that one file, this all my code is in the same namespace.

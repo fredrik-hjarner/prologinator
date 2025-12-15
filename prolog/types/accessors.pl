@@ -227,32 +227,8 @@ ctx_held(ctx(_, input(_, held(H))), H).
 % State Accessors
 % ==========================================================
 
-% Get attributes from state
-% Note: If possible use ctx_attrs directly if you can
-%       because ya know maybe you dont need to grab state
-%       first ya know.
-state_attrs(
-    state(_, _, attrs(Attrs), _, _, _), Attrs
-).
-
-% Set attributes in state
-% Note: If possible use ctx_attrs_ctx directly if you can
-%       because ya know maybe you dont need to grab state
-%       first ya know.
-state_attrs_state(
-    state(F, Objects, _, Status, NextID, Commands),
-    NewAttrs,
-    state(F, Objects, attrs(NewAttrs), Status,
-          NextID, Commands)
-).
-
-% Set status in state
-state_status_state(
-    state(F, Objects, Attrs, _, NextID, Commands),
-    NewStatus,
-    state(F, Objects, Attrs, status(NewStatus),
-          NextID, Commands)
-).
+% NOTE: State accessors are discouraged! Preferably use
+%       context accessors instead!
 
 % ==========================================================
 % Object Accessors
