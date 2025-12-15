@@ -65,10 +65,11 @@ val_format(Format, Args) :-
 % If term is ground and invalid, they throw an error.
 
 % ==========================================================
-% context_validation/1
+% context_validation/2
 % ==========================================================
 
-context_validation(ctx(State, Input)) :-
+context_validation(Ctx, Ctx) :-
+    Ctx = ctx(State, Input),
     state_validation(State),
     input_validation(Input).
 

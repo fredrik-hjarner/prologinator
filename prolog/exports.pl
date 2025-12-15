@@ -5,7 +5,7 @@
     action_validation_helper/1,
     builtin_action/1,
     command_validation/1,
-    context_validation/1,
+    context_validation/2,
     ctx_attr_val/3,
     ctx_set_attr_val/4,
     ctx_attrs/2,
