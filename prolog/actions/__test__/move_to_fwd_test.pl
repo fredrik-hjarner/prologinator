@@ -26,8 +26,7 @@ remaining", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([move_to(10, 20, 3)]),
-        collisions([])
+        actions([move_to(10, 20, 3)        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
@@ -53,8 +52,7 @@ remaining", (
     ( ObjOut = object(
         id(1),
         type(static),
-        actions([move_to(10, 20, 2)|_]),
-        collisions([])
+        actions([move_to(10, 20, 2)|_])
     ) ; err_write("ObjOut mismatch") ),
     (NewX = 3 ; err_write("NewX != 3")),
     (NewY = 6 ; err_write("NewY != 6")),
@@ -70,8 +68,7 @@ remaining", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([move_to(0, 0, 3)]),
-        collisions([])
+        actions([move_to(0, 0, 3)        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 10), attr(y, 20)],
@@ -97,8 +94,7 @@ remaining", (
     ObjOut = object(
         id(1),
         type(static),
-        actions([move_to(0, 0, 2)|_]),
-        collisions([])
+        actions([move_to(0, 0, 2)|_        ])
     ),
     (NewX = 7 ; err_write("NewX != 7")),
     (NewY = 14 ; err_write("NewY != 14")),
@@ -113,8 +109,7 @@ test("move_to: single frame, arrives at target", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([move_to(5, 5, 1)]),
-        collisions([])
+        actions([move_to(5, 5, 1)        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
@@ -140,8 +135,7 @@ test("move_to: single frame, arrives at target", (
     ObjOut = object(
         id(1),
         type(static),
-        actions([]),
-        collisions([])
+        actions([        ])
     ),
     (X = 5 ; err_write("X != 5")),
     (Y = 5 ; err_write("Y != 5")),
@@ -157,8 +151,7 @@ continues with remaining frames", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([move_to(10, 20, 3)]),
-        collisions([])
+        actions([move_to(10, 20, 3)        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 10), attr(y, 20)],
@@ -184,8 +177,7 @@ continues with remaining frames", (
     ObjOut = object(
         id(1),
         type(static),
-        actions([move_to(10, 20, 2)|_]),
-        collisions([])
+        actions([move_to(10, 20, 2)|_        ])
     ),
     (X = 10 ; err_write("X != 10")),
     (Y = 20 ; err_write("Y != 20")),
@@ -197,8 +189,7 @@ test("move_to: negative target coordinates", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([move_to(-5, -10, 2)]),
-        collisions([])
+        actions([move_to(-5, -10, 2)        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
@@ -221,8 +212,7 @@ test("move_to: negative target coordinates", (
     ObjOut = object(
         id(1),
         type(static),
-        actions([move_to(-5, -10, 1)|_]),
-        collisions([])
+        actions([move_to(-5, -10, 1)|_        ])
     ),
     (NewX = -2 ; err_write("NewX != -2")),
     (NewY = -5 ; err_write("NewY != -5")),

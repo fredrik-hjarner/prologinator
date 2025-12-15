@@ -24,8 +24,7 @@ yields", (
         actions([
             list([wait(1), move_to(5, 5, 2)]),
             wait(3)
-        ]),
-        collisions([])
+        ])
     ),
     empty_ctx(Ctx),
     execute_action(
@@ -53,8 +52,7 @@ yields", (
 test("list: empty list removes itself", (
     ObjIn = object(
         id(0), type(static),
-        actions([list([]), wait(1)]),
-        collisions([])
+        actions([list([]), wait(1)])
     ),
     empty_ctx(Ctx),
     execute_action(
@@ -66,8 +64,7 @@ test("list: empty list removes itself", (
     ),
     ObjOut = object(
         id(0), type(static),
-        actions([wait(1)]),
-        collisions([])
+        actions([wait(1)])
     )
 )).
 

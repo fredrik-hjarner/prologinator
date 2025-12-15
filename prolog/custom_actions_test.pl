@@ -38,8 +38,7 @@ test("define_action: stores action definition", (
                     move_delta(-Amplitude, 0, 10)
                 ])
             )
-        ]),
-        collisions([])
+        ])
     ),
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
@@ -94,8 +93,7 @@ test("custom_action: zigzag expands and executes", (
     ObjIn = object(
         id(0),
         type(static),
-        actions([zigzag(30, 2)]),
-        collisions([])
+        actions([zigzag(30, 2)])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0, [attr(x, 100), attr(y, 100)],
@@ -157,8 +155,7 @@ test("custom_action: define and use in same action list", (
             % Use it
             zigzag(20, 1),
             despawn
-        ]),
-        collisions([])
+        ])
     ),
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, CtxTemp),
@@ -219,8 +216,7 @@ test("custom_action: shoot_burst defines and executes", (
             ),
             wait(1),
             shoot_burst(2)
-        ]),
-        collisions([])
+        ])
     ),
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, CtxTemp),
@@ -287,8 +283,7 @@ test("custom_action: multiple definitions work", (
             % frame 3
             move_up(5),
             move_down(3)
-        ]),
-        collisions([])
+        ])
     ),
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, CtxTemp),
@@ -361,8 +356,7 @@ substituted", (
     ObjIn = object(
         id(0),
         type(static),
-        actions([move_pattern(10, 10, 20, 20, 5)]),
-        collisions([])
+        actions([move_pattern(10, 10, 20, 20, 5)])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0, [attr(x, 0), attr(y, 0)],

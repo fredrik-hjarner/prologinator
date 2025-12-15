@@ -71,7 +71,6 @@
     main/0,
     obj_acns/2,
     obj_acns_obj/3,
-    obj_collisions/2,
     obj_id/2,
     obj_id_type/3,
     obj_type/2,

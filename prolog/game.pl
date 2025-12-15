@@ -46,8 +46,7 @@ main :-
                       object(
                           id(0),
                           type(static),
-                          actions([load(GameFile)]),
-                          collisions([])
+                          actions([load(GameFile)])
                       )
                   ]),
                   attrs(AttrStore1),

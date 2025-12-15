@@ -101,17 +101,13 @@ object_constraint(
   object(
       id(ID),
       type(Type),
-      actions(Actions),
-      collisions(_Colls)
+      actions(Actions)
   )
 ) :-
     ID #>= 0,
     ID #=< 1000,
     object_type_constraint(Type),
     bounded_list_of(action_constraint, Actions, 100).
-    % Skip collision constraints - feature not
-    % implemented yet
-    % Colls is left unconstrained (permissive)
 
 % ==========================================================
 % object_type_constraint/1 Constraint

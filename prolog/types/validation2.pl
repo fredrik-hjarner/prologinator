@@ -151,19 +151,12 @@ actions_schema(struct(actions, [
     value(list(schema(action_schema)))
 ])).
 
-% collisions(Colls) where Colls is list of any
-collisions_schema(struct(collisions, [
-    value(list(any))
-])).
-
-% Object: object(id(ID), type(Type), attrs(Attrs),
-%   actions(Actions), collisions(Colls))
+% Object: object(id(ID), type(Type),
+%   actions(Actions))
 object_schema(struct(object, [
     id(schema(id_schema)),
     type(schema(type_schema)),
-    attrs(schema(attrs_schema)),
-    actions(schema(actions_schema)),
-    collisions(schema(collisions_schema))
+    actions(schema(actions_schema))
 ])).
 
 % ==========================================================
@@ -236,8 +229,8 @@ test("game_state_validation: valid state passes", (
     State = state(
         frame(0),
         objects([object(
-            id(0), type(static), attrs([pos(0, 0)]),
-            actions([]), collisions([])
+            id(0), type(static),
+            actions([])
         )]),
         attrs(EmptyAttrs),
         status(playing),
@@ -254,17 +247,16 @@ multiple objects and commands", (
         frame(5),
         objects([
             object(
-                id(0), type(tower), attrs([pos(10, 19)]),
-                actions([wait(3)]), collisions([])
+                id(0), type(tower),
+                actions([wait(3)])
             ),
             object(
-                id(1), type(enemy), attrs([pos(5, 5)]),
-                actions([move_to(10, 10, 5)]),
-                collisions([])
+                id(1), type(enemy),
+                actions([move_to(10, 10, 5)])
             ),
             object(
-                id(2), type(proj), attrs([pos(15, 15)]),
-                actions([]), collisions([])
+                id(2), type(proj),
+                actions([])
             )
         ]),
         attrs(EmptyAttrs),
@@ -284,7 +276,7 @@ objects and commands", (
         frame(42),
         objects([
             object(
-                id(0), type(tower), attrs([pos(5, 19)]),
+                id(0), type(tower),
                 actions([
                     loop([
                         wait(3),
@@ -292,28 +284,27 @@ objects and commands", (
                             move_to(5, 0, 20)
                         ])
                     ])
-                ]), collisions([])
+                ])
             ),
             object(
-                id(1), type(enemy), attrs([pos(10, 5)]),
+                id(1), type(enemy),
                 actions([
                     move_to(19, 5, 15),
                     wait(1)
-                ]), collisions([])
+                ])
             ),
             object(
-                id(2), type(proj), attrs([pos(15, 10)]),
-                actions([move_to(15, 0, 10)]),
-                collisions([])
+                id(2), type(proj),
+                actions([move_to(15, 0, 10)])
             ),
             object(
-                id(3), type(static), attrs([]),
+                id(3), type(static),
                 actions([
                     parallel_all([
                         wait(5),
                         spawn(enemy, pos(0, 10), [])
                     ])
-                ]), collisions([])
+                ])
             )
         ]),
         attrs(t),
@@ -396,7 +387,6 @@ test("game_state_validation: non-integer frame fails", (
 %         type(static),
 %         attrs([]),
 %         actions([]),
-%         collisions([])
 %     ),
 %     State = state(
 %         frame(0),
@@ -416,9 +406,7 @@ wrapped) throws", (
     Obj = object(
         5,
         type(static),
-        attrs([]),
-        actions([]),
-        collisions([])
+        actions([])
     ),
     expect_exception(
         validate(Obj, object_schema)
@@ -429,9 +417,7 @@ test("object_validation: invalid object type fails", (
     Obj = object(
         id(0),
         type(invalid_type),
-        attrs([]),
-        actions([]),
-        collisions([])
+        actions([])
     ),
     expect_exception(
         validate(Obj, object_schema)
@@ -542,9 +528,7 @@ test("object_validation: wrong functor throws", (
     Obj = not_object(
         id(0),
         type(static),
-        attrs([]),
-        actions([]),
-        collisions([])
+        actions([])
     ),
     expect_exception(
         validate(Obj, object_schema)

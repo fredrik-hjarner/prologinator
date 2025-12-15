@@ -659,21 +659,3 @@ test("union no schema matches throws", (
         union([integer, atom]),
         []))
 )).
-
-% run_tests :-
-%     writeln('====== VALIDATION TESTS ======'),
-%     forall(
-%         test(Name, Goal),
-%         run_single_test(Name, Goal)
-%     ),
-%     nl,
-%     writeln('==============================').
-
-% run_single_test(Name, Goal) :-
-%     (call(Goal) ->
-%         format('✓ ~w~n', [Name])
-%     ;
-%         format('✗ ~w~n', [Name])
-%     ).
-
-% :- initialization(run_tests).

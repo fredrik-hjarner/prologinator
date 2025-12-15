@@ -24,8 +24,7 @@ test("repeat: expands actions once and decrements", (
         actions([
             repeat(3, [noop, set_attr(count, 1)]),
             despawn
-        ]),
-        collisions([])
+        ])
     ),
     empty_ctx(Ctx),
     execute_action(
@@ -54,8 +53,7 @@ test("repeat: last repetition doesn't add repeat", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([repeat(1, [noop]), despawn]),
-        collisions([])
+        actions([repeat(1, [noop]), despawn])
     ),
     empty_ctx(Ctx),
     % ------------------------------------------------------
@@ -93,8 +91,7 @@ test("repeat: multiple actions in repeat list", (
                 set_attr(b, 2)
             ]),
             despawn
-        ]),
-        collisions([])
+        ])
     ),
     empty_ctx(Ctx),
     % ------------------------------------------------------

@@ -19,8 +19,7 @@ test("wait_until: completes when path exists", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait_until(collision_id), noop]),
-        collisions([])
+        actions([wait_until(collision_id), noop        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, 
@@ -54,8 +53,7 @@ test("wait_until: yields when path does not exist", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait_until(collision_id), noop]),
-        collisions([])
+        actions([wait_until(collision_id), noop        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, 
@@ -89,8 +87,7 @@ test("wait_until: works with nested paths", (
         id(1),
         type(static),
         actions([wait_until(collision_id/collisionType), 
-                 noop]),
-        collisions([])
+                 noop        ])
     ),
     empty_attr_store(EmptyAttrs0),
     % Object 1 has collision_id pointing to object 5
@@ -130,8 +127,7 @@ test("wait_until: yields when nested path does not exist", (
         id(1),
         type(static),
         actions([wait_until(collision_id/collisionType), 
-                 noop]),
-        collisions([])
+                 noop        ])
     ),
     empty_attr_store(EmptyAttrs0),
     % Object 1 has collision_id pointing to object 5
@@ -174,8 +170,7 @@ exist", (
         id(1),
         type(static),
         actions([wait_until(collision_id/collisionType), 
-                 noop]),
-        collisions([])
+                 noop        ])
     ),
     empty_attr_store(EmptyAttrs0),
     % Object 1 has no collision_id at all

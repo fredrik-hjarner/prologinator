@@ -25,7 +25,7 @@ test("game_state_validation: valid state passes", (
         frame(0),
         objects([object(
             id(0), type(static),
-            actions([]), collisions([])
+            actions([])
         )]),
         attrs(EmptyAttrs),
         status(playing),
@@ -49,16 +49,15 @@ multiple objects and commands", (
         objects([
             object(
                 id(0), type(tower),
-                actions([wait(3)]), collisions([])
+                actions([wait(3)])
             ),
             object(
                 id(1), type(enemy),
-                actions([move_to(10, 10, 5)]),
-                collisions([])
+                actions([move_to(10, 10, 5)])
             ),
             object(
                 id(2), type(proj),
-                actions([]), collisions([])
+                actions([])
             )
         ]),
         attrs(EmptyAttrs),
@@ -92,19 +91,18 @@ objects and commands", (
                         move_to(5, 0, 20)
                     ])
                 ])
-            ]), collisions([])
+            ])
         ),
         object(
             id(1), type(enemy),
             actions([
                 move_to(19, 5, 15),
                 wait(1)
-            ]), collisions([])
+            ])
         ),
         object(
             id(2), type(proj),
-            actions([move_to(15, 0, 10)]),
-            collisions([])
+            actions([move_to(15, 0, 10)])
         ),
         object(
             id(3), type(static),
@@ -113,7 +111,7 @@ objects and commands", (
                     wait(5),
                     spawn(enemy, 0, 10, [])
                 ])
-            ]), collisions([])
+            ])
         )
     ], Ctx0, Ctx1),
     ctx_set_nextid_cmds(4, [
@@ -189,8 +187,7 @@ test("game_state_validation: NextID <= max ID fails", (
     Obj = object(
         id(5),
         type(static),
-        actions([]),
-        collisions([])
+        actions([])
     ),
     empty_assoc(EmptyAttrs),
     State = state(
@@ -209,8 +206,7 @@ wrapped) throws", (
     Obj = object(
         5,
         type(static),
-        actions([]),
-        collisions([])
+        actions([])
     ),
     expect_exception(object_validation(Obj))
 )).
@@ -219,8 +215,7 @@ test("object_validation: invalid object type fails", (
     Obj = object(
         id(0),
         type(invalid_type),
-        actions([]),
-        collisions([])
+        actions([])
     ),
     expect_exception(object_validation(Obj))
 )).
@@ -300,7 +295,7 @@ test("game_state_validation: wrong functor throws", (
 
 test("object_validation: wrong arity throws", (
     Obj = object(
-        id(0), type(static), actions([])
+        id(0), type(static)
     ),
     expect_exception(object_validation(Obj))
 )).
@@ -309,8 +304,7 @@ test("object_validation: wrong functor throws", (
     Obj = not_object(
         id(0),
         type(static),
-        actions([]),
-        collisions([])
+        actions([])
     ),
     expect_exception(object_validation(Obj))
 )).

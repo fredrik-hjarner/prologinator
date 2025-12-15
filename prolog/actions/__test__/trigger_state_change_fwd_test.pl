@@ -25,8 +25,7 @@ to won", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([trigger_state_change(game_over(won))]),
-        collisions([])
+        actions([trigger_state_change(game_over(won))])
     ),
     empty_ctx(CtxIn),
     % ------------------------------------------------------
@@ -47,8 +46,7 @@ to won", (
     ObjOut = object(
         id(1),
         type(static),
-        actions([]),
-        collisions([])
+        actions([])
     ),
     (Status = won ; err_write("Status != won")),
     (Commands = [] ; err_write("Commands != []"))
@@ -63,8 +61,7 @@ to lost", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([trigger_state_change(game_over(lost))]),
-        collisions([])
+        actions([trigger_state_change(game_over(lost))])
     ),
     empty_ctx(CtxIn),
     % ------------------------------------------------------
@@ -85,8 +82,7 @@ to lost", (
     ObjOut = object(
         id(1),
         type(static),
-        actions([]),
-        collisions([])
+        actions([])
     ),
     (Status = lost ; err_write("Status != lost")),
     (Commands = [] ; err_write("Commands != []"))
@@ -101,8 +97,7 @@ override lost", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([trigger_state_change(game_over(won))]),
-        collisions([])
+        actions([trigger_state_change(game_over(won))])
     ),
     empty_ctx(CtxTemp),
     ctx_set_status(lost, CtxTemp, CtxIn),
@@ -124,8 +119,7 @@ override lost", (
     ObjOut = object(
         id(1),
         type(static),
-        actions([]),
-        collisions([])
+        actions([])
     ),
     (Status = lost ; err_write("Status != lost")),
     (Commands = [] ; err_write("Commands != []"))

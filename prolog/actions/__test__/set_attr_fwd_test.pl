@@ -22,7 +22,7 @@ test("set_attr: set new attribute", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1), type(enemy),
-        actions([set_attr(hp, 100)]), collisions([])
+        actions([set_attr(hp, 100)])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 5), attr(y, 10)],
@@ -47,7 +47,7 @@ test("set_attr: set new attribute", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1), type(enemy),
-        actions([]), collisions([])
+        actions([])
     ),
     (HP = 100 ; err_write("HP != 100")),
     (X = 5 ; err_write("X != 5")),
@@ -61,7 +61,7 @@ test("set_attr: replace existing attribute", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1), type(enemy),
-        actions([set_attr(hp, 50)]), collisions([])
+        actions([set_attr(hp, 50)])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
@@ -86,7 +86,7 @@ test("set_attr: replace existing attribute", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1), type(enemy),
-        actions([]), collisions([])
+        actions([])
     ),
     (HP = 50 ; err_write("HP != 50")),
     (X = 5 ; err_write("X != 5")),
@@ -104,7 +104,7 @@ duplicates", (
             set_attr(hp, 100),
             set_attr(hp, 75),
             set_attr(hp, 50)
-        ]), collisions([])
+        ])
     ),
     empty_ctx(Ctx),
     % ------------------------------------------------------

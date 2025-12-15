@@ -12,25 +12,21 @@
         parallel_all([
             % Right arrow (39) - move right
             loop([
-                log("move right loop started!"),
                 wait_key_held(39),
                 move_delta(1, 1, 0)
             ]),
             % Left arrow (37) - move left
             loop([
-                log("move left loop started!"),
                 wait_key_held(37),
                 move_delta(1, -1, 0)
             ]),
             % Up arrow (38) - move up
             loop([
-                log("move up loop started!"),
                 wait_key_held(38),
                 move_delta(1, 0, -1)
             ]),
             % Down arrow (40) - move down
             loop([
-                log("move down loop started!"),
                 wait_key_held(40),
                 move_delta(1, 0, 1)
             ])

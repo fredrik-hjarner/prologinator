@@ -17,8 +17,7 @@ object", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([]),
-        collisions([])
+        actions([        ])
     ),
     empty_ctx(Ctx),
     tick_object(
@@ -32,8 +31,7 @@ object", (
     ObjOut = object(
         id(1),
         type(static),
-        actions([]),
-        collisions([])
+        actions([            ])
     )
 )).
 
@@ -42,8 +40,7 @@ after one execution", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait(5)]),
-        collisions([])
+        actions([wait(5)        ])
     ),
     empty_ctx(Ctx),
     tick_object(
@@ -57,8 +54,7 @@ after one execution", (
     ObjOut = object(
         id(1),
         type(static),
-        actions([wait(4)]),
-        collisions([])
+        actions([wait(4)            ])
     )
 )).
 
@@ -67,8 +63,7 @@ continues until empty", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait(0)]),
-        collisions([])
+        actions([wait(0)        ])
     ),
     empty_ctx(Ctx),
     tick_object(
@@ -82,8 +77,7 @@ continues until empty", (
     ObjOut = object(
         id(1),
         type(static),
-        actions([]),
-        collisions([])
+        actions([            ])
     )
 )).
 
@@ -97,16 +91,14 @@ state", (
     ctx_set_objs([object(
         id(0),
         type(static),
-        actions([]),
-        collisions([])
+        actions([            ])
     )], CtxIn0, CtxIn),
     tick(CtxIn, CtxOut),
     ctx_frame(1, CtxOut, CtxOut),
     ctx_objs([object(
         id(0),
         type(static),
-        actions([]),
-        collisions([])
+        actions([            ])
     )], CtxOut, CtxOut)
 )).
 
@@ -116,16 +108,14 @@ test("tick: processes object with yielding action \
     ctx_set_objs([object(
         id(0),
         type(static),
-        actions([wait(3)]),
-        collisions([])
+        actions([wait(3)            ])
     )], CtxIn0, CtxIn),
     tick(CtxIn, CtxOut),
     ctx_frame(1, CtxOut, CtxOut),
     ctx_objs([object(
         id(0),
         type(static),
-        actions([wait(2)]),
-        collisions([])
+        actions([wait(2)            ])
     )], CtxOut, CtxOut)
 )).
 
@@ -137,8 +127,7 @@ object", (
         type(static),
         actions([
             spawn(enemy, 5, 5, [])
-        ]),
-        collisions([])
+            ])
     )], CtxIn0, CtxIn),
     tick(CtxIn, CtxOut),
     ctx_frame(1, CtxOut, CtxOut),
@@ -148,18 +137,16 @@ object", (
         object(
             id(0),
             type(static),
-            actions([]),
-            collisions([])
-        ),
+            actions([        ])
+    ),
         FinalObjs
     ),
     member(
         object(
             id(_NewID),
             type(enemy),
-            actions([]),
-            collisions([])
-        ),
+            actions([        ])
+    ),
         FinalObjs
     )
 )).
@@ -187,7 +174,7 @@ test("collision: simple enemy-projectile collision", (
                 % Moving right, arrives at (10, 10) in 1
                 % frame
                 move_to(10, 10, 1)
-            ]), collisions([])
+            ])
         ),
         object(
             id(1), type(proj),
@@ -195,7 +182,7 @@ test("collision: simple enemy-projectile collision", (
                 % Moving to same target, arrives at
                 % (10, 10) in 1 frame
                 move_to(10, 10, 1)
-            ]), collisions([])
+            ])
         )
     ], Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, InitialContext),
@@ -239,7 +226,7 @@ freeze (first collision)", (
                         move_to(5, 0, 20)
                     ])
                 ])
-            ]), collisions([])
+            ])
         ),
         object(
             id(1), type(tower),
@@ -250,7 +237,7 @@ freeze (first collision)", (
                         move_to(10, 0, 20)
                     ])
                 ])
-            ]), collisions([])
+            ])
         ),
         object(
             id(2), type(tower),
@@ -261,7 +248,7 @@ freeze (first collision)", (
                         move_to(15, 0, 20)
                     ])
                 ])
-            ]), collisions([])
+            ])
         ),
         object(
             id(3), type(static),
@@ -272,7 +259,7 @@ freeze (first collision)", (
                         move_to(19, 10, 30)
                     ])
                 ])
-            ]), collisions([])
+            ])
         )
     ], Ctx0, Ctx1),
     ctx_set_nextid(4, Ctx1, InitialContext),

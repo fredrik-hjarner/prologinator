@@ -30,8 +30,7 @@ actions from executing", (
             wait(5),
             move_to(10, 10, 3),
             set_attr(hp, 100)
-        ]),
-        collisions([])
+        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
@@ -66,8 +65,7 @@ executing after despawn", (
             despawn,
             trigger_state_change(game_over(won)),
             wait(5)
-        ]),
-        collisions([])
+        ])
     ),
     empty_ctx(Ctx),
     execute_action(

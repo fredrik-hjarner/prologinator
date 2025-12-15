@@ -30,8 +30,7 @@ test("parallel_race: stops on child completion", (
                 wait(10)
             ]),
             wait(3)
-        ]),
-        collisions([])
+        ])
     ),
     empty_ctx(CtxTemp),
     ctx_set_objs([Obj], CtxTemp, Ctx),
@@ -66,8 +65,7 @@ done", (
                 wait(5), wait(10)
             ]),
             wait(3)
-        ]),
-        collisions([])
+        ])
     ),
     empty_ctx(CtxTemp),
     ctx_set_objs([Obj], CtxTemp, Ctx),
@@ -106,8 +104,7 @@ despawns", (
             ]),
             trigger_state_change(game_over(won)),
             wait(5)
-        ]),
-        collisions([])
+        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
@@ -154,7 +151,6 @@ despawns", (
 %         id(1),
 %         type(static),
 %         actions([Actions]),
-%         collisions([])
 %     ),
 %     empty_attr_store(EmptyAttrs0),
 %     put_assoc(

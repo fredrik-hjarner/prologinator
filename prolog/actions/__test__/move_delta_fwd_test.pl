@@ -24,8 +24,7 @@ test("move_delta: single frame moves and completes", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([move_delta(1, 5, -3)]),
-        collisions([])
+        actions([move_delta(1, 5, -3)])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 10), attr(y, 20)],
@@ -50,8 +49,7 @@ test("move_delta: single frame moves and completes", (
     expect(ObjOut = object(
         id(1),
         type(static),
-        actions([]),
-        collisions([])
+        actions([])
     ), 'ObjOut != object(id(1), type(static), actions(...'),
     expect(X = 15, 'X != 15'),
     expect(Y = 17, 'Y != 17'),
@@ -65,8 +63,7 @@ test("move_delta: multiple frames continues", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([move_delta(3, 10, 5)]),
-        collisions([])
+        actions([move_delta(3, 10, 5)])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
@@ -104,8 +101,7 @@ test("move_delta: negative deltas work", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([move_delta(2, -10, -5)]),
-        collisions([])
+        actions([move_delta(2, -10, -5)])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 50), attr(y, 50)],
@@ -143,8 +139,7 @@ test("move_delta: preserves other attributes", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([move_delta(1, 5, -3)]),
-        collisions([])
+        actions([move_delta(1, 5, -3)])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
@@ -173,8 +168,7 @@ test("move_delta: preserves other attributes", (
     ObjOut = object(
         id(1),
         type(static),
-        actions([]),
-        collisions([])
+        actions([])
     ),
     (X = 15 ; err_write("X != 15")),
     (Y = 17 ; err_write("Y != 17")),

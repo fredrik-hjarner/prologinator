@@ -12,14 +12,12 @@ execute_action_impl(
     obj_old(object(
         id(ID),
         type(Type),
-        actions([_|Rest]),
-        Colls
+        actions([_|Rest])
     )),
     result(Status, object(
         id(ID),
         type(Type),
-        actions(NewActions),
-        Colls
+        actions(NewActions)
     ))
 ) -->
     execute_move_delta(

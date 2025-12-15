@@ -24,19 +24,15 @@ different positions", (
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     ctx_set_objs([
-        object(id(0), type(enemy), actions([]),
-               collisions([])),
-        object(id(1), type(proj), actions([]),
-               collisions([]))
+        object(id(0), type(enemy), actions([])),
+        object(id(1), type(proj), actions([]))
     ], Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(CtxIn, CtxOut),
     ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = [
-        object(id(0), type(enemy), actions([]),
-               collisions([])),
-        object(id(1), type(proj), actions([]),
-               collisions([]))
+        object(id(0), type(enemy), actions([])),
+        object(id(1), type(proj), actions([]))
     ]  % No objects removed
 )).
 
@@ -53,10 +49,8 @@ get collision_id attributes", (
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     Objects = [
-        object(id(0), type(enemy), actions([]),
-               collisions([])),
-        object(id(1), type(proj), actions([]),
-               collisions([]))
+        object(id(0), type(enemy), actions([])),
+        object(id(1), type(proj), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
@@ -64,10 +58,8 @@ get collision_id attributes", (
     % Objects remain
     ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = [
-        object(id(0), type(enemy), actions([]),
-               collisions([])),
-        object(id(1), type(proj), actions([]),
-               collisions([]))
+        object(id(0), type(enemy), actions([])),
+        object(id(1), type(proj), actions([]))
     ],
     % But collision_id attributes are set
     ctx_attr_val(0/collision_id, 1, CtxOut, CtxOut),
@@ -85,12 +77,9 @@ collision_id only on colliding objects", (
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     Objects = [
-        object(id(0), type(enemy), actions([]),
-               collisions([])),
-        object(id(1), type(proj), actions([]),
-               collisions([])),
-        object(id(2), type(enemy), actions([]),
-               collisions([]))
+        object(id(0), type(enemy), actions([])),
+        object(id(1), type(proj), actions([])),
+        object(id(2), type(enemy), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(3, Ctx1, CtxIn),
@@ -98,12 +87,9 @@ collision_id only on colliding objects", (
     % All objects remain
     ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = [
-        object(id(0), type(enemy), actions([]),
-               collisions([])),
-        object(id(1), type(proj), actions([]),
-               collisions([])),
-        object(id(2), type(enemy), actions([]),
-               collisions([]))
+        object(id(0), type(enemy), actions([])),
+        object(id(1), type(proj), actions([])),
+        object(id(2), type(enemy), actions([]))
     ],
     % Collision IDs set only for colliding objects (0 and 1)
     ctx_attr_val(0/collision_id, 1, CtxOut, CtxOut),
@@ -126,10 +112,8 @@ collision_id", (
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     Objects = [
-        object(id(0), type(enemy), actions([]),
-               collisions([])),
-        object(id(1), type(enemy), actions([]),
-               collisions([]))
+        object(id(0), type(enemy), actions([])),
+        object(id(1), type(enemy), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
@@ -151,10 +135,8 @@ position get collision_id", (
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     Objects = [
-        object(id(0), type(proj), actions([]),
-               collisions([])),
-        object(id(1), type(proj), actions([]),
-               collisions([]))
+        object(id(0), type(proj), actions([])),
+        object(id(1), type(proj), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
@@ -176,10 +158,8 @@ ignored", (
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
     Objects = [
-        object(id(0), type(enemy), actions([]),
-               collisions([])),
-        object(id(1), type(proj), actions([]),
-               collisions([]))
+        object(id(0), type(enemy), actions([])),
+        object(id(1), type(proj), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
@@ -196,8 +176,7 @@ ignored", (
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     Objects = [
-        object(id(0), type(enemy), actions([]),
-               collisions([]))
+        object(id(0), type(enemy), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(1, Ctx1, CtxIn),

@@ -49,8 +49,7 @@ attributes.", (
                 set_attr(y, 20),
                 set_attr(z, 30)
             ])
-        ]),
-        collisions([])
+        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(
@@ -101,8 +100,7 @@ test("parallel_all: yields when child yields", (
                 wait(2),  % Will yield (becomes wait(1))
                 set_attr(y, 20)
             ])
-        ]),
-        collisions([])
+        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(
@@ -160,8 +158,7 @@ test("parallel_all: despawns when child despawns", (
                 despawn,  % This will despawn and stop all!
                 set_attr(y, 20)
             ])
-        ]),
-        collisions([])
+        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(
@@ -204,8 +201,7 @@ test("parallel_all: should continue until all complete", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([Actions]),
-        collisions([])
+        actions([Actions])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(

@@ -28,27 +28,21 @@
 % ==========================================================
 
 % Extract ID from object
-obj_id(object(id(ID), _, _, _), ID).
+obj_id(object(id(ID), _, _), ID).
 
 % Extract actions from object
-obj_acns(object(_, _, actions(Actions), _), Actions).
+obj_acns(object(_, _, actions(Actions)), Actions).
 
 % Extract type from object
-obj_type(object(_, type(Type), _, _), Type).
-
-% Extract collisions from object
-obj_collisions(
-    object(_, _, _, collisions(Colls)), Colls
-).
+obj_type(object(_, type(Type), _), Type).
 
 % Extract ID and type from object
-obj_id_type(object(id(ID), type(Type), _, _), ID, Type).
+obj_id_type(object(id(ID), type(Type), _), ID, Type).
 
 % Set actions in object
 obj_acns_obj(
-    object(id(ID), type(Type), _, collisions(Colls)),
+    object(id(ID), type(Type), _),
     NewActions,
-    object(id(ID), type(Type), actions(NewActions),
-           collisions(Colls))
+    object(id(ID), type(Type), actions(NewActions))
 ).
 

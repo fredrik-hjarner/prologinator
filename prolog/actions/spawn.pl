@@ -29,7 +29,7 @@ execute_spawn(
     % 2. Create Object (no attributes - stored separately)
     {NewObj = object(
         id(ID), type(Type),
-        actions(Actions), collisions([])
+        actions(Actions)
     )},
     % 3. Initialize attributes in store
     ctx_set_attr_val(ID/x, X),

@@ -19,8 +19,7 @@ test("wait_key_down: completes when key pressed", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait_key_down(39), noop]),
-        collisions([])
+        actions([wait_key_down(39), noop])
     ),
     % Create context with key 39 down event
     Ctx = ctx(
@@ -61,8 +60,7 @@ test("wait_key_down: yields when key not pressed", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait_key_down(39), noop]),
-        collisions([])
+        actions([wait_key_down(39), noop])
     ),
     % Create context with no key events
     empty_ctx(Ctx),
@@ -92,8 +90,7 @@ test("wait_key_down: waits for different key", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait_key_down(37)]),
-        collisions([])
+        actions([wait_key_down(37)])
     ),
     % Create context with key 39 down event (not 37)
     Ctx = ctx(
@@ -134,8 +131,7 @@ test("wait_key_down: multiple key events", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait_key_down(37)]),
-        collisions([])
+        actions([wait_key_down(37)])
     ),
     % Create context with multiple key events
     Ctx = ctx(
@@ -180,8 +176,7 @@ test("wait_key_down: ignores key up events", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait_key_down(39)]),
-        collisions([])
+        actions([wait_key_down(39)])
     ),
     % Create context with key 39 up event (not down)
     Ctx = ctx(
@@ -224,8 +219,7 @@ test("wait_key_down: in loop pattern", (
         type(static),
         actions([
             loop([wait_key_down(39), set_attr(x, 10)])
-        ]),
-        collisions([])
+        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(

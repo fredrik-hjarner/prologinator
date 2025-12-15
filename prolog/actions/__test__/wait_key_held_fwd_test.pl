@@ -19,8 +19,7 @@ test("wait_key_held: completes when key is held", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait_key_held(39), noop]),
-        collisions([])
+        actions([wait_key_held(39), noop])
     ),
     % Create context with key 39 held
     Ctx = ctx(
@@ -61,8 +60,7 @@ test("wait_key_held: yields when key not held", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait_key_held(39), noop]),
-        collisions([])
+        actions([wait_key_held(39), noop])
     ),
     % Create context with no keys held
     empty_ctx(Ctx),
@@ -92,8 +90,7 @@ test("wait_key_held: waits for different key", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait_key_held(37)]),
-        collisions([])
+        actions([wait_key_held(37)])
     ),
     % Create context with key 39 held (not 37)
     Ctx = ctx(
@@ -134,8 +131,7 @@ test("wait_key_held: multiple keys held", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([wait_key_held(37)]),
-        collisions([])
+        actions([wait_key_held(37)])
     ),
     % Create context with multiple keys held
     Ctx = ctx(
@@ -178,8 +174,7 @@ test("wait_key_held: in loop pattern", (
         type(static),
         actions([
             loop([wait_key_held(39), set_attr(x, 10)])
-        ]),
-        collisions([])
+        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(

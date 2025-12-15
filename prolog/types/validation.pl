@@ -176,7 +176,7 @@ state_validation_helper(Term) :-
 
 extract_ids([], []).
 extract_ids(
-    [object(id(ID), _, _, _)|Rest], [ID|IDs]
+    [object(id(ID), _, _)|Rest], [ID|IDs]
 ) :-
     extract_ids(Rest, IDs).
 
@@ -212,7 +212,7 @@ object_validation_helper(Term) :-
     ( ground(Term) ->
         ( Term = object(
               id(ID), type(Type),
-              actions(Actions), collisions(_Colls)
+              actions(Actions)
           ) ->
             % Structure matches, validate content
             integer(ID),

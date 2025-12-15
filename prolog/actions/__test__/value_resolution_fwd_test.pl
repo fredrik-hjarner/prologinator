@@ -28,8 +28,7 @@ test("value_resolution: move_to with attr() references", (
         id(1),
         type(static),
         actions([move_to(attr(target_x),
-                         attr(target_y), 5)]),
-        collisions([])
+                         attr(target_y), 5)])
     ),
     execute_action(
         action(move_to(attr(target_x),
@@ -57,8 +56,7 @@ test("value_resolution: set_attr with attr() source", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([set_attr(source_x, attr(x))]),
-        collisions([])
+        actions([set_attr(source_x, attr(x))])
     ),
     execute_action(
         action(set_attr(source_x, attr(x))),
@@ -88,8 +86,7 @@ test("value_resolution: path syntax parent_id/target_y", (
         id(1),
         type(static),
         actions([set_attr(my_target_y,
-                          attr(parent_id/target_y))]),
-        collisions([])
+                          attr(parent_id/target_y))])
     ),
     execute_action(
         action(set_attr(my_target_y,
@@ -125,8 +122,7 @@ test("value_resolution: multi-hop path a/b/c", (
         type(static),
         actions([set_attr(result,
                           attr(first_id/second_id/
-                                final_value))]),
-        collisions([])
+                                final_value))        ])
     ),
     execute_action(
         action(set_attr(result,
@@ -155,8 +151,7 @@ test("value_resolution: spawn at attr() position", (
         id(1),
         type(static),
         actions([spawn(enemy, attr(spawn_x),
-                       attr(spawn_y), [])]),
-        collisions([])
+                       attr(spawn_y), [])        ])
     ),
     execute_action(
         action(spawn(enemy, attr(spawn_x),
@@ -169,7 +164,7 @@ test("value_resolution: spawn at attr() position", (
     % Should spawn enemy at (200, 300) - spawn immediately
     % creates object, so check it exists in context
     ctx_objs(Objects, CtxNew, CtxNew),
-    member(object(id(_ID), type(enemy), _, _), Objects),
+    member(object(id(_ID), type(enemy), _), Objects),
     ctx_attr_val(_ID/x, 200, CtxNew, CtxNew),
     ctx_attr_val(_ID/y, 300, CtxNew, CtxNew)
 )).
@@ -187,8 +182,7 @@ test("value_resolution: mixed plain and attr() values", (
         id(1),
         type(static),
         actions([move_to(attr(target_x), 200,
-                         attr(speed))]),
-        collisions([])
+                         attr(speed))        ])
     ),
     execute_action(
         action(move_to(attr(target_x), 200,
@@ -221,8 +215,7 @@ test("value_resolution: backward compatible plain values", (
     ObjIn = object(
         id(1),
         type(static),
-        actions([move_to(100, 200, 5)]),
-        collisions([])
+        actions([move_to(100, 200, 5)        ])
     ),
     execute_action(
         action(move_to(100, 200, 5)),

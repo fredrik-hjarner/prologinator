@@ -3,7 +3,7 @@
 
 execute_action_impl(
     action(despawn),
-    obj_old(object(id(ID), _, _, _)),
+    obj_old(object(id(ID), _, _)),
     result(despawned, _)
 ) -->
     execute_despawn(ID).
