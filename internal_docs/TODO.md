@@ -12,6 +12,10 @@
   or I may simply have dcg alias with one extra arg or arg
   in different order.
 
+- [x] normal ctx accessors in accessors/ctx.pl
+- [ ] normal obj accessors in accessors/obj.pl
+- [ ] accessors in adv_accessors.pl
+
 # Callback när attr ändras på sig själv eller annan.
 
 Ska man kunna lyssna på när ett attribut 
