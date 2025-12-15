@@ -122,7 +122,7 @@ objects and commands", (
             move_to(10, 0, 10)
         ])
     ], Ctx1, Ctx),
-    context_validation(Ctx)
+    context_validation(Ctx, Ctx)
 )).
 
 % ----------------------------------------------------------

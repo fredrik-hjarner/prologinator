@@ -2,18 +2,18 @@
 % Main Tick Function
 % ==========================================================
 tick(CtxIn, CtxOut) :-
-    context_validation(CtxIn),
+    context_validation(CtxIn, CtxIn),
     
     % 1. Detect collisions BEFORE ticking
     % (so objects can react)
     detect_collisions(CtxIn, CtxColl),
-    context_validation(CtxColl),
+    context_validation(CtxColl, CtxColl),
     
     % 2. Tick Physics & Logic
     % Iterates by ID, allowing new spawns to be picked up
     % immediately.
     tick_all_objects(CtxColl, CtxPhys),
-    context_validation(CtxPhys),
+    context_validation(CtxPhys, CtxPhys),
     
     % 3. Increment Frame
     increment_frame(CtxPhys, CtxOut).
