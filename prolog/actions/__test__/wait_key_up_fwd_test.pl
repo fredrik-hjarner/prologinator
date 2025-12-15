@@ -39,11 +39,11 @@ test("wait_key_up: completes when key released", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(wait_key_up(39)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % --------------------------------------------------
     % Assert
@@ -70,11 +70,11 @@ test("wait_key_up: yields when key not released", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(wait_key_up(39)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % --------------------------------------------------
     % Assert
@@ -112,11 +112,11 @@ test("wait_key_up: waits for different key", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(wait_key_up(37)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _
     ),
     % --------------------------------------------------
     % Assert
@@ -158,11 +158,11 @@ test("wait_key_up: multiple key events", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(wait_key_up(37)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _
     ),
     % --------------------------------------------------
     % Assert
@@ -200,11 +200,11 @@ test("wait_key_up: ignores key down events", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(wait_key_up(39)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _
     ),
     % --------------------------------------------------
     % Assert
@@ -242,11 +242,11 @@ test("wait_key_up: ignores held keys", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(wait_key_up(39)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _
     ),
     % --------------------------------------------------
     % Assert

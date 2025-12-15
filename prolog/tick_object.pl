@@ -23,11 +23,11 @@ tick_object(
     object_validation(ObjOld),
     obj_acns(ObjOld, [Act|_Rest]),
     execute_action(
-        ctx_old(CtxOld),
-        ctx_new(CtxTemp),
         action(Act),
         obj_old(ObjOld),
-        result(ActStatus, ObjTemp)
+        result(ActStatus, ObjTemp),
+        CtxOld,
+        CtxTemp
     ),
     ( ActStatus = despawned ->
         Status = despawned,

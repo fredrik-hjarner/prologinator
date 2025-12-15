@@ -32,11 +32,11 @@ test("wait_until: completes when path exists", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(wait_until(collision_id)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % --------------------------------------------------
     % Assert
@@ -66,11 +66,11 @@ test("wait_until: yields when path does not exist", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_CtxNew),
         action(wait_until(collision_id)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _CtxNew
     ),
     % --------------------------------------------------
     % Assert
@@ -108,11 +108,11 @@ test("wait_until: works with nested paths", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_CtxNew),
         action(wait_until(collision_id/collisionType)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _CtxNew
     ),
     % --------------------------------------------------
     % Assert
@@ -148,11 +148,11 @@ test("wait_until: yields when nested path does not exist", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_CtxNew),
         action(wait_until(collision_id/collisionType)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _CtxNew
     ),
     % --------------------------------------------------
     % Assert
@@ -187,11 +187,11 @@ exist", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_CtxNew),
         action(wait_until(collision_id/collisionType)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _CtxNew
     ),
     % --------------------------------------------------
     % Assert

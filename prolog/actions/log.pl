@@ -3,11 +3,11 @@
 
 % Confirmed that it works! Don't worry!
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx), % Context unchanged
     action(log(Msg)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    Ctx,
+    Ctx  % Context unchanged
 ) :-
     execute_log(Ctx, Msg, ObjIn, ObjOut).
 

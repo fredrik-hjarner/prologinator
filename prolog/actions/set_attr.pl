@@ -3,11 +3,11 @@
 
 % set_attr/2 - Set attribute on self
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(CtxOut),
     action(set_attr(Key, Value)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    Ctx,
+    CtxOut
 ) :-
     execute_set_attr(
         Ctx,
@@ -20,11 +20,11 @@ execute_action_impl(
 
 % set_attr/3 - Set attribute on specific object
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(CtxOut),
     action(set_attr(TargetID, Key, Value)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    Ctx,
+    CtxOut
 ) :-
     execute_set_attr(
         Ctx,

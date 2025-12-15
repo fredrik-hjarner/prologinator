@@ -2,11 +2,11 @@
 
 
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx),
     action(loop(Actions)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    Ctx,
+    Ctx
 ) :-
     execute_loop(Ctx, Actions, ObjIn, ObjOut).
 

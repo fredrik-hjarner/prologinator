@@ -8,11 +8,11 @@
 % Yields: false (expands immediately)
 
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx),
     action(load(Path)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    Ctx,
+    Ctx
 ) :-
     execute_load(Ctx, Path, ObjIn, ObjOut).
 

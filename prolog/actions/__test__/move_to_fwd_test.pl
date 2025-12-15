@@ -37,11 +37,11 @@ remaining", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -81,11 +81,11 @@ remaining", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -124,11 +124,11 @@ test("move_to: single frame, arrives at target", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, X),
@@ -168,11 +168,11 @@ continues with remaining frames", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, X),
@@ -205,11 +205,11 @@ test("move_to: negative target coordinates", (
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(Action),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, NewX),

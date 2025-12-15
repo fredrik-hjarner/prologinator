@@ -8,11 +8,11 @@
 % Yields: true when key is held, false otherwise
 
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx),  % Context unchanged
     action(wait_key_held(KeyCode)),
     obj_old(ObjIn),
-    result(Status, ObjOut)
+    result(Status, ObjOut),
+    Ctx,
+    Ctx  % Context unchanged
 ) :-
     execute_wait_key_held(
         Ctx, KeyCode, ObjIn, Status, ObjOut

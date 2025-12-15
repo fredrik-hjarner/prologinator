@@ -8,11 +8,11 @@
 % Yields: false (expands immediately)
 
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx),
     action(repeat(Times, Acts)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    Ctx,
+    Ctx
 ) :-
     execute_repeat(Ctx, Times, Acts, ObjIn, ObjOut).
 

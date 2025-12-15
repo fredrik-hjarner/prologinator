@@ -3,21 +3,21 @@
 
 % decr/2 - Decrement attribute on self
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(CtxOut),
     action(decr(Key, Amount)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    Ctx,
+    CtxOut
 ) :-
     execute_decr(Ctx, CtxOut, Key, Amount, ObjIn, ObjOut).
 
 % decr/3 - Decrement attribute on specific object
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(CtxOut),
     action(decr(TargetID, Key, Amount)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    Ctx,
+    CtxOut
 ) :-
     execute_decr(
         Ctx,

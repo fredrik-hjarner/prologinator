@@ -49,8 +49,6 @@ test("define_action: stores action definition", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(define_action(
             zigzag(Amplitude, Times),
             repeat(Times, [
@@ -59,7 +57,9 @@ test("define_action: stores action definition", (
             ])
         )),
         obj_old(ObjIn),
-        result(completed, ObjOut)
+        result(completed, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % ------------------------------------------------------
     % Assert
@@ -107,11 +107,11 @@ test("custom_action: zigzag expands and executes", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(zigzag(30, 2)),
         obj_old(ObjIn),
-        result(completed, ObjOut)
+        result(completed, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % ------------------------------------------------------
     % Assert
@@ -374,11 +374,11 @@ substituted", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(move_pattern(10, 10, 20, 20, 5)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % ------------------------------------------------------
     % Assert

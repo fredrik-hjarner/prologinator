@@ -64,15 +64,15 @@ attributes.", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(parallel_all([
             set_attr(x, 10),
             set_attr(y, 20),
             set_attr(z, 30)
         ])),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_attr_val(CtxNew, 1/x, NewX),
     ctx_attr_val(CtxNew, 1/y, NewY),
@@ -113,15 +113,15 @@ test("parallel_all: yields when child yields", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(parallel_all([
             set_attr(x, 10),
             wait(2),  % Yields after 1 frame (becomes wait(1))
             set_attr(y, 20)
         ])),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     expect(ctx_attr_val(CtxNew, 1/x, NewX)),
     expect(ctx_attr_val(CtxNew, 1/y, NewY)),
@@ -172,15 +172,15 @@ test("parallel_all: despawns when child despawns", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(parallel_all([
             set_attr(x, 10),
             despawn,  % Despawns immediately
             set_attr(y, 20)
         ])),
         obj_old(ObjIn),
-        result(Status, _ObjOut)
+        result(Status, _ObjOut),
+        Ctx,
+        CtxNew
     ),
     % ------------------------------------------------------
     % Assert
@@ -223,7 +223,7 @@ test("parallel_all: should continue until all complete", (
     % ------------------------------------------------------
     % Assert - frame 1
     % ------------------------------------------------------
-    expect(expect(Status = yielded)),
+    expect(Status = yielded),
     expect(obj_acns(
         ObjOut, [
             list([
@@ -243,7 +243,7 @@ test("parallel_all: should continue until all complete", (
     % ------------------------------------------------------
     % Assert - frame 2
     % ------------------------------------------------------
-    expect(expect(Status2 = yielded)),
+    expect(Status2 = yielded),
     expect(obj_acns(
         Obj2, [
             list([
@@ -263,7 +263,7 @@ test("parallel_all: should continue until all complete", (
     % ------------------------------------------------------
     % Assert - frame 3
     % ------------------------------------------------------
-    expect(expect(Status3 = despawned)),
+    expect(Status3 = despawned),
     expect(obj_acns(
         Obj3, []
     ))

@@ -39,13 +39,13 @@ test("parallel_race: stops on child completion", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(parallel_race(
             [wait(5), noop, wait(10)]
         )),
         obj_old(Obj),
-        result(completed, NewObj)
+        result(completed, NewObj),
+        Ctx,
+        _
     ),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
@@ -75,13 +75,13 @@ done", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(parallel_race(
             [wait(5), wait(10)]
         )),
         obj_old(Obj),
-        result(Status, NewObj)
+        result(Status, NewObj),
+        Ctx,
+        _
     ),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
@@ -114,11 +114,11 @@ despawns", (
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(parallel_race([despawn, wait(10)])),
         obj_old(Obj),
-        result(ActionStatus, _ObjOut)
+        result(ActionStatus, _ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_status(Status, CtxNew),
     ctx_cmds(Commands, CtxNew),

@@ -23,34 +23,34 @@
 % ==========================================================
 
 % Forward execution (normal game)
-% :- pred execute_action(+Action, +ObjIn, -ObjOut,
-%     -Commands, -RevHints) 
-%     :: (action(Action), game_object(ObjIn)) 
-%     => (action(Action), game_object(ObjOut),
-%     list(command, Commands), list(rev_hint, RevHints))
+% :- pred execute_action(+ActionWrapper, +ObjWrapper,
+%     -ResultWrapper, +CtxIn, -CtxOut)
+%     :: (action_wrapper(ActionWrapper),
+%         obj_wrapper(ObjWrapper), context(CtxIn))
+%     => (result_wrapper(ResultWrapper), context(CtxOut))
 %     + is_det.
 
 % Reverse execution (undo/replay)
-% :- pred execute_action(-Action, -ObjIn, +ObjOut,
-%     +Commands, +RevHints) + is_det.
+% :- pred execute_action(-ActionWrapper, -ObjWrapper,
+%     +ResultWrapper, -CtxIn, +CtxOut) + is_det.
 
 % Action inference - which must the action have been?
-% :- pred execute_action(-Action, +ObjIn, +ObjOut,
-%     +Commands, +RevHints).
+% :- pred execute_action(-ActionWrapper, +ObjWrapper,
+%     +ResultWrapper, -CtxIn, +CtxOut).
 
 % Validation (consistency check)
-% :- pred execute_action(+Action, +ObjIn, +ObjOut,
-%     +Commands, +RevHints).
+% :- pred execute_action(+ActionWrapper, +ObjWrapper,
+%     +ResultWrapper, +CtxIn, +CtxOut).
 
 % ==========================================================
 % Top-level execute_action (with resolution)
 % ==========================================================
 execute_action(
-    ctx_old(CtxOld),
-    ctx_new(CtxNew),
     action(Action),
     obj_old(ObjIn),
-    result(Status, ObjOut)
+    result(Status, ObjOut),
+    CtxOld,
+    CtxNew
 ) :-
     % 1. Resolve value specs in action
     obj_id(ObjIn, MyID),
@@ -58,25 +58,25 @@ execute_action(
     
     % 2. Delegate to existing logic (renamed)
     execute_action_resolved(
-        ctx_old(CtxOld),
-        ctx_new(CtxNew),
         action(ResolvedAction),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        CtxOld,
+        CtxNew
     ).
 
 % ==========================================================
-% RENAMED: execute_action → execute_action_resolved
+% execute_action_resolved
 % ==========================================================
 % Wrapper: validates action then delegates to implementation
 % Now threads Context directly to accumulate side effects.
 % Also handles user-defined actions via runtime expansion.
 execute_action_resolved(
-    ctx_old(CtxOld),
-    ctx_new(CtxNew),
     action(Action),
     obj_old(ObjIn),
-    result(Status, ObjOut)
+    result(Status, ObjOut),
+    CtxOld,
+    CtxNew
 ) :-
     % TODO: action_validation nowadays it almost useless
     %       since custom actions allow anything.
@@ -86,11 +86,11 @@ execute_action_resolved(
     ( builtin_action(Action) ->
         % It's a built-in action - execute normally
         execute_action_impl(
-            ctx_old(CtxOld),
-            ctx_new(CtxNew),
             action(Action),
             obj_old(ObjIn),
-            result(Status, ObjOut)
+            result(Status, ObjOut),
+            CtxOld,
+            CtxNew
         )
     ; user_action(Action, Body) -> % absolute prolog voodoo!
         % It's a user-defined action!
@@ -100,11 +100,11 @@ execute_action_resolved(
         % Note: Body may contain attr() specs, so recurse
         % through top-level execute_action for resolution
         execute_action(
-            ctx_old(CtxOld),
-            ctx_new(CtxNew),
             action(Body),
             obj_old(ObjIn),
-            result(Status, ObjOut)
+            result(Status, ObjOut),
+            CtxOld,
+            CtxNew
         )
     ;
         % Unknown action

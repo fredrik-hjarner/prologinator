@@ -1,10 +1,10 @@
 % Delegate to implementation
 execute_action_impl(
-    ctx_old(CtxOld),
-    ctx_new(CtxNew),
     action(list(Actions)),
     obj_old(ObjIn),
-    result(Status, ObjOut)
+    result(Status, ObjOut),
+    CtxOld,
+    CtxNew
 ) :-
     execute_list(
         CtxOld, CtxNew, Actions, ObjIn, Status, ObjOut

@@ -3,11 +3,11 @@
 
 % IMMEDIATELY spawns the object into the context
 execute_action_impl(
-    ctx_old(CtxIn),
-    ctx_new(CtxOut),
     action(spawn(Type, X, Y, Actions)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    CtxIn,
+    CtxOut
 ) :-
     execute_spawn(
         CtxIn,

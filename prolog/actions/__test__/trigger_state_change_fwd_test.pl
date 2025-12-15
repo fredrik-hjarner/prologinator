@@ -33,11 +33,11 @@ to won", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(CtxIn),
-        ctx_new(CtxOut),
         action(Action),
         obj_old(ObjIn),
-        result(completed, ObjOut)
+        result(completed, ObjOut),
+        CtxIn,
+        CtxOut
     ),
     ctx_cmds(Commands, CtxOut),
     ctx_status(Status, CtxOut),
@@ -71,11 +71,11 @@ to lost", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(CtxIn),
-        ctx_new(CtxOut),
         action(Action),
         obj_old(ObjIn),
-        result(completed, ObjOut)
+        result(completed, ObjOut),
+        CtxIn,
+        CtxOut
     ),
     ctx_cmds(Commands, CtxOut),
     ctx_status(Status, CtxOut),
@@ -110,11 +110,11 @@ override lost", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(CtxIn),
-        ctx_new(CtxOut),
         action(Action),
         obj_old(ObjIn),
-        result(completed, ObjOut)
+        result(completed, ObjOut),
+        CtxIn,
+        CtxOut
     ),
     ctx_cmds(Commands, CtxOut),
     ctx_status(Status, CtxOut),

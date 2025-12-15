@@ -39,11 +39,11 @@ test("wait_key_held: completes when key is held", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(wait_key_held(39)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % --------------------------------------------------
     % Assert
@@ -70,11 +70,11 @@ test("wait_key_held: yields when key not held", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(wait_key_held(39)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % --------------------------------------------------
     % Assert
@@ -112,11 +112,11 @@ test("wait_key_held: waits for different key", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(wait_key_held(37)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _
     ),
     % --------------------------------------------------
     % Assert
@@ -154,11 +154,11 @@ test("wait_key_held: multiple keys held", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(wait_key_held(37)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _
     ),
     % --------------------------------------------------
     % Assert

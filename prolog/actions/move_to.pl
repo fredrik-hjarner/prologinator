@@ -1,8 +1,6 @@
 % move_to action implementation
 
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(CtxOut), % Context may change due to attrs
     action(move_to(TargetX, TargetY, Frames)),
     obj_old(object(
         id(ID),
@@ -15,7 +13,9 @@ execute_action_impl(
         type(Type),
         actions(NewActions),
         Colls
-    ))
+    )),
+    Ctx,
+    CtxOut  % Context may change due to attrs
 ) :-
     execute_move_to(
         Ctx,

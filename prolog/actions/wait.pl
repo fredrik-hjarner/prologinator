@@ -1,11 +1,11 @@
 % wait action implementation
 
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx), % Context unchanged
     action(wait(N)),
     obj_old(ObjIn),
-    result(Status, ObjOut)
+    result(Status, ObjOut),
+    Ctx,
+    Ctx  % Context unchanged
 ) :-
     execute_wait(Ctx, N, ObjIn, Status, ObjOut).
 

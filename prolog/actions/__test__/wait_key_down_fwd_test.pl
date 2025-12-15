@@ -39,11 +39,11 @@ test("wait_key_down: completes when key pressed", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(wait_key_down(39)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % --------------------------------------------------
     % Assert
@@ -70,11 +70,11 @@ test("wait_key_down: yields when key not pressed", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(wait_key_down(39)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % --------------------------------------------------
     % Assert
@@ -112,11 +112,11 @@ test("wait_key_down: waits for different key", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(wait_key_down(37)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _
     ),
     % --------------------------------------------------
     % Assert
@@ -158,11 +158,11 @@ test("wait_key_down: multiple key events", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(wait_key_down(37)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _
     ),
     % --------------------------------------------------
     % Assert
@@ -200,11 +200,11 @@ test("wait_key_down: ignores key up events", (
     % Act
     % --------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(wait_key_down(39)),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        _
     ),
     % --------------------------------------------------
     % Assert

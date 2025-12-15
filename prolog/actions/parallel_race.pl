@@ -1,9 +1,9 @@
 execute_action_impl(
-    ctx_old(CtxOld),
-    ctx_new(CtxNew),
     action(parallel_race(Children)),
     obj_old(ObjIn),
-    result(Status, ObjOut)
+    result(Status, ObjOut),
+    CtxOld,
+    CtxNew
 ) :-
     execute_parallel_race(
         CtxOld, CtxNew,

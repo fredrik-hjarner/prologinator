@@ -41,11 +41,11 @@ actions from executing", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(despawn),
         obj_old(ObjIn),
-        result(Status, _ObjOut)
+        result(Status, _ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
     ctx_frame(Frame, CtxNew),
@@ -71,11 +71,11 @@ executing after despawn", (
     ),
     empty_ctx(Ctx),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(despawn),
         obj_old(ObjIn),
-        result(Status, _ObjOut)
+        result(Status, _ObjOut),
+        Ctx,
+        CtxNew
     ),
     % Object must be despawned
     Status = despawned,

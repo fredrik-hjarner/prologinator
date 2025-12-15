@@ -8,8 +8,6 @@
 % Yields: true when Frames > 0
 
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(CtxOut),
     action(move_delta(Frames, DX, DY)),
     obj_old(object(
         id(ID),
@@ -22,7 +20,9 @@ execute_action_impl(
         type(Type),
         actions(NewActions),
         Colls
-    ))
+    )),
+    Ctx,
+    CtxOut
 ) :-
     execute_move_delta(
         Ctx,

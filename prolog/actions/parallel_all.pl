@@ -2,26 +2,12 @@
 % Interface
 % ==========================================================
 
-% TODO: Clause added just get things through.
-%       Remove entire clause when solution to module
-%       dependency issue is found.
-% This clause just skips the action and returns completed.
-% execute_action_impl(
-%     ctx_old(Ctx),
-%     ctx_new(Ctx),
-%     action(parallel_all(_Children)),
-%     obj_old(ObjIn),
-%     result(completed, ObjOut)
-% ) :-
-%     obj_acns(ObjIn, [_|Rest]),
-%     obj_acns_obj(ObjIn, Rest, ObjOut).
-
 execute_action_impl(
-    ctx_old(CtxOld),
-    ctx_new(CtxNew),
     action(parallel_all(Children)),
     obj_old(ObjIn),
-    result(Status, ObjOut)
+    result(Status, ObjOut),
+    CtxOld,
+    CtxNew
 ) :-
     execute_parallel_all(
         CtxOld, CtxNew,

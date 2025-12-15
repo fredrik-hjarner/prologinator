@@ -9,11 +9,11 @@
 %   collision_id
 
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx),  % Context unchanged
     action(wait_until(Path)),
     obj_old(ObjIn),
-    result(Status, ObjOut)
+    result(Status, ObjOut),
+    Ctx,
+    Ctx  % Context unchanged
 ) :-
     execute_wait_until(
         Ctx, Path, ObjIn, Status, ObjOut

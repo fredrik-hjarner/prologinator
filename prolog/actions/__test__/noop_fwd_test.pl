@@ -30,11 +30,11 @@ test("noop: removes self from action queue", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(noop),
         obj_old(ObjIn),
-        result(ActionStatus, ObjOut)
+        result(ActionStatus, ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_cmds(Commands, CtxNew),
     ctx_frame(Frame, CtxNew),

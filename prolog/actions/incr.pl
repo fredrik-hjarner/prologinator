@@ -3,21 +3,21 @@
 
 % incr/2 - Increment attribute on self
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(CtxOut),
     action(incr(Key, Amount)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    Ctx,
+    CtxOut
 ) :-
     execute_incr(Ctx, CtxOut, Key, Amount, ObjIn, ObjOut).
 
 % incr/3 - Increment attribute on specific object
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(CtxOut),
     action(incr(TargetID, Key, Amount)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    Ctx,
+    CtxOut
 ) :-
     execute_incr(
         Ctx,

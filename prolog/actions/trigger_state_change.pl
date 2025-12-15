@@ -3,11 +3,11 @@
 
 % IMMEDIATELY updates status in context
 execute_action_impl(
-    ctx_old(CtxIn),
-    ctx_new(CtxOut),
     action(trigger_state_change(Change)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    CtxIn,
+    CtxOut
 ) :-
     execute_trigger_state_change(
         CtxIn, CtxOut, Change, ObjIn, ObjOut

@@ -32,12 +32,12 @@ test("value_resolution: move_to with attr() references", (
         collisions([])
     ),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(move_to(attr(target_x),
                        attr(target_y), 5)),
         obj_old(ObjIn),
-        result(_, _ObjOut)
+        result(_, _ObjOut),
+        Ctx,
+        CtxNew
     ),
     % Should start moving toward target
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -61,11 +61,11 @@ test("value_resolution: set_attr with attr() source", (
         collisions([])
     ),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(set_attr(source_x, attr(x))),
         obj_old(ObjIn),
-        result(_, _ObjOut)
+        result(_, _ObjOut),
+        Ctx,
+        CtxNew
     ),
     % source_x should now equal x
     ctx_attr_val(CtxNew, 1/source_x, 50),
@@ -92,12 +92,12 @@ test("value_resolution: path syntax parent_id/target_y", (
         collisions([])
     ),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(set_attr(my_target_y,
                         attr(parent_id/target_y))),
         obj_old(ObjIn),
-        result(_, _ObjOut)
+        result(_, _ObjOut),
+        Ctx,
+        CtxNew
     ),
     % Should copy parent's target_y (250) to my_target_y
     ctx_attr_val(CtxNew, 1/my_target_y, 250),
@@ -129,13 +129,13 @@ test("value_resolution: multi-hop path a/b/c", (
         collisions([])
     ),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(set_attr(result,
                         attr(first_id/second_id/
                               final_value))),
         obj_old(ObjIn),
-        result(_, _ObjOut)
+        result(_, _ObjOut),
+        Ctx,
+        CtxNew
     ),
     % Should navigate: 1 -> first_id(2) -> second_id(3) ->
     % final_value(999)
@@ -159,12 +159,12 @@ test("value_resolution: spawn at attr() position", (
         collisions([])
     ),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(spawn(enemy, attr(spawn_x),
                      attr(spawn_y), [])),
         obj_old(ObjIn),
-        result(_, _ObjOut)
+        result(_, _ObjOut),
+        Ctx,
+        CtxNew
     ),
     % Should spawn enemy at (200, 300) - spawn immediately
     % creates object, so check it exists in context
@@ -191,12 +191,12 @@ test("value_resolution: mixed plain and attr() values", (
         collisions([])
     ),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(move_to(attr(target_x), 200,
                        attr(speed))),
         obj_old(ObjIn),
-        result(_, _ObjOut)
+        result(_, _ObjOut),
+        Ctx,
+        CtxNew
     ),
     % Should move toward target (100, 200) with speed=5
     ctx_attr_val(CtxNew, 1/x, NewX),
@@ -225,11 +225,11 @@ test("value_resolution: backward compatible plain values", (
         collisions([])
     ),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(move_to(100, 200, 5)),
         obj_old(ObjIn),
-        result(_, _ObjOut)
+        result(_, _ObjOut),
+        Ctx,
+        CtxNew
     ),
     % Should work exactly as before
     ctx_attr_val(CtxNew, 1/x, NewX),

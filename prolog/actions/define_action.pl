@@ -6,11 +6,11 @@
 % is called later, execute_action/5 will expand it with
 % parameter substitution and execute the Body.
 execute_action_impl(
-    ctx_old(Ctx),
-    ctx_new(Ctx),  % Context unchanged
     action(define_action(Signature, Body)),
     obj_old(ObjIn),
-    result(completed, ObjOut)
+    result(completed, ObjOut),
+    Ctx,
+    Ctx  % Context unchanged
 ) :-
     execute_define_action(
         Ctx,

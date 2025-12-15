@@ -29,11 +29,11 @@ yields", (
     ),
     empty_ctx(Ctx),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         action(list([wait(1), move_to(5, 5, 2)])),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % list now executes actions immediately using
     % tick_object
@@ -58,11 +58,11 @@ test("list: empty list removes itself", (
     ),
     empty_ctx(Ctx),
     execute_action(
-        ctx_old(Ctx),
-        ctx_new(_),
         action(list([])),
         obj_old(ObjIn),
-        result(completed, ObjOut)
+        result(completed, ObjOut),
+        Ctx,
+        _
     ),
     ObjOut = object(
         id(0), type(static),
