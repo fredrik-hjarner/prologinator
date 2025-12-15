@@ -18,7 +18,7 @@
 % Uses attr(Key, Value) format internally for full
 % bidirectionality.
 ctx_attr_val(ObjectID/Key, Value, Ctx, Ctx) :-
-    ctx_attrs(AttrStore, Ctx),
+    ctx_attrs(AttrStore, Ctx, Ctx),
     gen_assoc(ObjectID, AttrStore, Attrs),
     member(attr(Key, Value), Attrs).
 
@@ -30,11 +30,11 @@ ctx_attr_val(ObjectID/Key, Value, Ctx) :-
 % Updates or creates an attribute for an object in the
 % centralized store. Returns a new context with the updated
 % attribute store. Replaces existing values for the same
-% key if they exist, otherwise appends to the object's
+% key if they exist, otherwise appjustends to the object's
 % attribute list.
 % ctx_set_attr_val(+ObjectID/Key, +Value, +CtxIn, -CtxOut)
 ctx_set_attr_val(ObjectID/Key, Value, CtxIn, CtxOut) :-
-    ctx_attrs(AttrStoreIn, CtxIn),
+    ctx_attrs(AttrStoreIn, CtxIn, CtxIn),
     set_attr_in_store_helper(AttrStoreIn, ObjectID, Key,
                              Value, AttrStoreOut),
     ctx_set_attrs(AttrStoreOut, CtxIn, CtxOut).

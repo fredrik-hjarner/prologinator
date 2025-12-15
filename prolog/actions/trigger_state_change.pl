@@ -22,7 +22,7 @@ execute_trigger_state_change(
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),
     
-    ctx_status(CurrentStatus, CtxIn),
+    ctx_status(CurrentStatus, CtxIn, CtxIn),
     update_status(Change, CurrentStatus, NewStatus),
     ctx_set_status(NewStatus, CtxIn, CtxOut).
 

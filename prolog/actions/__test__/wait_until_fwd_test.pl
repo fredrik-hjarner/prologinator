@@ -44,7 +44,7 @@ test("wait_until: completes when path exists", (
     expect(Status = completed, 'Status != completed'),
     expect(obj_acns(ObjOut, [noop]),
         'Actions != [noop]'),
-    expect(ctx_cmds([], CtxNew), 'Commands != []')
+    expect(ctx_cmds([], CtxNew, CtxNew), 'Commands != []')
 )).
 
 test("wait_until: yields when path does not exist", (

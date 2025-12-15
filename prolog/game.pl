@@ -82,11 +82,10 @@ game_loop(
     keys_held(KeysHeld)  % Current key state
 ) :-
     catch(
-        ( ctx_status(Status, Ctx),
+        ( ctx_status(Status, Ctx, Ctx),
           ( Status = playing ->
-              render(ctx_in(Ctx)),
-              write('Press: f=forward, r=reverse, \
-q=quit'),
+              render(Ctx, Ctx),
+              write('Press: f=forward, r=reverse, q=quit'),
               nl,
               flush_output,
               get_single_char(Char),
@@ -114,7 +113,7 @@ q=quit'),
                 keys_held(NewKeysHeld)
               )
           ;
-              render(ctx_in(Ctx)),
+              render(Ctx, Ctx),
               write('Game Over!'), nl
           )
         ),
@@ -137,7 +136,7 @@ handle_input(
 ) :-
     (   char_code(Char, 102) ->  % 'f'
         % Forward: lookup events, update keys, tick
-        ctx_frame(Frame, Ctx),
+        ctx_frame(Frame, Ctx, Ctx),
         Frame1 #= Frame + 1,
         
         % Get events for next frame
@@ -174,7 +173,9 @@ handle_input(
             NewHistory = RestHistory,
             % Reconstruct keys_held from PrevCtx
             ctx_input(
-                      input(_, held(NewKeysHeld)), PrevCtx)
+                input(_, held(NewKeysHeld)),
+                PrevCtx, PrevCtx
+            )
         ;
             NewCtx = Ctx,
             NewHistory = History,
@@ -223,15 +224,15 @@ apply_events(
 % ==========================================================
 % ASCII Rendering
 % ==========================================================
-render(ctx_in(Ctx)) :-
+render(Ctx, Ctx) :-
     % Clear screen (ANSI escape code)
     % COMMENTED OUT for debugging
     % char_code(Esc, 27),  % ESC character
     % write(Esc), write('[2J'), write(Esc), write('[H'),
     
-    ctx_frame(Frame, Ctx),
-    ctx_status(Status, Ctx),
-    ctx_objs(Objects, Ctx),
+    ctx_frame(Frame, Ctx, Ctx),
+    ctx_status(Status, Ctx, Ctx),
+    ctx_objs(Objects, Ctx, Ctx),
     length(Objects, ObjCount),
     
     % Header
@@ -242,31 +243,39 @@ render(ctx_in(Ctx)) :-
     write('================================'), nl, nl,
     
     % Render grid (20x20)
-    render_grid(Ctx, Objects),
+    render_grid(Objects, Ctx, Ctx),
     nl.
 
-render_grid(Ctx, Objects) :-
+render_grid(Objects, CtxIn, CtxOut) :-
     % Build position map once: pos(X, Y) -> Symbol
-    build_position_map(Ctx, Objects, PosMap),
+    build_position_map(Objects, PosMap, CtxIn, CtxOut),
     % Grid is 20x20, positions 0-19
     render_grid_rows(PosMap, 0).
 
-build_position_map(Ctx, Objects, PosMap) :-
+build_position_map(Objects, PosMap, CtxIn, CtxOut) :-
     empty_assoc(EmptyMap),
-    build_position_map_loop(Ctx, Objects, EmptyMap, PosMap).
+    build_position_map_loop(
+        Objects, EmptyMap, PosMap, CtxIn, CtxOut
+    ).
 
-build_position_map_loop(_, [], Map, Map).
-build_position_map_loop(Ctx, [Obj|Rest], MapIn, MapOut) :-
+build_position_map_loop([], Map, Map, CtxIn, CtxOut) :-
+    CtxOut = CtxIn.
+build_position_map_loop(
+    [Obj|Rest], MapIn, MapOut, CtxIn, CtxOut
+) :-
     obj_id(Obj, ID),
-    ( ctx_attr_val(ID/x, X, Ctx),
-      ctx_attr_val(ID/y, Y, Ctx),
-      get_symbol(Ctx, ID, Symbol) ->
+    ( ctx_attr_val(ID/x, X, CtxIn, CtxIn),
+      ctx_attr_val(ID/y, Y, CtxIn, CtxIn),
+      get_symbol(ID, Symbol, CtxIn, CtxMid) ->
         Pos = pos(X, Y),
         put_assoc(Pos, MapIn, Symbol, MapTemp)
     ;
-        MapTemp = MapIn
+        MapTemp = MapIn,
+        CtxMid = CtxIn
     ),
-    build_position_map_loop(Ctx, Rest, MapTemp, MapOut).
+    build_position_map_loop(
+        Rest, MapTemp, MapOut, CtxMid, CtxOut
+    ).
 
 render_grid_rows(PosMap, Y) :-
     Y =< 19,
@@ -290,10 +299,11 @@ render_grid_row(PosMap, Y, X) :-
 render_grid_row(_, _, X) :-
     X > 19.
 
-get_symbol(Ctx, ID, Symbol) :-
+get_symbol(ID, Symbol, CtxIn, CtxOut) :-
     % Get displayChar attribute (character code as integer)
     % If attribute doesn't exist, predicate fails
     % (object not displayed)
-    ctx_attr_val(ID/displayChar, Symbol, Ctx),
-    integer(Symbol).
+    ctx_attr_val(ID/displayChar, Symbol, CtxIn, CtxIn),
+    integer(Symbol),
+    CtxOut = CtxIn.
 

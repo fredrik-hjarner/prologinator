@@ -27,7 +27,7 @@ object", (
         Ctx,
         CtxNew
     ),
-    ctx_cmds([], CtxNew),
+    ctx_cmds([], CtxNew, CtxNew),
     Status = completed,
     ObjOut = object(
         id(1),
@@ -52,7 +52,7 @@ after one execution", (
         Ctx,
         CtxNew
     ),
-    ctx_cmds([], CtxNew),
+    ctx_cmds([], CtxNew, CtxNew),
     Status = yielded,
     ObjOut = object(
         id(1),
@@ -77,7 +77,7 @@ continues until empty", (
         Ctx,
         CtxNew
     ),
-    ctx_cmds([], CtxNew),
+    ctx_cmds([], CtxNew, CtxNew),
     Status = completed,
     ObjOut = object(
         id(1),
@@ -101,13 +101,13 @@ state", (
         collisions([])
     )], CtxIn0, CtxIn),
     tick(CtxIn, CtxOut),
-    ctx_frame(1, CtxOut),
+    ctx_frame(1, CtxOut, CtxOut),
     ctx_objs([object(
         id(0),
         type(static),
         actions([]),
         collisions([])
-    )], CtxOut)
+    )], CtxOut, CtxOut)
 )).
 
 test("tick: processes object with yielding action \
@@ -120,13 +120,13 @@ test("tick: processes object with yielding action \
         collisions([])
     )], CtxIn0, CtxIn),
     tick(CtxIn, CtxOut),
-    ctx_frame(1, CtxOut),
+    ctx_frame(1, CtxOut, CtxOut),
     ctx_objs([object(
         id(0),
         type(static),
         actions([wait(2)]),
         collisions([])
-    )], CtxOut)
+    )], CtxOut, CtxOut)
 )).
 
 test("tick: processes spawn request and creates new \
@@ -141,9 +141,9 @@ object", (
         collisions([])
     )], CtxIn0, CtxIn),
     tick(CtxIn, CtxOut),
-    ctx_frame(1, CtxOut),
-    ctx_nextid(2, CtxOut),
-    ctx_objs(FinalObjs, CtxOut),
+    ctx_frame(1, CtxOut, CtxOut),
+    ctx_nextid(2, CtxOut, CtxOut),
+    ctx_objs(FinalObjs, CtxOut, CtxOut),
     member(
         object(
             id(0),
@@ -202,15 +202,15 @@ test("collision: simple enemy-projectile collision", (
     % Run 1 frame - collision should happen when both reach
     % (10, 10)
     tick(InitialContext, Context1),
-    ctx_frame(1, Context1),
-    ctx_objs(Objs1, Context1),
+    ctx_frame(1, Context1, Context1),
+    ctx_objs(Objs1, Context1, Context1),
     % After collision, both objects remain but have
     % collision_id attributes
     length(Objs1, ObjCount),
     ObjCount = 2,
     % Check collision_id attributes are set
-    ctx_attr_val(0/collision_id, 1, Context1),
-    ctx_attr_val(1/collision_id, 0, Context1)
+    ctx_attr_val(0/collision_id, 1, Context1, Context1),
+    ctx_attr_val(1/collision_id, 0, Context1, Context1)
 )).
 
 % ==========================================================
@@ -279,7 +279,7 @@ freeze (first collision)", (
     % Run tick 32 times (first collision should happen
     % around here)
     run_ticks(InitialContext, 32, FinalContext),
-    ctx_frame(32, FinalContext)
+    ctx_frame(32, FinalContext, FinalContext)
 )).
 
 % ==========================================================

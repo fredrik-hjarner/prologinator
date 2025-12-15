@@ -51,7 +51,7 @@ test("wait_key_up: completes when key released", (
     expect(Status = completed, 'Status != completed'),
     expect(obj_acns(ObjOut, [noop]),
         'Actions != [noop]'),
-    expect(ctx_cmds([], CtxNew), 'Commands != []')
+    expect(ctx_cmds([], CtxNew, CtxNew), 'Commands != []')
 )).
 
 test("wait_key_up: yields when key not released", (
@@ -82,7 +82,7 @@ test("wait_key_up: yields when key not released", (
     expect(Status = yielded, 'Status != yielded'),
     expect(obj_acns(ObjOut, [wait_key_up(39), noop]),
         'Action not preserved'),
-    expect(ctx_cmds([], CtxNew), 'Commands != []')
+    expect(ctx_cmds([], CtxNew, CtxNew), 'Commands != []')
 )).
 
 test("wait_key_up: waits for different key", (
@@ -299,7 +299,7 @@ test("wait_key_up: in loop pattern", (
     % --------------------------------------------------
     % Should yield waiting for key release
     expect(Status1 = yielded, 'Should yield'),
-    expect(ctx_attr_val(1/x, 0, Ctx1),
+    expect(ctx_attr_val(1/x, 0, Ctx1, Ctx1),
         'x should still be 0'),
     % Loop expands body and adds itself back
     expect(obj_acns(Obj1, [

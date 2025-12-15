@@ -120,8 +120,8 @@ despawns", (
         Ctx,
         CtxNew
     ),
-    ctx_status(Status, CtxNew),
-    ctx_cmds(Commands, CtxNew),
+    ctx_status(Status, CtxNew, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

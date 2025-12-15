@@ -14,17 +14,17 @@
 % ==========================================================
 
 % ==========================================================
-% Mode: ctx_attr_val(+Ctx, -ObjectID/-Key, -Value)
+% Mode: ctx_attr_val(+Ctx, -ObjectID/-Key, -Value, -Value)
 % ==========================================================
 % NOTE: Untested modes with non-ground Ctx:
-%   - ctx_attr_val(-Ctx, +ObjectID/+Key, +Value)
-%   - ctx_attr_val(-Ctx, -ObjectID/+Key, +Value)
-%   - ctx_attr_val(-Ctx, +ObjectID/-Key, +Value)
-%   - ctx_attr_val(-Ctx, -ObjectID/-Key, +Value)
-%   - ctx_attr_val(-Ctx, +ObjectID/+Key, -Value)
-%   - ctx_attr_val(-Ctx, -ObjectID/+Key, -Value)
-%   - ctx_attr_val(-Ctx, +ObjectID/-Key, -Value)
-%   - ctx_attr_val(-Ctx, -ObjectID/-Key, -Value)
+%   - ctx_attr_val(-Ctx, +ObjectID/+Key, +Value, +Value)
+%   - ctx_attr_val(-Ctx, -ObjectID/+Key, +Value, +Value)
+%   - ctx_attr_val(-Ctx, +ObjectID/-Key, +Value, +Value)
+%   - ctx_attr_val(-Ctx, -ObjectID/-Key, +Value, +Value)
+%   - ctx_attr_val(-Ctx, +ObjectID/+Key, -Value, -Value)
+%   - ctx_attr_val(-Ctx, -ObjectID/+Key, -Value, -Value)
+%   - ctx_attr_val(-Ctx, +ObjectID/-Key, -Value, -Value)
+%   - ctx_attr_val(-Ctx, -ObjectID/-Key, -Value, -Value)
 %   (All modes where Ctx is non-ground are untested)
 
 test("ctx_attr_val: can enumerate ObjectID from attribute \
@@ -40,7 +40,7 @@ value", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    findall(ID, ctx_attr_val(ID/x, 5, Ctx), IDs),
+    findall(ID, ctx_attr_val(ID/x, 5, Ctx, Ctx), IDs),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -61,7 +61,9 @@ value", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    findall(ID-Key, ctx_attr_val(ID/Key, 5, Ctx), Pairs),
+    findall(
+        ID-Key, ctx_attr_val(ID/Key, 5, Ctx, Ctx), Pairs
+    ),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -81,7 +83,7 @@ value", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    findall(Key, ctx_attr_val(1/Key, 10, Ctx), Keys),
+    findall(Key, ctx_attr_val(1/Key, 10, Ctx, Ctx), Keys),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -102,7 +104,7 @@ from known Key and Value", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    ctx_attr_val(ID/x, 5, Ctx),
+    ctx_attr_val(ID/x, 5, Ctx, Ctx),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -121,7 +123,9 @@ Key", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    findall(ID-Val, ctx_attr_val(ID/x, Val, Ctx), Pairs),
+    findall(
+        ID-Val, ctx_attr_val(ID/x, Val, Ctx, Ctx), Pairs
+    ),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -141,7 +145,9 @@ ObjectID", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    findall(Key-Val, ctx_attr_val(1/Key, Val, Ctx), Pairs),
+    findall(
+        Key-Val, ctx_attr_val(1/Key, Val, Ctx, Ctx), Pairs
+    ),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -160,7 +166,9 @@ test("ctx_attr_val: enumerate all from Value", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    findall(ID-Key, ctx_attr_val(ID/Key, 5, Ctx), Pairs),
+    findall(
+        ID-Key, ctx_attr_val(ID/Key, 5, Ctx, Ctx), Pairs
+    ),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -198,7 +206,7 @@ writes (attr/2 format enables bidirectionality)", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ctx_attr_val(1/x, 5, CtxOut)
+    ctx_attr_val(1/x, 5, CtxOut, CtxOut)
 )).
 
 test("ctx_set_attr_val: can use non-ground ObjectID for \
@@ -216,7 +224,7 @@ writes", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ctx_attr_val(1/x, 5, CtxOut)
+    ctx_attr_val(1/x, 5, CtxOut, CtxOut)
 )).
 
 test("ctx_set_attr_val: can use non-ground ObjectID \
@@ -235,6 +243,6 @@ and Key for writes", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ctx_attr_val(1/x, 5, CtxOut)
+    ctx_attr_val(1/x, 5, CtxOut, CtxOut)
 )).
 

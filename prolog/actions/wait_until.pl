@@ -29,7 +29,7 @@ execute_wait_until(
     obj_acns(ObjIn, [_|Rest]),
     
     % Try to resolve path (fails if path doesn't exist)
-    ( resolve_path(Ctx, MyID, Path, _Val) ->
+    ( resolve_path(MyID, Path, _Val, Ctx, Ctx) ->
         % Path exists - proceed
         obj_acns_obj(ObjIn, Rest, ObjOut),
         Status = completed

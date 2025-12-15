@@ -47,8 +47,8 @@ actions from executing", (
         Ctx,
         CtxNew
     ),
-    ctx_cmds(Commands, CtxNew),
-    ctx_frame(Frame, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_frame(Frame, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -81,8 +81,8 @@ executing after despawn", (
     Status = despawned,
     % Despawn hint must be recorded
     % Status must remain playing (game_over did NOT execute)
-    ctx_status(playing, CtxNew),
+    ctx_status(playing, CtxNew, CtxNew),
     % No commands
-    ctx_cmds([], CtxNew)
+    ctx_cmds([], CtxNew, CtxNew)
 )).
 
