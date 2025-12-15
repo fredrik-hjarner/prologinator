@@ -13,7 +13,6 @@ execute_action_impl(
     Ctx  % Context unchanged
 ) :-
     execute_define_action(
-        Ctx,
         Signature,
         Body,
         ObjIn,
@@ -21,10 +20,9 @@ execute_action_impl(
     ).
 
 % ==========================================================
-% execute_define_action/5
+% execute_define_action/4
 % ==========================================================
 execute_define_action(
-    _Ctx,
     Signature,
     Body,
     ObjIn,

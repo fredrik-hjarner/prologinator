@@ -10,28 +10,28 @@ execute_action_impl(
     CtxOut
 ) :-
     execute_spawn(
-        CtxIn,
-        CtxOut,
         Type,
         X,
         Y,
         Actions,
         ObjIn,
-        ObjOut
+        ObjOut,
+        CtxIn,
+        CtxOut
     ).
 
 % ==========================================================
-% execute_spawn/7
+% execute_spawn/8
 % ==========================================================
 execute_spawn(
-    CtxIn,
-    CtxOut,
     Type,
     X,
     Y,
     Actions,
     ObjIn,
-    ObjOut
+    ObjOut,
+    CtxIn,
+    CtxOut
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),

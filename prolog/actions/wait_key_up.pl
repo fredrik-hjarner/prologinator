@@ -11,17 +11,19 @@ execute_action_impl(
     action(wait_key_up(KeyCode)),
     obj_old(ObjIn),
     result(Status, ObjOut),
-    Ctx,
-    Ctx  % Context unchanged
+    CtxOld,
+    CtxNew
 ) :-
     execute_wait_key_up(
-        Ctx, KeyCode, ObjIn, Status, ObjOut
+        KeyCode, ObjIn, Status, ObjOut, CtxOld, CtxNew
     ).
 
 % ==========================================================
-% execute_wait_key_up/5
+% execute_wait_key_up/6
 % ==========================================================
-execute_wait_key_up(Ctx, KeyCode, ObjIn, Status, ObjOut) :-
+execute_wait_key_up(
+    KeyCode, ObjIn, Status, ObjOut, Ctx, Ctx
+) :-
     obj_acns(ObjIn, [_|Rest]),
     
     % Check if key released THIS frame

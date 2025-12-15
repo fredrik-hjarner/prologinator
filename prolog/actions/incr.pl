@@ -9,7 +9,7 @@ execute_action_impl(
     Ctx,
     CtxOut
 ) :-
-    execute_incr(Ctx, CtxOut, Key, Amount, ObjIn, ObjOut).
+    execute_incr(Key, Amount, ObjIn, ObjOut, Ctx, CtxOut).
 
 % incr/3 - Increment attribute on specific object
 execute_action_impl(
@@ -20,19 +20,19 @@ execute_action_impl(
     CtxOut
 ) :-
     execute_incr(
-        Ctx,
-        CtxOut,
         TargetID,
         Key,
         Amount,
         ObjIn,
-        ObjOut
+        ObjOut,
+        Ctx,
+        CtxOut
     ).
 
 % ==========================================================
 % execute_incr/6 (for incr/2 - self)
 % ==========================================================
-execute_incr(Ctx, CtxOut, Key, Amount, ObjIn, ObjOut) :-
+execute_incr(Key, Amount, ObjIn, ObjOut, Ctx, CtxOut) :-
     obj_id(ObjIn, MyID),
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),
@@ -47,13 +47,13 @@ execute_incr(Ctx, CtxOut, Key, Amount, ObjIn, ObjOut) :-
 % execute_incr/7 (for incr/3 - target)
 % ==========================================================
 execute_incr(
-    Ctx,
-    CtxOut,
     TargetID,
     Key,
     Amount,
     ObjIn,
-    ObjOut
+    ObjOut,
+    Ctx,
+    CtxOut
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),

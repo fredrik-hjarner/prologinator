@@ -11,18 +11,18 @@ execute_action_impl(
     action(wait_key_held(KeyCode)),
     obj_old(ObjIn),
     result(Status, ObjOut),
-    Ctx,
-    Ctx  % Context unchanged
+    CtxOld,
+    CtxNew
 ) :-
     execute_wait_key_held(
-        Ctx, KeyCode, ObjIn, Status, ObjOut
+        KeyCode, ObjIn, Status, ObjOut, CtxOld, CtxNew
     ).
 
 % ==========================================================
-% execute_wait_key_held/5
+% execute_wait_key_held/6
 % ==========================================================
 execute_wait_key_held(
-    Ctx, KeyCode, ObjIn, Status, ObjOut
+    KeyCode, ObjIn, Status, ObjOut, Ctx, Ctx
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     

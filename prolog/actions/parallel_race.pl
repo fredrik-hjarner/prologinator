@@ -6,10 +6,11 @@ execute_action_impl(
     CtxNew
 ) :-
     execute_parallel_race(
-        CtxOld, CtxNew,
         Children,
         ObjIn,
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        CtxOld,
+        CtxNew
     ).
 
 % ==========================================================
@@ -17,14 +18,14 @@ execute_action_impl(
 % ==========================================================
 
 execute_parallel_race(
-    CtxOld, CtxNew, Children, ObjIn, result(Status, ObjOut)
+    Children, ObjIn, result(Status, ObjOut), CtxOld, CtxNew
 ) :-
     obj_acns(ObjIn, [_ParentAction|RestActions]),
     
     % Execute children sequentially
     % (stop immediately if one finishes).
     tick_children_race(
-        CtxOld, CtxTemp, Children, ObjIn, Result
+        Children, ObjIn, Result, CtxOld, CtxTemp
     ),
     
     ( Result = despawned ->
@@ -54,19 +55,20 @@ execute_parallel_race(
 % Helpers
 % ==========================================================
 
-% tick_children_race(+CtxIn, -CtxOut, +Children, +ObjIn,
-%     -Result)
+% tick_children_race(+Children, +ObjIn, -Result, +CtxIn,
+%     -CtxOut)
 % Result is one of:
 %   - despawned
 %   - race_won(FinalObj)       <-- At least one finished
 %   - ongoing(List, FinalObj)  <-- All children yielded
-tick_children_race(Ctx, Ctx, [], Obj, ongoing([], Obj)).
+tick_children_race([], Obj, ongoing([], Obj), Ctx, Ctx).
 
 tick_children_race(
-    CtxIn, CtxOut,
     [ChildAction|RestChildren],
     ObjIn,
-    Result
+    Result,
+    CtxIn,
+    CtxOut
 ) :-
     % 1. Normalize child to list
     ( ChildAction = [_|_] ->
@@ -80,10 +82,10 @@ tick_children_race(
     
     % 3. Tick the child
     tick_object(
-        ctx_old(CtxIn),
-        ctx_new(CtxTemp),
         obj_old(TempObj),
-        result(ChildStatus, ObjAfterTick)
+        result(ChildStatus, ObjAfterTick),
+        CtxIn,
+        CtxTemp
     ),
     
     ( ChildStatus = despawned ->
@@ -101,10 +103,11 @@ tick_children_race(
         
         % Child yielded, check the next racer
         tick_children_race(
-            CtxTemp, CtxOut,
             RestChildren,
             ObjAfterTick, % Thread state
-            RestResult
+            RestResult,
+            CtxTemp,
+            CtxOut
         ),
         
         ( RestResult = despawned ->

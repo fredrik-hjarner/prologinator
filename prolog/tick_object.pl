@@ -6,19 +6,19 @@
 % Returns result(Status, Obj) where Status is completed,
 % yielded, or despawned.
 tick_object(
-    ctx_old(Ctx),
-    ctx_new(Ctx),
     obj_old(Obj),
-    result(completed, Obj)
+    result(completed, Obj),
+    Ctx,
+    Ctx
 ) :-
     obj_acns(Obj, []), % guard.
     !. % TODO: Can this cut hurt bidirectionality?
 
 tick_object(
-    ctx_old(CtxOld),
-    ctx_new(CtxNew),
     obj_old(ObjOld),
-    result(Status, ObjOut)
+    result(Status, ObjOut),
+    CtxOld,
+    CtxNew
 ) :-
     object_validation(ObjOld),
     obj_acns(ObjOld, [Act|_Rest]),
@@ -39,10 +39,10 @@ tick_object(
         CtxNew = CtxTemp
     ; % ActStatus = completed
         tick_object(
-            ctx_old(CtxTemp),
-            ctx_new(CtxNew),
             obj_old(ObjTemp),
-            result(Status, ObjOut)
+            result(Status, ObjOut),
+            CtxTemp,
+            CtxNew
         )
     ).
 

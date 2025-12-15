@@ -10,14 +10,14 @@ execute_action_impl(
     CtxOut
 ) :-
     execute_trigger_state_change(
-        CtxIn, CtxOut, Change, ObjIn, ObjOut
+        Change, ObjIn, ObjOut, CtxIn, CtxOut
     ).
 
 % ==========================================================
 % execute_trigger_state_change/5
 % ==========================================================
 execute_trigger_state_change(
-    CtxIn, CtxOut, Change, ObjIn, ObjOut
+    Change, ObjIn, ObjOut, CtxIn, CtxOut
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),

@@ -201,10 +201,10 @@ test("wait_key_held: in loop pattern", (
     % Act
     % --------------------------------------------------
     tick_object(
-        ctx_old(Ctx),
-        ctx_new(Ctx1),
         obj_old(ObjIn),
-        result(Status1, Obj1)
+        result(Status1, Obj1),
+        Ctx,
+        Ctx1
     ),
     % --------------------------------------------------
     % Assert

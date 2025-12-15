@@ -18,15 +18,15 @@ execute_action_impl(
     CtxOut  % Context may change due to attrs
 ) :-
     execute_move_to(
-        Ctx,
-        CtxOut,
         TargetX,
         TargetY,
         Frames,
         ID,
         Rest,
         Status,
-        NewActions
+        NewActions,
+        Ctx,
+        CtxOut
     ).
 
 % ==========================================================
@@ -34,30 +34,30 @@ execute_action_impl(
 % ==========================================================
 % 0 frames: teleport instantly to target
 execute_move_to(
-    Ctx,
-    CtxOut,
     TargetX,
     TargetY,
     0,
     ID,
     Rest,
     completed,
-    Rest
+    Rest,
+    Ctx,
+    CtxOut
 ) :-
     ctx_attr_val_ctx(Ctx, ID/x, TargetX, Ctx1),
     ctx_attr_val_ctx(Ctx1, ID/y, TargetY, CtxOut).
 
 % 1+ frames: compute step and continue or finish
 execute_move_to(
-    Ctx,
-    CtxOut,
     TargetX,
     TargetY,
     Frames,
     ID,
     Rest,
     Status,
-    NewActions
+    NewActions,
+    Ctx,
+    CtxOut
 ) :-
     Frames #> 0,
     % Get current position from attribute store

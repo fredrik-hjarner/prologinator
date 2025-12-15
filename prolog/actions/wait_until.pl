@@ -12,18 +12,19 @@ execute_action_impl(
     action(wait_until(Path)),
     obj_old(ObjIn),
     result(Status, ObjOut),
-    Ctx,
-    Ctx  % Context unchanged
+    CtxOld,
+    CtxNew
 ) :-
     execute_wait_until(
-        Ctx, Path, ObjIn, Status, ObjOut
+        Path, ObjIn, Status, ObjOut, CtxOld, CtxNew
     ).
 
 % ==========================================================
-% execute_wait_until/5
+% execute_wait_until/6
 % ==========================================================
-execute_wait_until(Ctx, Path, ObjIn, 
-                   Status, ObjOut) :-
+execute_wait_until(
+    Path, ObjIn, Status, ObjOut, Ctx, Ctx
+) :-
     obj_id(ObjIn, MyID),
     obj_acns(ObjIn, [_|Rest]),
     

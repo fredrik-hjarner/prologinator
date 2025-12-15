@@ -7,12 +7,12 @@ execute_action_impl(
     Ctx,
     Ctx  % Context unchanged
 ) :-
-    execute_wait(Ctx, N, ObjIn, Status, ObjOut).
+    execute_wait(N, ObjIn, Status, ObjOut).
 
 % ==========================================================
-% execute_wait/5
+% execute_wait/4
 % ==========================================================
-execute_wait(_Ctx, N, ObjIn, Status, ObjOut) :-
+execute_wait(N, ObjIn, Status, ObjOut) :-
     obj_acns(ObjIn, [_|Rest]),
     ( N = 0 ->
         % wait(0): noop, removes itself, completes

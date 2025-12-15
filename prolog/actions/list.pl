@@ -7,14 +7,14 @@ execute_action_impl(
     CtxNew
 ) :-
     execute_list(
-        CtxOld, CtxNew, Actions, ObjIn, Status, ObjOut
+        Actions, ObjIn, Status, ObjOut, CtxOld, CtxNew
     ).
 
 % ==========================================================
 % execute_list/6
 % ==========================================================
 execute_list(
-    CtxOld, CtxNew, ListActions, ObjIn, Status, ObjOut
+    ListActions, ObjIn, Status, ObjOut, CtxOld, CtxNew
 ) :-
     % 1. Separate the current list action from the rest of
     % the queue
@@ -28,10 +28,10 @@ execute_list(
     % 3. Execute the inner list until it yields, completes,
     % or despawns
     tick_object(
-        ctx_old(CtxOld),
-        ctx_new(CtxTemp),
         obj_old(TempObj),
-        result(ListStatus, ObjResult)
+        result(ListStatus, ObjResult),
+        CtxOld,
+        CtxTemp
     ),
 
     % 4. Handle the result to determine how to reconstruct

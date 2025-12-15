@@ -20,10 +20,10 @@ tick_n(0, Ctx, Obj, Ctx, Obj).
 tick_n(N, CtxIn, ObjIn, CtxOut, ObjOut) :-
     N > 0,
     tick_object(
-        ctx_old(CtxIn),
-        ctx_new(Ctx1),
         obj_old(ObjIn),
-        result(_, Obj1)
+        result(_, Obj1),
+        CtxIn,
+        Ctx1
     ),
     N1 is N - 1,
     tick_n(N1, Ctx1, Obj1, CtxOut, ObjOut).
@@ -216,9 +216,10 @@ test("parallel_all: should continue until all complete", (
     % Act - Frame 0 -> 1
     % ------------------------------------------------------
     tick_object(
-        ctx_old(Ctx), ctx_new(CtxNew),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     % ------------------------------------------------------
     % Assert - frame 1
@@ -236,9 +237,10 @@ test("parallel_all: should continue until all complete", (
     % Act - Frame 1 -> 2
     % ------------------------------------------------------
     tick_object(
-        ctx_old(CtxNew), ctx_new(Ctx2),
         obj_old(ObjOut),
-        result(Status2, Obj2)
+        result(Status2, Obj2),
+        CtxNew,
+        Ctx2
     ),
     % ------------------------------------------------------
     % Assert - frame 2
@@ -256,9 +258,10 @@ test("parallel_all: should continue until all complete", (
     % Act - Frame 2 -> 3
     % ------------------------------------------------------
     tick_object(
-        ctx_old(Ctx2), ctx_new(Ctx3),
         obj_old(Obj2),
-        result(Status3, Obj3)
+        result(Status3, Obj3),
+        Ctx2,
+        Ctx3
     ),
     % ------------------------------------------------------
     % Assert - frame 3

@@ -12,7 +12,7 @@ tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
     % 2. Tick Physics & Logic
     % Iterates by ID, allowing new spawns to be picked up
     % immediately.
-    tick_all_objects(ctx_in(CtxColl), ctx_out(CtxPhys)),
+    tick_all_objects(CtxColl, CtxPhys),
     context_validation(CtxPhys),
     
     % 3. Increment Frame
@@ -31,7 +31,7 @@ increment_frame(CtxIn, CtxOut) :-
 % Tick Logic (The ID Cursor)
 % ==========================================================
 
-tick_all_objects(ctx_in(CtxIn), ctx_out(CtxOut)) :-
+tick_all_objects(CtxIn, CtxOut) :-
     % Start the loop with ID -1 (assuming IDs start at 0
     % or 1)
     tick_objects_loop(-1, CtxIn, CtxOut).
@@ -43,10 +43,10 @@ tick_objects_loop(LastID, CtxIn, CtxOut) :-
         obj_id(TargetObj, TargetID),
         
         tick_object(
-            ctx_old(CtxIn),
-            ctx_new(CtxTemp), % Contains spawns/side-effects
             obj_old(TargetObj),
-            result(Status, ObjResult)
+            result(Status, ObjResult),
+            CtxIn,
+            CtxTemp % Contains spawns/side-effects
         ),
         
         % Update the context with the result of this

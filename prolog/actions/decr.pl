@@ -9,7 +9,7 @@ execute_action_impl(
     Ctx,
     CtxOut
 ) :-
-    execute_decr(Ctx, CtxOut, Key, Amount, ObjIn, ObjOut).
+    execute_decr(Key, Amount, ObjIn, ObjOut, Ctx, CtxOut).
 
 % decr/3 - Decrement attribute on specific object
 execute_action_impl(
@@ -20,19 +20,19 @@ execute_action_impl(
     CtxOut
 ) :-
     execute_decr(
-        Ctx,
-        CtxOut,
         TargetID,
         Key,
         Amount,
         ObjIn,
-        ObjOut
+        ObjOut,
+        Ctx,
+        CtxOut
     ).
 
 % ==========================================================
 % execute_decr/6 (for decr/2 - self)
 % ==========================================================
-execute_decr(Ctx, CtxOut, Key, Amount, ObjIn, ObjOut) :-
+execute_decr(Key, Amount, ObjIn, ObjOut, Ctx, CtxOut) :-
     obj_id(ObjIn, MyID),
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),
@@ -47,13 +47,13 @@ execute_decr(Ctx, CtxOut, Key, Amount, ObjIn, ObjOut) :-
 % execute_decr/7 (for decr/3 - target)
 % ==========================================================
 execute_decr(
-    Ctx,
-    CtxOut,
     TargetID,
     Key,
     Amount,
     ObjIn,
-    ObjOut
+    ObjOut,
+    Ctx,
+    CtxOut
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),

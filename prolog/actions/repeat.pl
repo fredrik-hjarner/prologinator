@@ -14,12 +14,12 @@ execute_action_impl(
     Ctx,
     Ctx
 ) :-
-    execute_repeat(Ctx, Times, Acts, ObjIn, ObjOut).
+    execute_repeat(Times, Acts, ObjIn, ObjOut).
 
 % ==========================================================
-% execute_repeat/5
+% execute_repeat/4
 % ==========================================================
-execute_repeat(_Ctx, Times, Acts, ObjIn, ObjOut) :-
+execute_repeat(Times, Acts, ObjIn, ObjOut) :-
     obj_acns(ObjIn, [_|Rest]),
     Times #> 0,
     Times1 #= Times - 1,

@@ -10,10 +10,11 @@ execute_action_impl(
     CtxNew
 ) :-
     execute_parallel_all(
-        CtxOld, CtxNew,
         Children,
         ObjIn,
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        CtxOld,
+        CtxNew
     ).
 
 % ==========================================================
@@ -21,14 +22,14 @@ execute_action_impl(
 % ==========================================================
 
 execute_parallel_all(
-    CtxOld, CtxNew, Children, ObjIn, result(Status, ObjOut)
+    Children, ObjIn, result(Status, ObjOut), CtxOld, CtxNew
 ) :-
     obj_acns(ObjIn, [_ParentAction|RestActions]),
     
     % Execute children sequentially, threading the object
     % state.
     % Stop immediately if any child despawns.
-    tick_children(CtxOld, CtxTemp, Children, ObjIn, Result),
+    tick_children(Children, ObjIn, Result, CtxOld, CtxTemp),
     
     ( Result = despawned ->
         Status = despawned,
@@ -63,12 +64,12 @@ execute_parallel_all(
 % Helpers
 % ==========================================================
 
-% tick_children(+CtxIn, -CtxOut, +Children, +ObjIn, -Result)
+% tick_children(+Children, +ObjIn, -Result, +CtxIn, -CtxOut)
 % Result's either 'despawned' or 'remaining(List, FinalObj)'
 % Threads the object state (attributes) through each child
 % execution.
 
-tick_children(Ctx, Ctx, [], Obj, remaining([], Obj)).
+tick_children([], Obj, remaining([], Obj), Ctx, Ctx).
 
 % NOTE: Only the upper-/outer-most actions are executed in
 % parallel so to speak. If those are composite actions then
@@ -76,10 +77,11 @@ tick_children(Ctx, Ctx, [], Obj, remaining([], Obj)).
 % (unless of course if such an action happens to be a
 % parallel_all, parallel_race or similar)
 tick_children(
-    CtxIn, CtxOut,
     [FirstTopLayerAcn|TopLayerAcnsRest],
     ObjIn,
-    Result
+    Result,
+    CtxIn,
+    CtxOut
 ) :-
     % Normalize child to a list of actions (handle single
     % action atoms)
@@ -96,10 +98,10 @@ tick_children(
     % Tick the object (executes until yield, despawn, or
     % complete)
     tick_object(
-        ctx_old(CtxIn),
-        ctx_new(CtxAfterTIck),
         obj_old(ObjWithAcn),
-        result(ChildStatusAfterTick, ObjChildAfterTick)
+        result(ChildStatusAfterTick, ObjChildAfterTick),
+        CtxIn,
+        CtxAfterTick
     ),
     % So after tick the `remaining actions` in
     % ChildStatusAfterTick.
@@ -107,7 +109,7 @@ tick_children(
     ( ChildStatusAfterTick = despawned ->
         % Immediate exit on despawn
         Result = despawned,
-        CtxOut = CtxAfterTIck
+        CtxOut = CtxAfterTick
     ;
         % FirstTopLayerAcn yielded or completed.
         % ObjChildAfterTick contains the updated attributes
@@ -117,7 +119,6 @@ tick_children(
         obj_acns(ObjChildAfterTick, RemainingAcnsAfterTick),
         
         tick_children(
-            CtxAfterTIck, CtxOut,
             TopLayerAcnsRest,
             ObjChildAfterTick,
             % RestResult contains all remaining actions of
@@ -125,7 +126,9 @@ tick_children(
             % we already executed above) have each been
             % ticked, having been built up by the code
             % beneath.
-            RestResult
+            RestResult,
+            CtxAfterTick,
+            CtxOut
         ),
         
         ( RestResult = despawned ->

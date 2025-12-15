@@ -9,12 +9,12 @@ execute_action_impl(
     Ctx,
     Ctx  % Context unchanged
 ) :-
-    execute_log(Ctx, Msg, ObjIn, ObjOut).
+    execute_log(Msg, ObjIn, ObjOut).
 
 % ==========================================================
-% execute_log/4
+% execute_log/3
 % ==========================================================
-execute_log(_Ctx, Msg, ObjIn, ObjOut) :-
+execute_log(Msg, ObjIn, ObjOut) :-
     obj_acns(ObjIn, [_|Rest]),
     format("~s~n", [Msg]),
     obj_acns_obj(ObjIn, Rest, ObjOut).

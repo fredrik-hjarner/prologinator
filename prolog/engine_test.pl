@@ -22,10 +22,10 @@ object", (
     ),
     empty_ctx(Ctx),
     tick_object(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_cmds([], CtxNew),
     Status = completed,
@@ -47,10 +47,10 @@ after one execution", (
     ),
     empty_ctx(Ctx),
     tick_object(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_cmds([], CtxNew),
     Status = yielded,
@@ -72,10 +72,10 @@ continues until empty", (
     ),
     empty_ctx(Ctx),
     tick_object(
-        ctx_old(Ctx),
-        ctx_new(CtxNew),
         obj_old(ObjIn),
-        result(Status, ObjOut)
+        result(Status, ObjOut),
+        Ctx,
+        CtxNew
     ),
     ctx_cmds([], CtxNew),
     Status = completed,

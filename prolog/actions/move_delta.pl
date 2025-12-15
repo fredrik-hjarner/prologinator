@@ -25,15 +25,15 @@ execute_action_impl(
     CtxOut
 ) :-
     execute_move_delta(
-        Ctx,
-        CtxOut,
         Frames,
         DX,
         DY,
         ID,
         Rest,
         Status,
-        NewActions
+        NewActions,
+        Ctx,
+        CtxOut
     ).
 
 % ==========================================================
@@ -41,15 +41,15 @@ execute_action_impl(
 % ==========================================================
 % 0 frames: teleport instantly by delta
 execute_move_delta(
-    Ctx,
-    CtxOut,
     0,
     DX,
     DY,
     ID,
     Rest,
     completed,
-    Rest
+    Rest,
+    Ctx,
+    CtxOut
 ) :-
     % Get current position from attribute store
     ( ctx_attr_val(Ctx, ID/x, CurrX),
@@ -76,15 +76,15 @@ execute_move_delta(
 
 % 1+ frames: apply delta and continue or finish
 execute_move_delta(
-    Ctx,
-    CtxOut,
     Frames,
     DX,
     DY,
     ID,
     Rest,
     Status,
-    NewActions
+    NewActions,
+    Ctx,
+    CtxOut
 ) :-
     Frames #> 0,
     % Get current position from attribute store
