@@ -50,7 +50,7 @@ execute_set_attr(
     obj_id(ObjIn, MyID),
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),
-    ctx_attr_val_ctx(Ctx, MyID/Key, Value, CtxOut).
+    ctx_set_attr_val(MyID/Key, Value, Ctx, CtxOut).
 
 % ==========================================================
 % execute_set_attr/7 (for set_attr/3 - target)
@@ -66,5 +66,5 @@ execute_set_attr(
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     obj_acns_obj(ObjIn, Rest, ObjOut),
-    ctx_attr_val_ctx(Ctx, TargetID/Key, Value, CtxOut).
+    ctx_set_attr_val(TargetID/Key, Value, Ctx, CtxOut).
 

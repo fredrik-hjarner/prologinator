@@ -48,8 +48,8 @@ execute_spawn(
     ),
     
     % 3. Initialize attributes in store
-    ctx_attr_val_ctx(CtxTemp1, ID/x, X, CtxTemp2a),
-    ctx_attr_val_ctx(CtxTemp2a, ID/y, Y, CtxTemp2),
+    ctx_set_attr_val(ID/x, X, CtxTemp1, CtxTemp2a),
+    ctx_set_attr_val(ID/y, Y, CtxTemp2a, CtxTemp2),
     
     % 4. Append to Context
     % Since ID is increasing, appending to end keeps the

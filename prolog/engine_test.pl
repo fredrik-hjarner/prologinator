@@ -100,7 +100,7 @@ state", (
         actions([]),
         collisions([])
     )], CtxIn0, CtxIn),
-    tick(ctx_in(CtxIn), ctx_out(CtxOut)),
+    tick(CtxIn, CtxOut),
     ctx_frame(1, CtxOut),
     ctx_objs([object(
         id(0),
@@ -119,7 +119,7 @@ test("tick: processes object with yielding action \
         actions([wait(3)]),
         collisions([])
     )], CtxIn0, CtxIn),
-    tick(ctx_in(CtxIn), ctx_out(CtxOut)),
+    tick(CtxIn, CtxOut),
     ctx_frame(1, CtxOut),
     ctx_objs([object(
         id(0),
@@ -140,7 +140,7 @@ object", (
         ]),
         collisions([])
     )], CtxIn0, CtxIn),
-    tick(ctx_in(CtxIn), ctx_out(CtxOut)),
+    tick(CtxIn, CtxOut),
     ctx_frame(1, CtxOut),
     ctx_nextid(2, CtxOut),
     ctx_objs(FinalObjs, CtxOut),
@@ -201,7 +201,7 @@ test("collision: simple enemy-projectile collision", (
     ctx_set_nextid(2, Ctx1, InitialContext),
     % Run 1 frame - collision should happen when both reach
     % (10, 10)
-    tick(ctx_in(InitialContext), ctx_out(Context1)),
+    tick(InitialContext, Context1),
     ctx_frame(1, Context1),
     ctx_objs(Objs1, Context1),
     % After collision, both objects remain but have
@@ -278,9 +278,7 @@ freeze (first collision)", (
     ctx_set_nextid(4, Ctx1, InitialContext),
     % Run tick 32 times (first collision should happen
     % around here)
-    run_ticks(
-        ctx_in(InitialContext), 32, ctx_out(FinalContext)
-    ),
+    run_ticks(InitialContext, 32, FinalContext),
     ctx_frame(32, FinalContext)
 )).
 
@@ -288,9 +286,9 @@ freeze (first collision)", (
 % Test Helper: run tick N times
 % ==========================================================
 
-run_ticks(ctx_in(Ctx), 0, ctx_out(Ctx)).
-run_ticks(ctx_in(CtxIn), N, ctx_out(CtxOut)) :-
+run_ticks(Ctx, 0, Ctx).
+run_ticks(CtxIn, N, CtxOut) :-
     N > 0,
-    tick(ctx_in(CtxIn), ctx_out(CtxNext)),
+    tick(CtxIn, CtxNext),
     N1 is N - 1,
-    run_ticks(ctx_in(CtxNext), N1, ctx_out(CtxOut)).
+    run_ticks(CtxNext, N1, CtxOut).

@@ -15,9 +15,9 @@
 % ==========================================================
 
 % Helper to tick object N times recursively
-% tick_n(+N, +CtxIn, +ObjIn, -CtxOut, -ObjOut)
-tick_n(0, Ctx, Obj, Ctx, Obj).
-tick_n(N, CtxIn, ObjIn, CtxOut, ObjOut) :-
+% tick_n(+N, +ObjIn, -ObjOut, +CtxIn, -CtxOut)
+tick_n(0, Obj, Obj, Ctx, Ctx).
+tick_n(N, ObjIn, ObjOut, CtxIn, CtxOut) :-
     N > 0,
     tick_object(
         obj_old(ObjIn),
@@ -26,7 +26,7 @@ tick_n(N, CtxIn, ObjIn, CtxOut, ObjOut) :-
         Ctx1
     ),
     N1 is N - 1,
-    tick_n(N1, Ctx1, Obj1, CtxOut, ObjOut).
+    tick_n(N1, Obj1, ObjOut, Ctx1, CtxOut).
 
 % ==========================================================
 % Forward Tests for parallel_all
@@ -200,12 +200,12 @@ test("parallel_all: should continue until all complete", (
     Actions = list([
         ParAcn,
         despawn
-        ]),
-        ObjIn = object(
-            id(1),
-            type(static),
+    ]),
+    ObjIn = object(
+        id(1),
+        type(static),
         actions([Actions]),
-    collisions([])
+        collisions([])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(

@@ -5,7 +5,7 @@
 % ==========================================================
 % Main entry: runs before tick_all_objects
 % ==========================================================
-detect_collisions(ctx_old(CtxIn), ctx_new(CtxOut)) :-
+detect_collisions(CtxIn, CtxOut) :-
     % 1. Clear old collision_id attributes
     clear_all_collisions(CtxIn, Ctx1),
     
@@ -74,9 +74,7 @@ write_collision_ids([], Ctx, Ctx).
 write_collision_ids([(ID1, ID2)|Rest], 
                     CtxIn, CtxOut) :-
     % Write both directions
-    ctx_attr_val_ctx(CtxIn, ID1/collision_id, 
-                     ID2, Ctx1),
-    ctx_attr_val_ctx(Ctx1, ID2/collision_id, 
-                     ID1, Ctx2),
+    ctx_set_attr_val(ID1/collision_id, ID2, CtxIn, Ctx1),
+    ctx_set_attr_val(ID2/collision_id, ID1, Ctx1, Ctx2),
     % Continue (later writes override)
     write_collision_ids(Rest, Ctx2, CtxOut).

@@ -71,8 +71,8 @@ execute_move_delta(
         true
     ),
     % Update position in attribute store
-    ctx_attr_val_ctx(Ctx, ID/x, NewX, Ctx1),
-    ctx_attr_val_ctx(Ctx1, ID/y, NewY, CtxOut).
+    ctx_set_attr_val(ID/x, NewX, Ctx, Ctx1),
+    ctx_set_attr_val(ID/y, NewY, Ctx1, CtxOut).
 
 % 1+ frames: apply delta and continue or finish
 execute_move_delta(
@@ -107,8 +107,8 @@ execute_move_delta(
         true
     ),
     % Update position in attribute store
-    ctx_attr_val_ctx(Ctx, ID/x, NewX, Ctx1),
-    ctx_attr_val_ctx(Ctx1, ID/y, NewY, CtxOut),
+    ctx_set_attr_val(ID/x, NewX, Ctx, Ctx1),
+    ctx_set_attr_val(ID/y, NewY, Ctx1, CtxOut),
     % Continue or arrive
     ( Frames #> 1 ->
         Frames1 #= Frames - 1,

@@ -30,10 +30,7 @@ different positions", (
                collisions([]))
     ], Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
-    detect_collisions(
-        ctx_old(CtxIn),
-        ctx_new(CtxOut)
-    ),
+    detect_collisions(CtxIn, CtxOut),
     ctx_objs(NewObjects, CtxOut),
     NewObjects = [
         object(id(0), type(enemy), actions([]),
@@ -63,10 +60,7 @@ get collision_id attributes", (
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
-    detect_collisions(
-        ctx_old(CtxIn),
-        ctx_new(CtxOut)
-    ),
+    detect_collisions(CtxIn, CtxOut),
     % Objects remain
     ctx_objs(NewObjects, CtxOut),
     NewObjects = [
@@ -100,10 +94,7 @@ collision_id only on colliding objects", (
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(3, Ctx1, CtxIn),
-    detect_collisions(
-        ctx_old(CtxIn),
-        ctx_new(CtxOut)
-    ),
+    detect_collisions(CtxIn, CtxOut),
     % All objects remain
     ctx_objs(NewObjects, CtxOut),
     NewObjects = [
@@ -142,10 +133,7 @@ collision_id", (
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
-    detect_collisions(
-        ctx_old(CtxIn),
-        ctx_new(CtxOut)
-    ),
+    detect_collisions(CtxIn, CtxOut),
     % Objects remain
     ctx_objs(NewObjects, CtxOut),
     NewObjects = Objects,
@@ -170,10 +158,7 @@ position get collision_id", (
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
-    detect_collisions(
-        ctx_old(CtxIn),
-        ctx_new(CtxOut)
-    ),
+    detect_collisions(CtxIn, CtxOut),
     % Objects remain
     ctx_objs(NewObjects, CtxOut),
     NewObjects = Objects,
@@ -198,10 +183,7 @@ ignored", (
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
-    detect_collisions(
-        ctx_old(CtxIn),
-        ctx_new(CtxOut)
-    ),
+    detect_collisions(CtxIn, CtxOut),
     ctx_objs(NewObjects, CtxOut),
     % No objects removed (no positions)
     NewObjects = Objects
@@ -219,10 +201,7 @@ ignored", (
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(1, Ctx1, CtxIn),
-    detect_collisions(
-        ctx_old(CtxIn),
-        ctx_new(CtxOut)
-    ),
+    detect_collisions(CtxIn, CtxOut),
     ctx_objs(NewObjects, CtxOut),
     NewObjects = Objects  % No objects removed
 )).

@@ -168,7 +168,7 @@ test("custom_action: define and use in same action list", (
     % Act
     % ------------------------------------------------------
     % First tick: define_action executes
-    tick(ctx_in(Ctx0), ctx_out(Ctx1)),
+    tick(Ctx0, Ctx1),
     expect(ctx_objs([Obj1], Ctx1)),
     obj_acns(Obj1, Actions1),
     % ------------------------------------------------------
@@ -181,7 +181,7 @@ test("custom_action: define and use in same action list", (
     % Act
     % ------------------------------------------------------
     % Second tick: zigzag expands and executes
-    tick(ctx_in(Ctx1), ctx_out(Ctx2)),
+    tick(Ctx1, Ctx2),
     expect(ctx_objs([Obj2], Ctx2)),
     obj_acns(Obj2, Actions2),
     % ------------------------------------------------------
@@ -230,7 +230,7 @@ test("custom_action: shoot_burst defines and executes", (
     % Act
     % ------------------------------------------------------
     % First tick: define_action executes
-    tick(ctx_in(Ctx0), ctx_out(Ctx1)),
+    tick(Ctx0, Ctx1),
     expect(
         ctx_objs([Obj1], Ctx1)
     ),
@@ -243,7 +243,7 @@ test("custom_action: shoot_burst defines and executes", (
     expect(member(shoot_burst(2), Actions1)),
     
     % Second tick: shoot_burst expands
-    tick(ctx_in(Ctx1), ctx_out(Ctx2)),
+    tick(Ctx1, Ctx2),
     ctx_objs(Objects2, Ctx2),
     % Should have spawned a projectile
     length(Objects2, NumObjects),
@@ -298,7 +298,7 @@ test("custom_action: multiple definitions work", (
     % Act
     % ------------------------------------------------------
     % First tick: first define_action
-    tick(ctx_in(Ctx0), ctx_out(Ctx1)),
+    tick(Ctx0, Ctx1),
     expect(
         ctx_objs([Obj1], Ctx1)
     ),
@@ -315,7 +315,7 @@ test("custom_action: multiple definitions work", (
     % Act
     % ------------------------------------------------------
     % Second tick: second define_action
-    tick(ctx_in(Ctx1), ctx_out(Ctx2)),
+    tick(Ctx1, Ctx2),
     expect(
         ctx_objs([Obj2], Ctx2)
     ),
@@ -329,7 +329,7 @@ test("custom_action: multiple definitions work", (
     expect(member(move_down(3), Actions2)),
     
     % Third tick: move_up expands
-    tick(ctx_in(Ctx2), ctx_out(Ctx3)),
+    tick(Ctx2, Ctx3),
     expect(
         ctx_objs([Obj3], Ctx3)
     ),

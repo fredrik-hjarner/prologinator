@@ -41,7 +41,7 @@ execute_decr(Key, Amount, ObjIn, ObjOut, Ctx, CtxOut) :-
     ;
         NewValue #= 0 - Amount
     ),
-    ctx_attr_val_ctx(Ctx, MyID/Key, NewValue, CtxOut).
+    ctx_set_attr_val(MyID/Key, NewValue, Ctx, CtxOut).
 
 % ==========================================================
 % execute_decr/7 (for decr/3 - target)
@@ -63,6 +63,6 @@ execute_decr(
     ;
         NewValue #= 0 - Amount
     ),
-    ctx_attr_val_ctx(Ctx, TargetID/Key, NewValue,
+    ctx_set_attr_val(TargetID/Key, NewValue, Ctx,
                      CtxOut).
 

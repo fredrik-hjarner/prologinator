@@ -7,7 +7,7 @@
     command_validation/1,
     context_validation/1,
     ctx_attr_val/3,
-    ctx_attr_val_ctx/4,
+    ctx_set_attr_val/4,
     ctx_attrs/2,
     ctx_set_attrs/3,
     ctx_cmds/2,

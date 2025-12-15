@@ -1,12 +1,12 @@
 % ==========================================================
 % Main Tick Function
 % ==========================================================
-tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
+tick(CtxIn, CtxOut) :-
     context_validation(CtxIn),
     
     % 1. Detect collisions BEFORE ticking
     % (so objects can react)
-    detect_collisions(ctx_old(CtxIn), ctx_new(CtxColl)),
+    detect_collisions(CtxIn, CtxColl),
     context_validation(CtxColl),
     
     % 2. Tick Physics & Logic
@@ -38,7 +38,7 @@ tick_all_objects(CtxIn, CtxOut) :-
 
 % The loop finds the next object with ID > LastID
 tick_objects_loop(LastID, CtxIn, CtxOut) :-
-    ( find_next_object(CtxIn, LastID, TargetObj) ->
+    ( find_next_object(LastID, TargetObj, CtxIn, _) ->
         % Found an object to tick
         obj_id(TargetObj, TargetID),
         
@@ -54,12 +54,12 @@ tick_objects_loop(LastID, CtxIn, CtxOut) :-
         ( Status = despawned ->
             % Remove object from context
             update_object_in_context(
-                CtxTemp, TargetID, [], CtxNext
+                TargetID, [], CtxTemp, CtxNext
             )
         ;
             % Keep object (yielded or completed)
             update_object_in_context(
-                CtxTemp, TargetID, [ObjResult], CtxNext
+                TargetID, [ObjResult], CtxTemp, CtxNext
             )
         ),
         
@@ -74,7 +74,7 @@ tick_objects_loop(LastID, CtxIn, CtxOut) :-
 % Helper: Finds the first object in context with ID > MinID
 % Since the list is sorted, this is effectively finding
 % the next one.
-find_next_object(Ctx, MinID, Obj) :-
+find_next_object(MinID, Obj, Ctx, Ctx) :-
     ctx_objs(Objects, Ctx),
     member(Obj, Objects),
     obj_id(Obj, ID),
@@ -84,7 +84,7 @@ find_next_object(Ctx, MinID, Obj) :-
 % Helper: Replaces the object with TargetID with the
 % NewList (which is [Obj] or [])
 update_object_in_context(
-    CtxIn, TargetID, NewList, CtxOut
+    TargetID, NewList, CtxIn, CtxOut
 ) :-
     ctx_objs(Objects, CtxIn),
     replace_by_id(Objects, TargetID, NewList, NewObjects),

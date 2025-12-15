@@ -27,8 +27,8 @@ ctx_attr_val(Ctx, ObjectID/Key, Value) :-
 % attribute store. Replaces existing values for the same
 % key if they exist, otherwise appends to the object's
 % attribute list.
-% ctx_attr_val_ctx(+CtxIn, +ObjectID/Key, +Value, -CtxOut)
-ctx_attr_val_ctx(CtxIn, ObjectID/Key, Value, CtxOut) :-
+% ctx_set_attr_val(+ObjectID/Key, +Value, +CtxIn, -CtxOut)
+ctx_set_attr_val(ObjectID/Key, Value, CtxIn, CtxOut) :-
     ctx_attrs(AttrStoreIn, CtxIn),
     set_attr_in_store_helper(AttrStoreIn, ObjectID, Key,
                              Value, AttrStoreOut),

@@ -159,10 +159,7 @@ handle_input(
         
         % Tick
         catch(
-            tick(
-              ctx_in(CtxWithInput), 
-              ctx_out(NewCtx)
-            ),
+            tick(CtxWithInput, NewCtx),
             Error,
             ( write('Error during tick: '),
               write(Error), nl,

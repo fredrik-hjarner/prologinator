@@ -169,21 +169,21 @@ test("ctx_attr_val: enumerate all from Value", (
 )).
 
 % ==========================================================
-% Mode: ctx_attr_val_ctx(+CtxIn, -ObjectID/-Key,
-%   +Value, -CtxOut)
+% Mode: ctx_set_attr_val(-ObjectID/-Key, +Value,
+%   +CtxIn, -CtxOut)
 % ==========================================================
 % NOTE: Untested modes with non-ground CtxIn:
-%   - ctx_attr_val_ctx(-CtxIn, +ObjectID/+Key,
-%       +Value, -CtxOut)
-%   - ctx_attr_val_ctx(-CtxIn, -ObjectID/+Key,
-%       +Value, -CtxOut)
-%   - ctx_attr_val_ctx(-CtxIn, +ObjectID/-Key,
-%       +Value, -CtxOut)
-%   - ctx_attr_val_ctx(-CtxIn, -ObjectID/-Key,
-%       +Value, -CtxOut)
+%   - ctx_set_attr_val(+ObjectID/+Key, +Value,
+%       -CtxIn, -CtxOut)
+%   - ctx_set_attr_val(-ObjectID/+Key, +Value,
+%       -CtxIn, -CtxOut)
+%   - ctx_set_attr_val(+ObjectID/-Key, +Value,
+%       -CtxIn, -CtxOut)
+%   - ctx_set_attr_val(-ObjectID/-Key, +Value,
+%       -CtxIn, -CtxOut)
 %   (All modes where CtxIn is non-ground are untested)
 
-test("ctx_attr_val_ctx: can use non-ground Key for \
+test("ctx_set_attr_val: can use non-ground Key for \
 writes (attr/2 format enables bidirectionality)", (
     % ------------------------------------------------------
     % Arrange
@@ -194,14 +194,14 @@ writes (attr/2 format enables bidirectionality)", (
     % Act
     % ------------------------------------------------------
     Key = x,
-    ctx_attr_val_ctx(CtxIn, 1/Key, 5, CtxOut),
+    ctx_set_attr_val(1/Key, 5, CtxIn, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
     ctx_attr_val(CtxOut, 1/x, 5)
 )).
 
-test("ctx_attr_val_ctx: can use non-ground ObjectID for \
+test("ctx_set_attr_val: can use non-ground ObjectID for \
 writes", (
     % ------------------------------------------------------
     % Arrange
@@ -212,14 +212,14 @@ writes", (
     % Act
     % ------------------------------------------------------
     ID = 1,
-    ctx_attr_val_ctx(CtxIn, ID/x, 5, CtxOut),
+    ctx_set_attr_val(ID/x, 5, CtxIn, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
     ctx_attr_val(CtxOut, 1/x, 5)
 )).
 
-test("ctx_attr_val_ctx: can use non-ground ObjectID \
+test("ctx_set_attr_val: can use non-ground ObjectID \
 and Key for writes", (
     % ------------------------------------------------------
     % Arrange
@@ -231,7 +231,7 @@ and Key for writes", (
     % ------------------------------------------------------
     ID = 1,
     Key = x,
-    ctx_attr_val_ctx(CtxIn, ID/Key, 5, CtxOut),
+    ctx_set_attr_val(ID/Key, 5, CtxIn, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

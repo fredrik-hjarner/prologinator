@@ -84,11 +84,11 @@ Key", (
 )).
 
 % ==========================================================
-% Mode: ctx_attr_val_ctx(+CtxIn, +ObjectID/+Key,
-%   +Value, -CtxOut)
+% Mode: ctx_set_attr_val(+ObjectID/+Key, +Value,
+%   +CtxIn, -CtxOut)
 % ==========================================================
 
-test("ctx_attr_val_ctx: create new attribute on new \
+test("ctx_set_attr_val: create new attribute on new \
 object", (
     % ------------------------------------------------------
     % Arrange
@@ -98,7 +98,7 @@ object", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    ctx_attr_val_ctx(CtxIn, 1/x, 5, CtxOut),
+    ctx_set_attr_val(1/x, 5, CtxIn, CtxOut),
     ctx_attr_val(CtxOut, 1/x, X),
     % ------------------------------------------------------
     % Assert
@@ -106,7 +106,7 @@ object", (
     expect(X = 5)
 )).
 
-test("ctx_attr_val_ctx: add attribute to existing object", (
+test("ctx_set_attr_val: add attribute to existing object", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
@@ -116,7 +116,7 @@ test("ctx_attr_val_ctx: add attribute to existing object", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    ctx_attr_val_ctx(CtxIn, 1/y, 10, CtxOut),
+    ctx_set_attr_val(1/y, 10, CtxIn, CtxOut),
     ctx_attr_val(CtxOut, 1/x, X),
     ctx_attr_val(CtxOut, 1/y, Y),
     % ------------------------------------------------------
@@ -126,7 +126,7 @@ test("ctx_attr_val_ctx: add attribute to existing object", (
     expect(Y = 10)
 )).
 
-test("ctx_attr_val_ctx: replace existing attribute", (
+test("ctx_set_attr_val: replace existing attribute", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
@@ -137,7 +137,7 @@ test("ctx_attr_val_ctx: replace existing attribute", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    ctx_attr_val_ctx(CtxIn, 1/x, 20, CtxOut),
+    ctx_set_attr_val(1/x, 20, CtxIn, CtxOut),
     ctx_attr_val(CtxOut, 1/x, X),
     ctx_attr_val(CtxOut, 1/y, Y),
     % ------------------------------------------------------
@@ -147,7 +147,7 @@ test("ctx_attr_val_ctx: replace existing attribute", (
     expect(Y = 10)
 )).
 
-test("ctx_attr_val_ctx: multiple updates preserve \
+test("ctx_set_attr_val: multiple updates preserve \
 other attributes", (
     % ------------------------------------------------------
     % Arrange
@@ -157,9 +157,9 @@ other attributes", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    ctx_attr_val_ctx(Ctx0, 1/x, 5, Ctx1),
-    ctx_attr_val_ctx(Ctx1, 1/y, 10, Ctx2),
-    ctx_attr_val_ctx(Ctx2, 1/hp, 100, CtxOut),
+    ctx_set_attr_val(1/x, 5, Ctx0, Ctx1),
+    ctx_set_attr_val(1/y, 10, Ctx1, Ctx2),
+    ctx_set_attr_val(1/hp, 100, Ctx2, CtxOut),
     ctx_attr_val(CtxOut, 1/x, X),
     ctx_attr_val(CtxOut, 1/y, Y),
     ctx_attr_val(CtxOut, 1/hp, HP),
@@ -171,7 +171,7 @@ other attributes", (
     expect(HP = 100)
 )).
 
-test("ctx_attr_val_ctx: multiple objects independent", (
+test("ctx_set_attr_val: multiple objects independent", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
@@ -180,8 +180,8 @@ test("ctx_attr_val_ctx: multiple objects independent", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    ctx_attr_val_ctx(Ctx0, 1/x, 5, Ctx1),
-    ctx_attr_val_ctx(Ctx1, 2/x, 10, CtxOut),
+    ctx_set_attr_val(1/x, 5, Ctx0, Ctx1),
+    ctx_set_attr_val(2/x, 10, Ctx1, CtxOut),
     ctx_attr_val(CtxOut, 1/x, X1),
     ctx_attr_val(CtxOut, 2/x, X2),
     % ------------------------------------------------------

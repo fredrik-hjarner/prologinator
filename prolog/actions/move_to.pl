@@ -44,8 +44,8 @@ execute_move_to(
     Ctx,
     CtxOut
 ) :-
-    ctx_attr_val_ctx(Ctx, ID/x, TargetX, Ctx1),
-    ctx_attr_val_ctx(Ctx1, ID/y, TargetY, CtxOut).
+    ctx_set_attr_val(ID/x, TargetX, Ctx, Ctx1),
+    ctx_set_attr_val(ID/y, TargetY, Ctx1, CtxOut).
 
 % 1+ frames: compute step and continue or finish
 execute_move_to(
@@ -78,8 +78,8 @@ execute_move_to(
         true
     ),
     % Update position in attribute store
-    ctx_attr_val_ctx(Ctx, ID/x, NewX, Ctx1),
-    ctx_attr_val_ctx(Ctx1, ID/y, NewY, CtxOut),
+    ctx_set_attr_val(ID/x, NewX, Ctx, Ctx1),
+    ctx_set_attr_val(ID/y, NewY, Ctx1, CtxOut),
     ( Frames #> 1 ->
         Frames1 #= Frames - 1,
         NewActions = [

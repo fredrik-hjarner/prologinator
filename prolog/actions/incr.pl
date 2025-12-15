@@ -41,7 +41,7 @@ execute_incr(Key, Amount, ObjIn, ObjOut, Ctx, CtxOut) :-
     ;
         NewValue = Amount
     ),
-    ctx_attr_val_ctx(Ctx, MyID/Key, NewValue, CtxOut).
+    ctx_set_attr_val(MyID/Key, NewValue, Ctx, CtxOut).
 
 % ==========================================================
 % execute_incr/7 (for incr/3 - target)
@@ -63,6 +63,6 @@ execute_incr(
     ;
         NewValue = Amount
     ),
-    ctx_attr_val_ctx(Ctx, TargetID/Key, NewValue,
+    ctx_set_attr_val(TargetID/Key, NewValue, Ctx,
                      CtxOut).
 
