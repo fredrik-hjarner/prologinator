@@ -68,7 +68,7 @@ test("define_action: stores action definition", (
     expect(obj_acns(ObjOut, [])),
     % Definition should be stored
     expect(prologinator:user_action(zigzag(_, _), _)),
-    expect(ctx_cmds([], CtxNew))
+    expect(ctx_cmds([], CtxNew, CtxNew))
 )).
 
 % ----------------------------------------------------------
@@ -127,7 +127,7 @@ test("custom_action: zigzag expands and executes", (
         ; member(move_delta(30, 0, 10), Actions)
             % Or already expanded further
     )),
-    expect(ctx_cmds([], CtxNew))
+    expect(ctx_cmds([], CtxNew, CtxNew))
 )).
 
 % --------------------------------------------------------
@@ -169,7 +169,7 @@ test("custom_action: define and use in same action list", (
     % ------------------------------------------------------
     % First tick: define_action executes
     tick(Ctx0, Ctx1),
-    expect(ctx_objs([Obj1], Ctx1)),
+    expect(ctx_objs([Obj1], Ctx1, Ctx1)),
     obj_acns(Obj1, Actions1),
     % ------------------------------------------------------
     % Assert
@@ -182,7 +182,7 @@ test("custom_action: define and use in same action list", (
     % ------------------------------------------------------
     % Second tick: zigzag expands and executes
     tick(Ctx1, Ctx2),
-    expect(ctx_objs([Obj2], Ctx2)),
+    expect(ctx_objs([Obj2], Ctx2, Ctx2)),
     obj_acns(Obj2, Actions2),
     % ------------------------------------------------------
     % Assert
@@ -232,7 +232,7 @@ test("custom_action: shoot_burst defines and executes", (
     % First tick: define_action executes
     tick(Ctx0, Ctx1),
     expect(
-        ctx_objs([Obj1], Ctx1)
+        ctx_objs([Obj1], Ctx1, Ctx1)
     ),
     obj_acns(Obj1, Actions1),
     % ------------------------------------------------------
@@ -244,7 +244,7 @@ test("custom_action: shoot_burst defines and executes", (
     
     % Second tick: shoot_burst expands
     tick(Ctx1, Ctx2),
-    ctx_objs(Objects2, Ctx2),
+    ctx_objs(Objects2, Ctx2, Ctx2),
     % Should have spawned a projectile
     length(Objects2, NumObjects),
     % Original object + at least one projectile
@@ -300,7 +300,7 @@ test("custom_action: multiple definitions work", (
     % First tick: first define_action
     tick(Ctx0, Ctx1),
     expect(
-        ctx_objs([Obj1], Ctx1)
+        ctx_objs([Obj1], Ctx1, Ctx1)
     ),
     obj_acns(Obj1, Actions1),
     % ------------------------------------------------------
@@ -317,7 +317,7 @@ test("custom_action: multiple definitions work", (
     % Second tick: second define_action
     tick(Ctx1, Ctx2),
     expect(
-        ctx_objs([Obj2], Ctx2)
+        ctx_objs([Obj2], Ctx2, Ctx2)
     ),
     obj_acns(Obj2, Actions2),
 
@@ -331,7 +331,7 @@ test("custom_action: multiple definitions work", (
     % Third tick: move_up expands
     tick(Ctx2, Ctx3),
     expect(
-        ctx_objs([Obj3], Ctx3)
+        ctx_objs([Obj3], Ctx3, Ctx3)
     ),
     obj_acns(Obj3, Actions3),
     expect([] = Actions3)
@@ -394,6 +394,6 @@ substituted", (
         member(list([move_to(10, 10, _),
             move_to(20, 20, 5)]), Actions)
     ),
-    expect(ctx_cmds([], CtxNew))
+    expect(ctx_cmds([], CtxNew, CtxNew))
 )).
 

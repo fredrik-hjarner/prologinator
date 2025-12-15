@@ -87,3 +87,11 @@ MUST have an H1. If it has a H3 it MUST have an H2 and H1.
 % Context Getters ------------------------------------------
 ```
 
+# DCG Use
+
+We thread context with --> when possible and when it would
+be elegant/clean to do so.
+Predicates that only read from context are *not* allowed to
+simply take in *one* ctx, it still must take in *two* ctxs
+so that it'll be easy to use with DCG -->.
+Context args *always* comes last.

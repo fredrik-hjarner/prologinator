@@ -43,9 +43,9 @@ remaining", (
         Ctx,
         CtxNew
     ),
-    ctx_cmds(Commands, CtxNew),
-    ctx_attr_val(1/x, NewX, CtxNew),
-    ctx_attr_val(1/y, NewY, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -87,9 +87,9 @@ remaining", (
         Ctx,
         CtxNew
     ),
-    ctx_cmds(Commands, CtxNew),
-    ctx_attr_val(1/x, NewX, CtxNew),
-    ctx_attr_val(1/y, NewY, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -130,9 +130,9 @@ test("move_to: single frame, arrives at target", (
         Ctx,
         CtxNew
     ),
-    ctx_cmds(Commands, CtxNew),
-    ctx_attr_val(1/x, X, CtxNew),
-    ctx_attr_val(1/y, Y, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_attr_val(1/x, X, CtxNew, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -174,9 +174,9 @@ continues with remaining frames", (
         Ctx,
         CtxNew
     ),
-    ctx_cmds(Commands, CtxNew),
-    ctx_attr_val(1/x, X, CtxNew),
-    ctx_attr_val(1/y, Y, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_attr_val(1/x, X, CtxNew, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -211,9 +211,9 @@ test("move_to: negative target coordinates", (
         Ctx,
         CtxNew
     ),
-    ctx_cmds(Commands, CtxNew),
-    ctx_attr_val(1/x, NewX, CtxNew),
-    ctx_attr_val(1/y, NewY, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
+    ctx_attr_val(1/y, NewY, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

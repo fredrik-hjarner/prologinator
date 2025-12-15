@@ -38,10 +38,10 @@ test("set_attr: set new attribute", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(1/hp, HP, CtxNew),
-    ctx_attr_val(1/x, X, CtxNew),
-    ctx_attr_val(1/y, Y, CtxNew),
-    ctx_cmds(Commands, CtxNew),
+    ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
+    ctx_attr_val(1/x, X, CtxNew, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -78,9 +78,9 @@ test("set_attr: replace existing attribute", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(1/hp, HP, CtxNew),
-    ctx_attr_val(1/x, X, CtxNew),
-    ctx_attr_val(1/y, Y, CtxNew),
+    ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
+    ctx_attr_val(1/x, X, CtxNew, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -131,7 +131,7 @@ duplicates", (
         Ctx2,
         CtxNew
     ),
-    ctx_attr_val(1/hp, HP, CtxNew),
+    ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

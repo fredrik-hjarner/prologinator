@@ -39,8 +39,8 @@ to won", (
         CtxIn,
         CtxOut
     ),
-    ctx_cmds(Commands, CtxOut),
-    ctx_status(Status, CtxOut),
+    ctx_cmds(Commands, CtxOut, CtxOut),
+    ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -77,8 +77,8 @@ to lost", (
         CtxIn,
         CtxOut
     ),
-    ctx_cmds(Commands, CtxOut),
-    ctx_status(Status, CtxOut),
+    ctx_cmds(Commands, CtxOut, CtxOut),
+    ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -116,8 +116,8 @@ override lost", (
         CtxIn,
         CtxOut
     ),
-    ctx_cmds(Commands, CtxOut),
-    ctx_status(Status, CtxOut),
+    ctx_cmds(Commands, CtxOut, CtxOut),
+    ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

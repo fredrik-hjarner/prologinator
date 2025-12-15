@@ -31,7 +31,7 @@ different positions", (
     ], Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(CtxIn, CtxOut),
-    ctx_objs(NewObjects, CtxOut),
+    ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = [
         object(id(0), type(enemy), actions([]),
                collisions([])),
@@ -62,7 +62,7 @@ get collision_id attributes", (
     ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(CtxIn, CtxOut),
     % Objects remain
-    ctx_objs(NewObjects, CtxOut),
+    ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = [
         object(id(0), type(enemy), actions([]),
                collisions([])),
@@ -70,8 +70,8 @@ get collision_id attributes", (
                collisions([]))
     ],
     % But collision_id attributes are set
-    ctx_attr_val(0/collision_id, 1, CtxOut),
-    ctx_attr_val(1/collision_id, 0, CtxOut)
+    ctx_attr_val(0/collision_id, 1, CtxOut, CtxOut),
+    ctx_attr_val(1/collision_id, 0, CtxOut, CtxOut)
 )).
 
 test("collisions: enemy and projectile collision sets \
@@ -96,7 +96,7 @@ collision_id only on colliding objects", (
     ctx_set_nextid(3, Ctx1, CtxIn),
     detect_collisions(CtxIn, CtxOut),
     % All objects remain
-    ctx_objs(NewObjects, CtxOut),
+    ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = [
         object(id(0), type(enemy), actions([]),
                collisions([])),
@@ -106,10 +106,10 @@ collision_id only on colliding objects", (
                collisions([]))
     ],
     % Collision IDs set only for colliding objects (0 and 1)
-    ctx_attr_val(0/collision_id, 1, CtxOut),
-    ctx_attr_val(1/collision_id, 0, CtxOut),
+    ctx_attr_val(0/collision_id, 1, CtxOut, CtxOut),
+    ctx_attr_val(1/collision_id, 0, CtxOut, CtxOut),
     % Object 2 has no collision_id (fails if it exists)
-    \+ ctx_attr_val(2/collision_id, _, CtxOut)
+    \+ ctx_attr_val(2/collision_id, _, CtxOut, CtxOut)
 )).
 
 % --------------------------------------------------------
@@ -135,11 +135,11 @@ collision_id", (
     ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(CtxIn, CtxOut),
     % Objects remain
-    ctx_objs(NewObjects, CtxOut),
+    ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = Objects,
     % Both get collision_id attributes
-    ctx_attr_val(0/collision_id, 1, CtxOut),
-    ctx_attr_val(1/collision_id, 0, CtxOut)
+    ctx_attr_val(0/collision_id, 1, CtxOut, CtxOut),
+    ctx_attr_val(1/collision_id, 0, CtxOut, CtxOut)
 )).
 
 test("collisions: projectile and projectile at same \
@@ -160,11 +160,11 @@ position get collision_id", (
     ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(CtxIn, CtxOut),
     % Objects remain
-    ctx_objs(NewObjects, CtxOut),
+    ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = Objects,
     % Both get collision_id attributes
-    ctx_attr_val(0/collision_id, 1, CtxOut),
-    ctx_attr_val(1/collision_id, 0, CtxOut)
+    ctx_attr_val(0/collision_id, 1, CtxOut, CtxOut),
+    ctx_attr_val(1/collision_id, 0, CtxOut, CtxOut)
 )).
 
 % --------------------------------------------------------
@@ -184,7 +184,7 @@ ignored", (
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(CtxIn, CtxOut),
-    ctx_objs(NewObjects, CtxOut),
+    ctx_objs(NewObjects, CtxOut, CtxOut),
     % No objects removed (no positions)
     NewObjects = Objects
 )).
@@ -202,7 +202,7 @@ ignored", (
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(1, Ctx1, CtxIn),
     detect_collisions(CtxIn, CtxOut),
-    ctx_objs(NewObjects, CtxOut),
+    ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = Objects  % No objects removed
 )).
 

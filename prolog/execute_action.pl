@@ -54,7 +54,9 @@ execute_action(
 ) :-
     % 1. Resolve value specs in action
     obj_id(ObjIn, MyID),
-    resolve_action(CtxOld, MyID, Action, ResolvedAction),
+    resolve_action(
+        MyID, Action, ResolvedAction, CtxOld, CtxOld
+    ),
     
     % 2. Delegate to existing logic (renamed)
     execute_action_resolved(

@@ -41,9 +41,9 @@ test("move_delta: single frame moves and completes", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(1/x, X, CtxNew),
-    ctx_attr_val(1/y, Y, CtxNew),
-    ctx_cmds(Commands, CtxNew),
+    ctx_attr_val(1/x, X, CtxNew, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -82,10 +82,10 @@ test("move_delta: multiple frames continues", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(1/x, X, CtxNew),
-    ctx_attr_val(1/y, Y, CtxNew),
+    ctx_attr_val(1/x, X, CtxNew, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     obj_acns(ObjOut, Actions),
-    ctx_cmds(Commands, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -121,10 +121,10 @@ test("move_delta: negative deltas work", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(1/x, X, CtxNew),
-    ctx_attr_val(1/y, Y, CtxNew),
+    ctx_attr_val(1/x, X, CtxNew, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     obj_acns(ObjOut, Actions),
-    ctx_cmds(Commands, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -162,11 +162,11 @@ test("move_delta: preserves other attributes", (
         Ctx,
         CtxNew
     ),
-    ctx_attr_val(1/x, X, CtxNew),
-    ctx_attr_val(1/y, Y, CtxNew),
-    ctx_attr_val(1/hp, HP, CtxNew),
-    ctx_attr_val(1/speed, Speed, CtxNew),
-    ctx_cmds(Commands, CtxNew),
+    ctx_attr_val(1/x, X, CtxNew, CtxNew),
+    ctx_attr_val(1/y, Y, CtxNew, CtxNew),
+    ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
+    ctx_attr_val(1/speed, Speed, CtxNew, CtxNew),
+    ctx_cmds(Commands, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

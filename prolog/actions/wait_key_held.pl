@@ -26,7 +26,7 @@ execute_wait_key_held(
 ) :-
     obj_acns(ObjIn, [_|Rest]),
     
-    ( key_held(Ctx, KeyCode) ->
+    ( key_held(KeyCode, Ctx, Ctx) ->
         % Key held: yield (action complete)
         obj_acns_obj(ObjIn, Rest, ObjOut),
         Status = completed

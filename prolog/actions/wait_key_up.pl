@@ -27,7 +27,7 @@ execute_wait_key_up(
     obj_acns(ObjIn, [_|Rest]),
     
     % Check if key released THIS frame
-    ( key_up(Ctx, KeyCode) ->
+    ( key_up(KeyCode, Ctx, Ctx) ->
         % Key released: action complete
         obj_acns_obj(ObjIn, Rest, ObjOut),
         Status = completed

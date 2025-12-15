@@ -27,7 +27,7 @@ execute_wait_key_down(
     obj_acns(ObjIn, [_|Rest]),
     
     % Check if key was pressed THIS frame
-    ( key_down(Ctx, KeyCode) ->
+    ( key_down(KeyCode, Ctx, Ctx) ->
         % Key pressed: action complete
         obj_acns_obj(ObjIn, Rest, ObjOut),
         Status = completed
