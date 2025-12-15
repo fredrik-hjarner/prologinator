@@ -121,7 +121,8 @@ lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/game.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/macros.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/test_macros.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/accessors.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/accessors/obj.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/accessors/ctx.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/adv_accessors.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/constructors.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/constraints.pl

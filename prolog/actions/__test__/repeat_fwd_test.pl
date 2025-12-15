@@ -44,7 +44,7 @@ test("repeat: expands actions once and decrements", (
         repeat(2, [noop, set_attr(count, 1)]),
         despawn
     ],
-    ctx_cmds(CtxNew, [])
+    ctx_cmds([], CtxNew)
 )).
 
 test("repeat: last repetition doesn't add repeat", (
@@ -69,7 +69,7 @@ test("repeat: last repetition doesn't add repeat", (
         result(completed, ObjOut)
     ),
     obj_acns(ObjOut, Actions),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -112,7 +112,7 @@ test("repeat: multiple actions in repeat list", (
         result(completed, ObjOut)
     ),
     obj_acns(ObjOut, Actions),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

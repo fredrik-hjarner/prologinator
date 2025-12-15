@@ -16,7 +16,8 @@
 #include "../prolog/dynamic.pl"
 
 % 2. Types (foundational - no dependencies on game logic)
-#include "../prolog/types/accessors.pl"
+#include "../prolog/types/accessors/ctx.pl"
+#include "../prolog/types/accessors/obj.pl"
 #include "../prolog/types/constructors.pl"
 % #include "../prolog/types/constraints.pl" % no dont import
 #include "../prolog/types/validation.pl"

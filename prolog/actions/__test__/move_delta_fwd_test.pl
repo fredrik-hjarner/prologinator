@@ -43,7 +43,7 @@ test("move_delta: single frame moves and completes", (
     ),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -85,7 +85,7 @@ test("move_delta: multiple frames continues", (
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     obj_acns(ObjOut, Actions),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -124,7 +124,7 @@ test("move_delta: negative deltas work", (
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     obj_acns(ObjOut, Actions),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -166,7 +166,7 @@ test("move_delta: preserves other attributes", (
     ctx_attr_val(CtxNew, 1/y, Y),
     ctx_attr_val(CtxNew, 1/hp, HP),
     ctx_attr_val(CtxNew, 1/speed, Speed),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

@@ -39,8 +39,8 @@ to won", (
         obj_old(ObjIn),
         result(completed, ObjOut)
     ),
-    ctx_cmds(CtxOut, Commands),
-    ctx_status(CtxOut, Status),
+    ctx_cmds(Commands, CtxOut),
+    ctx_status(Status, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -77,8 +77,8 @@ to lost", (
         obj_old(ObjIn),
         result(completed, ObjOut)
     ),
-    ctx_cmds(CtxOut, Commands),
-    ctx_status(CtxOut, Status),
+    ctx_cmds(Commands, CtxOut),
+    ctx_status(Status, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -105,7 +105,7 @@ override lost", (
         collisions([])
     ),
     empty_ctx(CtxTemp),
-    ctx_status_ctx(CtxTemp, lost, CtxIn),
+    ctx_set_status(lost, CtxTemp, CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -116,8 +116,8 @@ override lost", (
         obj_old(ObjIn),
         result(completed, ObjOut)
     ),
-    ctx_cmds(CtxOut, Commands),
-    ctx_status(CtxOut, Status),
+    ctx_cmds(Commands, CtxOut),
+    ctx_status(Status, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

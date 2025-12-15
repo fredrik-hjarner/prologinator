@@ -43,8 +43,8 @@ test("define_action: stores action definition", (
     ),
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
-    ctx_objs_ctx(Ctx0, [], Ctx1),
-    ctx_nextid_ctx(Ctx1, 1, Ctx),
+    ctx_set_objs([], Ctx0, Ctx1),
+    ctx_set_nextid(1, Ctx1, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -68,7 +68,7 @@ test("define_action: stores action definition", (
     expect(obj_acns(ObjOut, [])),
     % Definition should be stored
     expect(prologinator:user_action(zigzag(_, _), _)),
-    expect(ctx_cmds(CtxNew, []))
+    expect(ctx_cmds([], CtxNew))
 )).
 
 % ----------------------------------------------------------
@@ -101,8 +101,8 @@ test("custom_action: zigzag expands and executes", (
     put_assoc(0, EmptyAttrs0, [attr(x, 100), attr(y, 100)],
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
-    ctx_objs_ctx(Ctx0, [], Ctx1),
-    ctx_nextid_ctx(Ctx1, 1, Ctx),
+    ctx_set_objs([], Ctx0, Ctx1),
+    ctx_set_nextid(1, Ctx1, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -127,7 +127,7 @@ test("custom_action: zigzag expands and executes", (
         ; member(move_delta(30, 0, 10), Actions)
             % Or already expanded further
     )),
-    expect(ctx_cmds(CtxNew, []))
+    expect(ctx_cmds([], CtxNew))
 )).
 
 % --------------------------------------------------------
@@ -162,14 +162,14 @@ test("custom_action: define and use in same action list", (
     ),
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, CtxTemp),
-    ctx_objs_ctx(CtxTemp, [ObjIn], CtxTemp2),
-    ctx_nextid_ctx(CtxTemp2, 1, Ctx0),
+    ctx_set_objs([ObjIn], CtxTemp, CtxTemp2),
+    ctx_set_nextid(1, CtxTemp2, Ctx0),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
     % First tick: define_action executes
     tick(ctx_in(Ctx0), ctx_out(Ctx1)),
-    expect(ctx_objs(Ctx1, [Obj1])),
+    expect(ctx_objs([Obj1], Ctx1)),
     obj_acns(Obj1, Actions1),
     % ------------------------------------------------------
     % Assert
@@ -182,7 +182,7 @@ test("custom_action: define and use in same action list", (
     % ------------------------------------------------------
     % Second tick: zigzag expands and executes
     tick(ctx_in(Ctx1), ctx_out(Ctx2)),
-    expect(ctx_objs(Ctx2, [Obj2])),
+    expect(ctx_objs([Obj2], Ctx2)),
     obj_acns(Obj2, Actions2),
     % ------------------------------------------------------
     % Assert
@@ -224,15 +224,15 @@ test("custom_action: shoot_burst defines and executes", (
     ),
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, CtxTemp),
-    ctx_objs_ctx(CtxTemp, [ObjIn], CtxTemp2),
-    ctx_nextid_ctx(CtxTemp2, 1, Ctx0),
+    ctx_set_objs([ObjIn], CtxTemp, CtxTemp2),
+    ctx_set_nextid(1, CtxTemp2, Ctx0),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
     % First tick: define_action executes
     tick(ctx_in(Ctx0), ctx_out(Ctx1)),
     expect(
-        ctx_objs(Ctx1, [Obj1])
+        ctx_objs([Obj1], Ctx1)
     ),
     obj_acns(Obj1, Actions1),
     % ------------------------------------------------------
@@ -244,7 +244,7 @@ test("custom_action: shoot_burst defines and executes", (
     
     % Second tick: shoot_burst expands
     tick(ctx_in(Ctx1), ctx_out(Ctx2)),
-    ctx_objs(Ctx2, Objects2),
+    ctx_objs(Objects2, Ctx2),
     % Should have spawned a projectile
     length(Objects2, NumObjects),
     % Original object + at least one projectile
@@ -292,15 +292,15 @@ test("custom_action: multiple definitions work", (
     ),
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, CtxTemp),
-    ctx_objs_ctx(CtxTemp, [ObjIn], CtxTemp2),
-    ctx_nextid_ctx(CtxTemp2, 1, Ctx0),
+    ctx_set_objs([ObjIn], CtxTemp, CtxTemp2),
+    ctx_set_nextid(1, CtxTemp2, Ctx0),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
     % First tick: first define_action
     tick(ctx_in(Ctx0), ctx_out(Ctx1)),
     expect(
-        ctx_objs(Ctx1, [Obj1])
+        ctx_objs([Obj1], Ctx1)
     ),
     obj_acns(Obj1, Actions1),
     % ------------------------------------------------------
@@ -317,7 +317,7 @@ test("custom_action: multiple definitions work", (
     % Second tick: second define_action
     tick(ctx_in(Ctx1), ctx_out(Ctx2)),
     expect(
-        ctx_objs(Ctx2, [Obj2])
+        ctx_objs([Obj2], Ctx2)
     ),
     obj_acns(Obj2, Actions2),
 
@@ -331,7 +331,7 @@ test("custom_action: multiple definitions work", (
     % Third tick: move_up expands
     tick(ctx_in(Ctx2), ctx_out(Ctx3)),
     expect(
-        ctx_objs(Ctx3, [Obj3])
+        ctx_objs([Obj3], Ctx3)
     ),
     obj_acns(Obj3, Actions3),
     expect([] = Actions3)
@@ -368,8 +368,8 @@ substituted", (
     put_assoc(0, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
-    ctx_objs_ctx(Ctx0, [], Ctx1),
-    ctx_nextid_ctx(Ctx1, 1, Ctx),
+    ctx_set_objs([], Ctx0, Ctx1),
+    ctx_set_nextid(1, Ctx1, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -394,6 +394,6 @@ substituted", (
         member(list([move_to(10, 10, _),
             move_to(20, 20, 5)]), Actions)
     ),
-    expect(ctx_cmds(CtxNew, []))
+    expect(ctx_cmds([], CtxNew))
 )).
 

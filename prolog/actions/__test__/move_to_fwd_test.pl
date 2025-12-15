@@ -43,7 +43,7 @@ remaining", (
         obj_old(ObjIn),
         result(Status, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, NewX),
     ctx_attr_val(CtxNew, 1/y, NewY),
     % ------------------------------------------------------
@@ -87,7 +87,7 @@ remaining", (
         obj_old(ObjIn),
         result(Status, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, NewX),
     ctx_attr_val(CtxNew, 1/y, NewY),
     % ------------------------------------------------------
@@ -130,7 +130,7 @@ test("move_to: single frame, arrives at target", (
         obj_old(ObjIn),
         result(Status, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     % ------------------------------------------------------
@@ -174,7 +174,7 @@ continues with remaining frames", (
         obj_old(ObjIn),
         result(Status, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     % ------------------------------------------------------
@@ -211,7 +211,7 @@ test("move_to: negative target coordinates", (
         obj_old(ObjIn),
         result(Status, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, NewX),
     ctx_attr_val(CtxNew, 1/y, NewY),
     % ------------------------------------------------------

@@ -34,7 +34,7 @@ test("parallel_race: stops on child completion", (
         collisions([])
     ),
     empty_ctx(CtxTemp),
-    ctx_objs_ctx(CtxTemp, [Obj], Ctx),
+    ctx_set_objs([Obj], CtxTemp, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -70,7 +70,7 @@ done", (
         collisions([])
     ),
     empty_ctx(CtxTemp),
-    ctx_objs_ctx(CtxTemp, [Obj], Ctx),
+    ctx_set_objs([Obj], CtxTemp, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -120,8 +120,8 @@ despawns", (
         obj_old(Obj),
         result(ActionStatus, _ObjOut)
     ),
-    ctx_status(CtxNew, Status),
-    ctx_cmds(CtxNew, Commands),
+    ctx_status(Status, CtxNew),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

@@ -168,7 +168,7 @@ test("value_resolution: spawn at attr() position", (
     ),
     % Should spawn enemy at (200, 300) - spawn immediately
     % creates object, so check it exists in context
-    ctx_objs(CtxNew, Objects),
+    ctx_objs(Objects, CtxNew),
     member(object(id(_ID), type(enemy), _, _), Objects),
     ctx_attr_val(CtxNew, _ID/x, 200),
     ctx_attr_val(CtxNew, _ID/y, 300)

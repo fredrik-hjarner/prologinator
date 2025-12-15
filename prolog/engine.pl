@@ -23,9 +23,9 @@ tick(ctx_in(CtxIn), ctx_out(CtxOut)) :-
 % ==========================================================
 
 increment_frame(CtxIn, CtxOut) :-
-    ctx_frame(CtxIn, F),
+    ctx_frame(F, CtxIn),
     F1 #= F + 1,
-    ctx_frame_ctx(CtxIn, F1, CtxOut).
+    ctx_set_frame(F1, CtxIn, CtxOut).
 
 % ==========================================================
 % Tick Logic (The ID Cursor)
@@ -75,7 +75,7 @@ tick_objects_loop(LastID, CtxIn, CtxOut) :-
 % Since the list is sorted, this is effectively finding
 % the next one.
 find_next_object(Ctx, MinID, Obj) :-
-    ctx_objs(Ctx, Objects),
+    ctx_objs(Objects, Ctx),
     member(Obj, Objects),
     obj_id(Obj, ID),
     ID > MinID,
@@ -86,9 +86,9 @@ find_next_object(Ctx, MinID, Obj) :-
 update_object_in_context(
     CtxIn, TargetID, NewList, CtxOut
 ) :-
-    ctx_objs(CtxIn, Objects),
+    ctx_objs(Objects, CtxIn),
     replace_by_id(Objects, TargetID, NewList, NewObjects),
-    ctx_objs_ctx(CtxIn, NewObjects, CtxOut).
+    ctx_set_objs(NewObjects, CtxIn, CtxOut).
 
 % replace_by_id(+CurrentList, +TargetID, +ReplacementList,
 % -NewList)

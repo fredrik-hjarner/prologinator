@@ -10,7 +10,7 @@ detect_collisions(ctx_old(CtxIn), ctx_new(CtxOut)) :-
     clear_all_collisions(CtxIn, Ctx1),
     
     % 2. Find all position overlaps
-    ctx_objs_attrs(Ctx1, Objects, AttrStore),
+    ctx_objs_attrs(Objects, AttrStore, Ctx1),
     find_collision_pairs(Objects, AttrStore, Pairs),
     % Pairs = [(5, 12), (5, 18), (8, 12), ...]
     
@@ -21,13 +21,13 @@ detect_collisions(ctx_old(CtxIn), ctx_new(CtxOut)) :-
 % Step 1: Clear collision_id attributes
 % ----------------------------------------------------------
 clear_all_collisions(CtxIn, CtxOut) :-
-    ctx_attrs(CtxIn, StoreIn),
-    ctx_objs(CtxIn, Objects),
+    ctx_attrs(StoreIn, CtxIn),
+    ctx_objs(Objects, CtxIn),
     foldl(clear_one_collision, 
           Objects, 
           StoreIn, 
           StoreOut),
-    ctx_attrs_ctx(CtxIn, StoreOut, CtxOut).
+    ctx_set_attrs(StoreOut, CtxIn, CtxOut).
 
 clear_one_collision(Obj, StoreIn, StoreOut) :-
     obj_id(Obj, ID),

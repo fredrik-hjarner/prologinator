@@ -51,7 +51,7 @@ test("wait_key_up: completes when key released", (
     expect(Status = completed, 'Status != completed'),
     expect(obj_acns(ObjOut, [noop]),
         'Actions != [noop]'),
-    expect(ctx_cmds(CtxNew, []), 'Commands != []')
+    expect(ctx_cmds([], CtxNew), 'Commands != []')
 )).
 
 test("wait_key_up: yields when key not released", (
@@ -82,7 +82,7 @@ test("wait_key_up: yields when key not released", (
     expect(Status = yielded, 'Status != yielded'),
     expect(obj_acns(ObjOut, [wait_key_up(39), noop]),
         'Action not preserved'),
-    expect(ctx_cmds(CtxNew, []), 'Commands != []')
+    expect(ctx_cmds([], CtxNew), 'Commands != []')
 )).
 
 test("wait_key_up: waits for different key", (

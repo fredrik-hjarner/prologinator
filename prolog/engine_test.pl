@@ -27,7 +27,7 @@ object", (
         obj_old(ObjIn),
         result(Status, ObjOut)
     ),
-    ctx_cmds(CtxNew, []),
+    ctx_cmds([], CtxNew),
     Status = completed,
     ObjOut = object(
         id(1),
@@ -52,7 +52,7 @@ after one execution", (
         obj_old(ObjIn),
         result(Status, ObjOut)
     ),
-    ctx_cmds(CtxNew, []),
+    ctx_cmds([], CtxNew),
     Status = yielded,
     ObjOut = object(
         id(1),
@@ -77,7 +77,7 @@ continues until empty", (
         obj_old(ObjIn),
         result(Status, ObjOut)
     ),
-    ctx_cmds(CtxNew, []),
+    ctx_cmds([], CtxNew),
     Status = completed,
     ObjOut = object(
         id(1),
@@ -94,56 +94,56 @@ continues until empty", (
 test("tick: increments frame and processes empty game \
 state", (
     empty_ctx(CtxIn0),
-    ctx_objs_ctx(CtxIn0, [object(
+    ctx_set_objs([object(
         id(0),
         type(static),
         actions([]),
         collisions([])
-    )], CtxIn),
+    )], CtxIn0, CtxIn),
     tick(ctx_in(CtxIn), ctx_out(CtxOut)),
-    ctx_frame(CtxOut, 1),
-    ctx_objs(CtxOut, [object(
+    ctx_frame(1, CtxOut),
+    ctx_objs([object(
         id(0),
         type(static),
         actions([]),
         collisions([])
-    )])
+    )], CtxOut)
 )).
 
 test("tick: processes object with yielding action \
 (wait)", (
     empty_ctx(CtxIn0),
-    ctx_objs_ctx(CtxIn0, [object(
+    ctx_set_objs([object(
         id(0),
         type(static),
         actions([wait(3)]),
         collisions([])
-    )], CtxIn),
+    )], CtxIn0, CtxIn),
     tick(ctx_in(CtxIn), ctx_out(CtxOut)),
-    ctx_frame(CtxOut, 1),
-    ctx_objs(CtxOut, [object(
+    ctx_frame(1, CtxOut),
+    ctx_objs([object(
         id(0),
         type(static),
         actions([wait(2)]),
         collisions([])
-    )])
+    )], CtxOut)
 )).
 
 test("tick: processes spawn request and creates new \
 object", (
     empty_ctx(CtxIn0),
-    ctx_objs_ctx(CtxIn0, [object(
+    ctx_set_objs([object(
         id(0),
         type(static),
         actions([
             spawn(enemy, 5, 5, [])
         ]),
         collisions([])
-    )], CtxIn),
+    )], CtxIn0, CtxIn),
     tick(ctx_in(CtxIn), ctx_out(CtxOut)),
-    ctx_frame(CtxOut, 1),
-    ctx_nextid(CtxOut, 2),
-    ctx_objs(CtxOut, FinalObjs),
+    ctx_frame(1, CtxOut),
+    ctx_nextid(2, CtxOut),
+    ctx_objs(FinalObjs, CtxOut),
     member(
         object(
             id(0),
@@ -180,7 +180,7 @@ test("collision: simple enemy-projectile collision", (
     put_assoc(1, Attrs1, [attr(x, 5), attr(y, 10)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
-    ctx_objs_ctx(Ctx0, [
+    ctx_set_objs([
         object(
             id(0), type(enemy),
             actions([
@@ -197,13 +197,13 @@ test("collision: simple enemy-projectile collision", (
                 move_to(10, 10, 1)
             ]), collisions([])
         )
-    ], Ctx1),
-    ctx_nextid_ctx(Ctx1, 2, InitialContext),
+    ], Ctx0, Ctx1),
+    ctx_set_nextid(2, Ctx1, InitialContext),
     % Run 1 frame - collision should happen when both reach
     % (10, 10)
     tick(ctx_in(InitialContext), ctx_out(Context1)),
-    ctx_frame(Context1, 1),
-    ctx_objs(Context1, Objs1),
+    ctx_frame(1, Context1),
+    ctx_objs(Objs1, Context1),
     % After collision, both objects remain but have
     % collision_id attributes
     length(Objs1, ObjCount),
@@ -229,7 +229,7 @@ freeze (first collision)", (
     put_assoc(2, Attrs2, [attr(x, 15), attr(y, 19)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
-    ctx_objs_ctx(Ctx0, [
+    ctx_set_objs([
         object(
             id(0), type(tower),
             actions([
@@ -274,14 +274,14 @@ freeze (first collision)", (
                 ])
             ]), collisions([])
         )
-    ], Ctx1),
-    ctx_nextid_ctx(Ctx1, 4, InitialContext),
+    ], Ctx0, Ctx1),
+    ctx_set_nextid(4, Ctx1, InitialContext),
     % Run tick 32 times (first collision should happen
     % around here)
     run_ticks(
         ctx_in(InitialContext), 32, ctx_out(FinalContext)
     ),
-    ctx_frame(FinalContext, 32)
+    ctx_frame(32, FinalContext)
 )).
 
 % ==========================================================

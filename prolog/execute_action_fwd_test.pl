@@ -43,7 +43,7 @@ remaining", (
         obj_old(ObjIn),
         result(_, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, NewX),
     ctx_attr_val(CtxNew, 1/y, NewY),
     % ------------------------------------------------------
@@ -86,7 +86,7 @@ remaining", (
         obj_old(ObjIn),
         result(_, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, NewX),
     ctx_attr_val(CtxNew, 1/y, NewY),
     % ------------------------------------------------------
@@ -128,7 +128,7 @@ test("move_to: single frame, arrives at target", (
         obj_old(ObjIn),
         result(_, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     % ------------------------------------------------------
@@ -171,7 +171,7 @@ continues with remaining frames", (
         obj_old(ObjIn),
         result(_, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     % ------------------------------------------------------
@@ -207,7 +207,7 @@ test("move_to: negative target coordinates", (
         obj_old(ObjIn),
         result(_, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     ctx_attr_val(CtxNew, 1/x, NewX),
     ctx_attr_val(CtxNew, 1/y, NewY),
     % ------------------------------------------------------
@@ -251,8 +251,8 @@ to won", (
         obj_old(ObjIn),
         result(_, ObjOut)
     ),
-    ctx_cmds(CtxOut, Commands),
-    ctx_status(CtxOut, Status),
+    ctx_cmds(Commands, CtxOut),
+    ctx_status(Status, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -289,8 +289,8 @@ to lost", (
         obj_old(ObjIn),
         result(_, ObjOut)
     ),
-    ctx_cmds(CtxOut, Commands),
-    ctx_status(CtxOut, Status),
+    ctx_cmds(Commands, CtxOut),
+    ctx_status(Status, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -317,7 +317,7 @@ override lost", (
         collisions([])
     ),
     empty_ctx(CtxTemp),
-    ctx_status_ctx(CtxTemp, lost, CtxIn),
+    ctx_set_status(lost, CtxTemp, CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -328,8 +328,8 @@ override lost", (
         obj_old(ObjIn),
         result(_, ObjOut)
     ),
-    ctx_cmds(CtxOut, Commands),
-    ctx_status(CtxOut, Status),
+    ctx_cmds(Commands, CtxOut),
+    ctx_status(Status, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -366,9 +366,9 @@ test("noop: removes self from action queue", (
         obj_old(ObjIn),
         result(completed, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
-    ctx_frame(CtxNew, Frame),
-    ctx_status(CtxNew, Status),
+    ctx_cmds(Commands, CtxNew),
+    ctx_frame(Frame, CtxNew),
+    ctx_status(Status, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -409,9 +409,9 @@ test("list: executes actions immediately", (
         actions([list([move_to(5, 5, 2)]), wait(3)]),
         collisions([])
     ),
-    ctx_cmds(CtxNew, []),
-    ctx_frame(CtxNew, 0),
-    ctx_status(CtxNew, playing)
+    ctx_cmds([], CtxNew),
+    ctx_frame(0, CtxNew),
+    ctx_status(playing, CtxNew)
 )).
 
 test("list: empty list removes itself", (
@@ -469,8 +469,8 @@ actions from executing", (
         obj_old(ObjIn),
         result(_, ObjOut)
     ),
-    ctx_cmds(CtxNew, Commands),
-    ctx_frame(CtxNew, Frame),
+    ctx_cmds(Commands, CtxNew),
+    ctx_frame(Frame, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -503,9 +503,9 @@ executing after despawn", (
     ObjOut = [],
     % Despawn hint must be recorded
     % Status must remain playing (game_over did NOT execute)
-    ctx_status(CtxNew, playing),
+    ctx_status(playing, CtxNew),
     % No commands
-    ctx_cmds(CtxNew, [])
+    ctx_cmds([], CtxNew)
 )).
 
 % ==========================================================
@@ -537,7 +537,7 @@ test("set_attr: set new attribute", (
     ctx_attr_val(CtxNew, 1/hp, HP),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -610,7 +610,7 @@ test("parallel_race: stops on child completion", (
         collisions([])
     ),
     empty_ctx(CtxTemp),
-    ctx_objs_ctx(CtxTemp, [Obj], Ctx),
+    ctx_set_objs([Obj], CtxTemp, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -646,7 +646,7 @@ done", (
         collisions([])
     ),
     empty_ctx(CtxTemp),
-    ctx_objs_ctx(CtxTemp, [Obj], Ctx),
+    ctx_set_objs([Obj], CtxTemp, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -696,8 +696,8 @@ despawns", (
         obj_old(Obj),
         result(_, ObjOut)
     ),
-    ctx_status(CtxNew, Status),
-    ctx_cmds(CtxNew, Commands),
+    ctx_status(Status, CtxNew),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -782,7 +782,7 @@ test("repeat: expands actions once and decrements", (
         repeat(2, [noop, set_attr(count, 1)]),
         despawn
     ],
-    ctx_cmds(CtxNew, [])
+    ctx_cmds([], CtxNew)
 )).
 
 test("repeat: last repetition doesn't add repeat", (
@@ -807,7 +807,7 @@ test("repeat: last repetition doesn't add repeat", (
         result(completed, ObjOut)
     ),
     obj_acns(ObjOut, Actions),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -850,7 +850,7 @@ test("repeat: multiple actions in repeat list", (
         result(completed, ObjOut)
     ),
     obj_acns(ObjOut, Actions),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -894,7 +894,7 @@ test("move_delta: single frame moves and completes", (
     ),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -936,7 +936,7 @@ test("move_delta: multiple frames continues", (
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     obj_acns(ObjOut, Actions),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -975,7 +975,7 @@ test("move_delta: negative deltas work", (
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
     obj_acns(ObjOut, Actions),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -1014,7 +1014,7 @@ test("move_delta: preserves other attributes", (
     ctx_attr_val(CtxNew, 1/y, Y),
     ctx_attr_val(CtxNew, 1/hp, HP),
     ctx_attr_val(CtxNew, 1/speed, Speed),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -1188,7 +1188,7 @@ test("value_resolution: spawn at attr() position", (
     ),
     % Should spawn enemy at (200, 300) - spawn immediately
     % creates object, so check it exists in context
-    ctx_objs(CtxNew, Objects),
+    ctx_objs(Objects, CtxNew),
     member(object(id(_ID), type(enemy), _, _), Objects),
     ctx_attr_val(CtxNew, _ID/x, 200),
     ctx_attr_val(CtxNew, _ID/y, 300)

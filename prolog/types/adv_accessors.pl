@@ -18,7 +18,7 @@
 % Uses attr(Key, Value) format internally for full
 % bidirectionality.
 ctx_attr_val(Ctx, ObjectID/Key, Value) :-
-    ctx_attrs(Ctx, AttrStore),
+    ctx_attrs(AttrStore, Ctx),
     gen_assoc(ObjectID, AttrStore, Attrs),
     member(attr(Key, Value), Attrs).
 
@@ -29,10 +29,10 @@ ctx_attr_val(Ctx, ObjectID/Key, Value) :-
 % attribute list.
 % ctx_attr_val_ctx(+CtxIn, +ObjectID/Key, +Value, -CtxOut)
 ctx_attr_val_ctx(CtxIn, ObjectID/Key, Value, CtxOut) :-
-    ctx_attrs(CtxIn, AttrStoreIn),
+    ctx_attrs(AttrStoreIn, CtxIn),
     set_attr_in_store_helper(AttrStoreIn, ObjectID, Key,
                              Value, AttrStoreOut),
-    ctx_attrs_ctx(CtxIn, AttrStoreOut, CtxOut).
+    ctx_set_attrs(AttrStoreOut, CtxIn, CtxOut).
 
 % Helper to update attribute in assoc tree
 % Handles the low-level logic of updating the assoc tree:

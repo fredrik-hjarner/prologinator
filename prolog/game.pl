@@ -82,7 +82,7 @@ game_loop(
     keys_held(KeysHeld)  % Current key state
 ) :-
     catch(
-        ( ctx_status(Ctx, Status),
+        ( ctx_status(Status, Ctx),
           ( Status = playing ->
               render(ctx_in(Ctx)),
               write('Press: f=forward, r=reverse, \
@@ -92,7 +92,7 @@ q=quit'),
               get_single_char(Char),
               ( Char = end_of_file ->
                   % EOF, quit
-                  ctx_status_ctx(Ctx, lost, NewCtx),
+                  ctx_set_status(lost, Ctx, NewCtx),
                   NewHistory = History,
                   NewKeysHeld = KeysHeld
               ;
@@ -137,7 +137,7 @@ handle_input(
 ) :-
     (   char_code(Char, 102) ->  % 'f'
         % Forward: lookup events, update keys, tick
-        ctx_frame(Ctx, Frame),
+        ctx_frame(Frame, Ctx),
         Frame1 #= Frame + 1,
         
         % Get events for next frame
@@ -151,9 +151,9 @@ handle_input(
         apply_events(Events, KeysHeld, NewKeysHeld),
         
         % Inject input(events, held) into context
-        ctx_input_ctx(
-          Ctx,
+        ctx_set_input(
           input(events(Events), held(NewKeysHeld)),
+          Ctx,
           CtxWithInput
         ),
         
@@ -176,8 +176,8 @@ handle_input(
             NewCtx = PrevCtx,
             NewHistory = RestHistory,
             % Reconstruct keys_held from PrevCtx
-            ctx_input(PrevCtx, 
-                      input(_, held(NewKeysHeld)))
+            ctx_input(
+                      input(_, held(NewKeysHeld)), PrevCtx)
         ;
             NewCtx = Ctx,
             NewHistory = History,
@@ -185,7 +185,7 @@ handle_input(
         )
     ;   char_code(Char, 113) ->  % 'q'
         % Quit
-        ctx_status_ctx(Ctx, lost, NewCtx),
+        ctx_set_status(lost, Ctx, NewCtx),
         NewHistory = History,
         NewKeysHeld = KeysHeld
     ;
@@ -232,9 +232,9 @@ render(ctx_in(Ctx)) :-
     % char_code(Esc, 27),  % ESC character
     % write(Esc), write('[2J'), write(Esc), write('[H'),
     
-    ctx_frame(Ctx, Frame),
-    ctx_status(Ctx, Status),
-    ctx_objs(Ctx, Objects),
+    ctx_frame(Frame, Ctx),
+    ctx_status(Status, Ctx),
+    ctx_objs(Objects, Ctx),
     length(Objects, ObjCount),
     
     % Header

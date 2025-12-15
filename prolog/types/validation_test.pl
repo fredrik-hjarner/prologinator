@@ -82,7 +82,7 @@ objects and commands", (
     put_assoc(2, Attrs2, [attr(x, 15), attr(y, 10)],
               EmptyAttrs),
     ctx_with_frame_attrs(42, EmptyAttrs, Ctx0),
-    ctx_objs_ctx(Ctx0, [
+    ctx_set_objs([
         object(
             id(0), type(tower),
             actions([
@@ -115,13 +115,13 @@ objects and commands", (
                 ])
             ]), collisions([])
         )
-    ], Ctx1),
-    ctx_nextid_cmds_ctx(Ctx1, 4, [
+    ], Ctx0, Ctx1),
+    ctx_set_nextid_cmds(4, [
         spawn_request(enemy, 0, 0, []),
         spawn_request(proj, 10, 10, [
             move_to(10, 0, 10)
         ])
-    ], Ctx),
+    ], Ctx1, Ctx),
     context_validation(Ctx)
 )).
 

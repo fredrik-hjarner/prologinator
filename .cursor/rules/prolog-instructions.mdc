@@ -48,3 +48,42 @@ makes the code more robust when if I add or remove fields
 from entities. Feel free to refactor code you see to use
 accessors and constructors. Also if certain accessors or
 constructors are not available, feel free to add them.
+
+# Comment Hierarchy
+
+H1, H2, H3, H4 delimit sections. For non-sections just use 
+normal comments. Just like in html if a file has a H2 if
+MUST have an H1. If it has a H3 it MUST have an H2 and H1.
+
+## H1 - Major Sections
+
+```prolog
+% ==========================================================
+% 
+%   Context Accessors
+% 
+% ==========================================================
+```
+
+## H2 - Subsections
+
+```prolog
+% ==========================================================
+% Context Getters
+% ==========================================================
+```
+
+## H3 - Groups
+
+```prolog
+% ----------------------------------------------------------
+% Single Field Getters
+% ----------------------------------------------------------
+```
+
+## H4 - Subgroups
+
+```prolog
+% Context Getters ------------------------------------------
+```
+

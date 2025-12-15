@@ -37,9 +37,9 @@ execute_spawn(
     obj_acns_obj(ObjIn, Rest, ObjOut),
     
     % 1. Generate ID
-    ctx_nextid(CtxIn, ID),
+    ctx_nextid(ID, CtxIn),
     NextID #= ID + 1,
-    ctx_nextid_ctx(CtxIn, NextID, CtxTemp1),
+    ctx_set_nextid(NextID, CtxIn, CtxTemp1),
     
     % 2. Create Object (no attributes - stored separately)
     NewObj = object(
@@ -57,7 +57,7 @@ execute_spawn(
     % Note: append/3 is O(N), but for typical game sizes
     % (<1000 objects) this is acceptable. For larger scales,
     % consider difference lists or reverse-order storage.
-    ctx_objs(CtxTemp2, CurrentSpawns),
+    ctx_objs(CurrentSpawns, CtxTemp2),
     append(CurrentSpawns, [NewObj], NewSpawns),
-    ctx_objs_ctx(CtxTemp2, NewSpawns, CtxOut).
+    ctx_set_objs(NewSpawns, CtxTemp2, CtxOut).
 

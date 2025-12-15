@@ -15,11 +15,11 @@ execute_action_impl(
 % ==========================================================
 execute_despawn(CtxIn, CtxOut, ID) :-
     % Remove object's attributes from store
-    ctx_attrs(CtxIn, AttrStore),
+    ctx_attrs(AttrStore, CtxIn),
     ( gen_assoc(ID, AttrStore, _Attrs) ->
         del_assoc(ID, AttrStore, _, NewAttrStore)
     ;
         NewAttrStore = AttrStore
     ),
-    ctx_attrs_ctx(CtxIn, NewAttrStore, CtxOut).
+    ctx_set_attrs(NewAttrStore, CtxIn, CtxOut).
 

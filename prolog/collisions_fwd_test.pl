@@ -23,18 +23,18 @@ different positions", (
     put_assoc(1, Attrs1, [attr(x, 10), attr(y, 10)],
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
-    ctx_objs_ctx(Ctx0, [
+    ctx_set_objs([
         object(id(0), type(enemy), actions([]),
                collisions([])),
         object(id(1), type(proj), actions([]),
                collisions([]))
-    ], Ctx1),
-    ctx_nextid_ctx(Ctx1, 2, CtxIn),
+    ], Ctx0, Ctx1),
+    ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(
         ctx_old(CtxIn),
         ctx_new(CtxOut)
     ),
-    ctx_objs(CtxOut, NewObjects),
+    ctx_objs(NewObjects, CtxOut),
     NewObjects = [
         object(id(0), type(enemy), actions([]),
                collisions([])),
@@ -61,14 +61,14 @@ get collision_id attributes", (
         object(id(1), type(proj), actions([]),
                collisions([]))
     ],
-    ctx_objs_ctx(Ctx0, Objects, Ctx1),
-    ctx_nextid_ctx(Ctx1, 2, CtxIn),
+    ctx_set_objs(Objects, Ctx0, Ctx1),
+    ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(
         ctx_old(CtxIn),
         ctx_new(CtxOut)
     ),
     % Objects remain
-    ctx_objs(CtxOut, NewObjects),
+    ctx_objs(NewObjects, CtxOut),
     NewObjects = [
         object(id(0), type(enemy), actions([]),
                collisions([])),
@@ -98,14 +98,14 @@ collision_id only on colliding objects", (
         object(id(2), type(enemy), actions([]),
                collisions([]))
     ],
-    ctx_objs_ctx(Ctx0, Objects, Ctx1),
-    ctx_nextid_ctx(Ctx1, 3, CtxIn),
+    ctx_set_objs(Objects, Ctx0, Ctx1),
+    ctx_set_nextid(3, Ctx1, CtxIn),
     detect_collisions(
         ctx_old(CtxIn),
         ctx_new(CtxOut)
     ),
     % All objects remain
-    ctx_objs(CtxOut, NewObjects),
+    ctx_objs(NewObjects, CtxOut),
     NewObjects = [
         object(id(0), type(enemy), actions([]),
                collisions([])),
@@ -140,14 +140,14 @@ collision_id", (
         object(id(1), type(enemy), actions([]),
                collisions([]))
     ],
-    ctx_objs_ctx(Ctx0, Objects, Ctx1),
-    ctx_nextid_ctx(Ctx1, 2, CtxIn),
+    ctx_set_objs(Objects, Ctx0, Ctx1),
+    ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(
         ctx_old(CtxIn),
         ctx_new(CtxOut)
     ),
     % Objects remain
-    ctx_objs(CtxOut, NewObjects),
+    ctx_objs(NewObjects, CtxOut),
     NewObjects = Objects,
     % Both get collision_id attributes
     ctx_attr_val(CtxOut, 0/collision_id, 1),
@@ -168,14 +168,14 @@ position get collision_id", (
         object(id(1), type(proj), actions([]),
                collisions([]))
     ],
-    ctx_objs_ctx(Ctx0, Objects, Ctx1),
-    ctx_nextid_ctx(Ctx1, 2, CtxIn),
+    ctx_set_objs(Objects, Ctx0, Ctx1),
+    ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(
         ctx_old(CtxIn),
         ctx_new(CtxOut)
     ),
     % Objects remain
-    ctx_objs(CtxOut, NewObjects),
+    ctx_objs(NewObjects, CtxOut),
     NewObjects = Objects,
     % Both get collision_id attributes
     ctx_attr_val(CtxOut, 0/collision_id, 1),
@@ -196,13 +196,13 @@ ignored", (
         object(id(1), type(proj), actions([]),
                collisions([]))
     ],
-    ctx_objs_ctx(Ctx0, Objects, Ctx1),
-    ctx_nextid_ctx(Ctx1, 2, CtxIn),
+    ctx_set_objs(Objects, Ctx0, Ctx1),
+    ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(
         ctx_old(CtxIn),
         ctx_new(CtxOut)
     ),
-    ctx_objs(CtxOut, NewObjects),
+    ctx_objs(NewObjects, CtxOut),
     % No objects removed (no positions)
     NewObjects = Objects
 )).
@@ -217,13 +217,13 @@ ignored", (
         object(id(0), type(enemy), actions([]),
                collisions([]))
     ],
-    ctx_objs_ctx(Ctx0, Objects, Ctx1),
-    ctx_nextid_ctx(Ctx1, 1, CtxIn),
+    ctx_set_objs(Objects, Ctx0, Ctx1),
+    ctx_set_nextid(1, Ctx1, CtxIn),
     detect_collisions(
         ctx_old(CtxIn),
         ctx_new(CtxOut)
     ),
-    ctx_objs(CtxOut, NewObjects),
+    ctx_objs(NewObjects, CtxOut),
     NewObjects = Objects  % No objects removed
 )).
 

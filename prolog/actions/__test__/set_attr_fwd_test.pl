@@ -41,7 +41,7 @@ test("set_attr: set new attribute", (
     ctx_attr_val(CtxNew, 1/hp, HP),
     ctx_attr_val(CtxNew, 1/x, X),
     ctx_attr_val(CtxNew, 1/y, Y),
-    ctx_cmds(CtxNew, Commands),
+    ctx_cmds(Commands, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

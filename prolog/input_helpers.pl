@@ -8,7 +8,7 @@
 % key_down(+Ctx, +KeyCode)
 % True if KeyCode had a 'down' event this frame
 key_down(Ctx, KeyCode) :-
-    ctx_events(Ctx, Events),
+    ctx_events(Events, Ctx),
     member(event(key(KeyCode), down), Events).
 
 % Verbose alias
@@ -21,7 +21,7 @@ key_down_this_frame(Ctx, KeyCode) :-
 % key_up(+Ctx, +KeyCode)
 % True if KeyCode had an 'up' event this frame
 key_up(Ctx, KeyCode) :-
-    ctx_events(Ctx, Events),
+    ctx_events(Events, Ctx),
     member(event(key(KeyCode), up), Events).
 
 % Verbose alias
@@ -41,7 +41,7 @@ key_up_this_frame(Ctx, KeyCode) :-
 % (not just pressed this frame, but held since
 %  some past frame)
 key_held(Ctx, KeyCode) :-
-    ctx_held(Ctx, Keys),
+    ctx_held(Keys, Ctx),
     member(KeyCode, Keys).
 
 % Alias

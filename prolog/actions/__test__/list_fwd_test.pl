@@ -45,9 +45,9 @@ yields", (
     Actions = [
         list([move_to(5, 5, 2)]), wait(3)
     ],
-    ctx_cmds(CtxNew, []),
-    ctx_frame(CtxNew, 0),
-    ctx_status(CtxNew, playing)
+    ctx_cmds([], CtxNew),
+    ctx_frame(0, CtxNew),
+    ctx_status(playing, CtxNew)
 )).
 
 test("list: empty list removes itself", (
