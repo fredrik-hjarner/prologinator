@@ -10,11 +10,9 @@
 execute_action_impl(
     action(load(Path)),
     obj_old(ObjIn),
-    result(completed, ObjOut),
-    Ctx,
-    Ctx
-) :-
-    execute_load(Path, ObjIn, ObjOut).
+    result(completed, ObjOut)
+) -->
+    {execute_load(Path, ObjIn, ObjOut)}.
 
 % ==========================================================
 % execute_load/3

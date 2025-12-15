@@ -5,49 +5,46 @@
 % Key Event Queries (this frame only)
 % ==========================================================
 
-% key_down(+KeyCode, +CtxIn, -CtxOut)
+% key_down(+KeyCode)
 % True if KeyCode had a 'down' event this frame
-key_down(KeyCode, CtxIn, CtxOut) :-
-    ctx_events(Events, CtxIn, CtxIn),
-    member(event(key(KeyCode), down), Events),
-    CtxOut = CtxIn.
+key_down(KeyCode) -->
+    ctx_events(Events),
+    {member(event(key(KeyCode), down), Events)}.
 
 % Verbose alias
-key_pressed_this_frame(KeyCode, CtxIn, CtxOut) :-
-    key_down(KeyCode, CtxIn, CtxOut).
+key_pressed_this_frame(KeyCode) -->
+    key_down(KeyCode).
 
-key_down_this_frame(KeyCode, CtxIn, CtxOut) :-
-    key_down(KeyCode, CtxIn, CtxOut).
+key_down_this_frame(KeyCode) -->
+    key_down(KeyCode).
 
-% key_up(+KeyCode, +CtxIn, -CtxOut)
+% key_up(+KeyCode)
 % True if KeyCode had an 'up' event this frame
-key_up(KeyCode, CtxIn, CtxOut) :-
-    ctx_events(Events, CtxIn, CtxIn),
-    member(event(key(KeyCode), up), Events),
-    CtxOut = CtxIn.
+key_up(KeyCode) -->
+    ctx_events(Events),
+    {member(event(key(KeyCode), up), Events)}.
 
 % Verbose alias
-key_released_this_frame(KeyCode, CtxIn, CtxOut) :-
-    key_up(KeyCode, CtxIn, CtxOut).
+key_released_this_frame(KeyCode) -->
+    key_up(KeyCode).
 
 % TODO: Not sure I like aliases. Also naming could be better
-key_up_this_frame(KeyCode, CtxIn, CtxOut) :-
-    key_up(KeyCode, CtxIn, CtxOut).
+key_up_this_frame(KeyCode) -->
+    key_up(KeyCode).
 
 % ==========================================================
 % Key State Queries (current state)
 % ==========================================================
 
-% key_held(+KeyCode, +CtxIn, -CtxOut)
+% key_held(+KeyCode)
 % True if KeyCode is currently being held down
 % (not just pressed this frame, but held since
 %  some past frame)
-key_held(KeyCode, CtxIn, CtxOut) :-
-    ctx_held(Keys, CtxIn, CtxIn),
-    member(KeyCode, Keys),
-    CtxOut = CtxIn.
+key_held(KeyCode) -->
+    ctx_held(Keys),
+    {member(KeyCode, Keys)}.
 
 % Alias
-key_is_held(KeyCode, CtxIn, CtxOut) :-
-    key_held(KeyCode, CtxIn, CtxOut).
+key_is_held(KeyCode) -->
+    key_held(KeyCode).
 

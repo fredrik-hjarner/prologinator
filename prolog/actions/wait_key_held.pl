@@ -10,33 +10,30 @@
 execute_action_impl(
     action(wait_key_held(KeyCode)),
     obj_old(ObjIn),
-    result(Status, ObjOut),
-    CtxOld,
-    CtxNew
-) :-
-    execute_wait_key_held(
-        KeyCode, ObjIn, Status, ObjOut, CtxOld, CtxNew
-    ).
+    result(Status, ObjOut)
+) -->
+    execute_wait_key_held(KeyCode, ObjIn, Status, ObjOut).
 
 % ==========================================================
 % execute_wait_key_held/6
 % ==========================================================
-execute_wait_key_held(
-    KeyCode, ObjIn, Status, ObjOut, Ctx, Ctx
-) :-
-    obj_acns(ObjIn, [_|Rest]),
-    
-    ( key_held(KeyCode, Ctx, Ctx) ->
+execute_wait_key_held(KeyCode, ObjIn, Status, ObjOut) -->
+    {obj_acns(ObjIn, [_|Rest])},
+    ( key_held(KeyCode) ->
         % Key held: yield (action complete)
-        obj_acns_obj(ObjIn, Rest, ObjOut),
-        Status = completed
+        {
+            obj_acns_obj(ObjIn, Rest, ObjOut),
+            Status = completed
+        }
     ;
         % Key not held: keep waiting
-        obj_acns_obj(
-          ObjIn,
-          [wait_key_held(KeyCode)|Rest],
-          ObjOut
-        ),
-        Status = yielded
+        {
+            obj_acns_obj(
+                ObjIn,
+                [wait_key_held(KeyCode)|Rest],
+                ObjOut
+            ),
+            Status = yielded
+        }
     ).
 

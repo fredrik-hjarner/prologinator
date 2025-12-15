@@ -10,11 +10,9 @@
 execute_action_impl(
     action(repeat(Times, Acts)),
     obj_old(ObjIn),
-    result(completed, ObjOut),
-    Ctx,
-    Ctx
-) :-
-    execute_repeat(Times, Acts, ObjIn, ObjOut).
+    result(completed, ObjOut)
+) -->
+    {execute_repeat(Times, Acts, ObjIn, ObjOut)}.
 
 % ==========================================================
 % execute_repeat/4

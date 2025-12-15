@@ -48,23 +48,16 @@
 execute_action(
     action(Action),
     obj_old(ObjIn),
-    result(Status, ObjOut),
-    CtxOld,
-    CtxNew
-) :-
+    result(Status, ObjOut)
+) -->
     % 1. Resolve value specs in action
-    obj_id(ObjIn, MyID),
-    resolve_action(
-        MyID, Action, ResolvedAction, CtxOld, CtxOld
-    ),
-    
+    {obj_id(ObjIn, MyID)},
+    resolve_action(MyID, Action, ResolvedAction),
     % 2. Delegate to existing logic (renamed)
     execute_action_resolved(
         action(ResolvedAction),
         obj_old(ObjIn),
-        result(Status, ObjOut),
-        CtxOld,
-        CtxNew
+        result(Status, ObjOut)
     ).
 
 % ==========================================================
@@ -76,25 +69,21 @@ execute_action(
 execute_action_resolved(
     action(Action),
     obj_old(ObjIn),
-    result(Status, ObjOut),
-    CtxOld,
-    CtxNew
-) :-
+    result(Status, ObjOut)
+) -->
     % TODO: action_validation nowadays it almost useless
     %       since custom actions allow anything.
     %       so maybe I should validate builtins separately?
-    action_validation(Action),
+    {action_validation(Action)},
     % validate(Action, action_schema),
-    ( builtin_action(Action) ->
+    ( {builtin_action(Action)} ->
         % It's a built-in action - execute normally
         execute_action_impl(
             action(Action),
             obj_old(ObjIn),
-            result(Status, ObjOut),
-            CtxOld,
-            CtxNew
+            result(Status, ObjOut)
         )
-    ; user_action(Action, Body) -> % absolute prolog voodoo!
+    ; {user_action(Action, Body)} -> % total prolog voodoo!
         % It's a user-defined action!
         % Action unifies with Template, binding variables
         % in Body automatically
@@ -104,13 +93,11 @@ execute_action_resolved(
         execute_action(
             action(Body),
             obj_old(ObjIn),
-            result(Status, ObjOut),
-            CtxOld,
-            CtxNew
+            result(Status, ObjOut)
         )
     ;
         % Unknown action
-        throw(unknown_action(Action))
+        {throw(unknown_action(Action))}
     ).
 
 % ==========================================================

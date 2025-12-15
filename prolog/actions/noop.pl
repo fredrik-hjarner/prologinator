@@ -4,11 +4,9 @@
 execute_action_impl(
     action(noop),
     obj_old(ObjIn),
-    result(completed, ObjOut),
-    Ctx,
-    Ctx
-) :-
-    execute_noop(ObjIn, ObjOut).
+    result(completed, ObjOut)
+) -->
+    {execute_noop(ObjIn, ObjOut)}.
 
 % ==========================================================
 % execute_noop/2

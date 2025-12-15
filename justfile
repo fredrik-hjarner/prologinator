@@ -100,6 +100,7 @@ lint-all:
 lint-len:
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine_test.pl
+    MAX_LENGTH=60 bun scripts/max-len.ts prolog/tick_object.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/resolve_action.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/builtin_actions.pl
     MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action.pl

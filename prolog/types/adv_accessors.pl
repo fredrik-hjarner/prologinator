@@ -13,14 +13,16 @@
 % Fails if the object or attribute doesn't exist. Uses
 % ctx_attrs to get the store, then looks up the object's
 % attributes and finds the matching key-value.
-% getter ctx_attr_val/4 for dcg use
+% getter ctx_attr_val//2 for dcg use
 % Bidirectional: ObjectID and Key can be non-ground.
 % Uses attr(Key, Value) format internally for full
 % bidirectionality.
-ctx_attr_val(ObjectID/Key, Value, Ctx, Ctx) :-
-    ctx_attrs(AttrStore, Ctx, Ctx),
-    gen_assoc(ObjectID, AttrStore, Attrs),
-    member(attr(Key, Value), Attrs).
+ctx_attr_val(ObjectID/Key, Value) -->
+    ctx_attrs(AttrStore),
+    {
+        gen_assoc(ObjectID, AttrStore, Attrs),
+        member(attr(Key, Value), Attrs)
+    }.
 
 % getter ctx_attr_val/3 for non-dcg use
 ctx_attr_val(ObjectID/Key, Value, Ctx) :-
@@ -30,14 +32,17 @@ ctx_attr_val(ObjectID/Key, Value, Ctx) :-
 % Updates or creates an attribute for an object in the
 % centralized store. Returns a new context with the updated
 % attribute store. Replaces existing values for the same
-% key if they exist, otherwise appjustends to the object's
+% key if they exist, otherwise appends to the object's
 % attribute list.
-% ctx_set_attr_val(+ObjectID/Key, +Value, +CtxIn, -CtxOut)
-ctx_set_attr_val(ObjectID/Key, Value, CtxIn, CtxOut) :-
-    ctx_attrs(AttrStoreIn, CtxIn, CtxIn),
-    set_attr_in_store_helper(AttrStoreIn, ObjectID, Key,
-                             Value, AttrStoreOut),
-    ctx_set_attrs(AttrStoreOut, CtxIn, CtxOut).
+% ctx_set_attr_val(+ObjectID/Key, +Value)
+ctx_set_attr_val(ObjectID/Key, Value) -->
+    ctx_attrs(AttrStoreIn),
+    {
+        set_attr_in_store_helper(
+            AttrStoreIn, ObjectID, Key, Value, AttrStoreOut
+        )
+    },
+    ctx_set_attrs(AttrStoreOut).
 
 % Helper to update attribute in assoc tree
 % Handles the low-level logic of updating the assoc tree:

@@ -20,10 +20,8 @@ execute_action_impl(
         type(Type),
         actions(NewActions),
         Colls
-    )),
-    Ctx,
-    CtxOut
-) :-
+    ))
+) -->
     execute_move_delta(
         Frames,
         DX,
@@ -31,9 +29,7 @@ execute_action_impl(
         ID,
         Rest,
         Status,
-        NewActions,
-        Ctx,
-        CtxOut
+        NewActions
     ).
 
 % ==========================================================
@@ -47,32 +43,29 @@ execute_move_delta(
     ID,
     Rest,
     completed,
-    Rest,
-    Ctx,
-    CtxOut
-) :-
+    Rest
+) -->
     % Get current position from attribute store
-    ( ctx_attr_val(ID/x, CurrX, Ctx, Ctx),
-      ctx_attr_val(ID/y, CurrY, Ctx, Ctx) ->
-        true
+    ( ctx_attr_val(ID/x, CurrX),
+      ctx_attr_val(ID/y, CurrY) ->
+        []
     ;
         % Default to 0,0 if not set
-        CurrX = 0,
-        CurrY = 0
+        {CurrX = 0, CurrY = 0}
     ),
     % Apply delta instantly
-    NewX #= CurrX + DX,
-    NewY #= CurrY + DY,
+    {NewX #= CurrX + DX,
+     NewY #= CurrY + DY},
     % Label for grounding
-    ( ground(CurrX), ground(CurrY), ground(DX), ground(DY)
+    {( ground(CurrX), ground(CurrY), ground(DX), ground(DY)
     ->
         labeling([], [NewX, NewY])
     ;
         true
-    ),
+    )},
     % Update position in attribute store
-    ctx_set_attr_val(ID/x, NewX, Ctx, Ctx1),
-    ctx_set_attr_val(ID/y, NewY, Ctx1, CtxOut).
+    ctx_set_attr_val(ID/x, NewX),
+    ctx_set_attr_val(ID/y, NewY).
 
 % 1+ frames: apply delta and continue or finish
 execute_move_delta(
@@ -82,35 +75,32 @@ execute_move_delta(
     ID,
     Rest,
     Status,
-    NewActions,
-    Ctx,
-    CtxOut
-) :-
-    Frames #> 0,
+    NewActions
+) -->
+    {Frames #> 0},
     % Get current position from attribute store
-    ( ctx_attr_val(ID/x, CurrX, Ctx, Ctx),
-      ctx_attr_val(ID/y, CurrY, Ctx, Ctx) ->
-        true
+    ( ctx_attr_val(ID/x, CurrX),
+      ctx_attr_val(ID/y, CurrY) ->
+        []
     ;
         % Default to 0,0 if not set
-        CurrX = 0,
-        CurrY = 0
+        {CurrX = 0, CurrY = 0}
     ),
     % Apply delta
-    NewX #= CurrX + DX,
-    NewY #= CurrY + DY,
+    {NewX #= CurrX + DX,
+     NewY #= CurrY + DY},
     % Label for grounding
-    ( ground(CurrX), ground(CurrY), ground(DX),
+    {( ground(CurrX), ground(CurrY), ground(DX),
       ground(DY) ->
         labeling([], [NewX, NewY])
     ;
         true
-    ),
+    )},
     % Update position in attribute store
-    ctx_set_attr_val(ID/x, NewX, Ctx, Ctx1),
-    ctx_set_attr_val(ID/y, NewY, Ctx1, CtxOut),
+    ctx_set_attr_val(ID/x, NewX),
+    ctx_set_attr_val(ID/y, NewY),
     % Continue or arrive
-    ( Frames #> 1 ->
+    {( Frames #> 1 ->
         Frames1 #= Frames - 1,
         NewActions = [move_delta(Frames1, DX, DY)|Rest],
         Status = yielded
@@ -120,5 +110,5 @@ execute_move_delta(
         % time.
         % We must yield execution to the next frame.
         Status = yielded
-    ).
+    )}.
 

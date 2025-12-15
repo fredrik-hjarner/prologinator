@@ -5,29 +5,27 @@
 % ==========================================================
 % Main entry: runs before tick_all_objects
 % ==========================================================
-detect_collisions(CtxIn, CtxOut) :-
+detect_collisions -->
     % 1. Clear old collision_id attributes
-    clear_all_collisions(CtxIn, Ctx1),
-    
+    clear_all_collisions,
     % 2. Find all position overlaps
-    ctx_objs_attrs(Objects, AttrStore, Ctx1, Ctx1),
-    find_collision_pairs(Objects, AttrStore, Pairs),
+    ctx_objs_attrs(Objects, AttrStore),
+    {find_collision_pairs(Objects, AttrStore, Pairs)},
     % Pairs = [(5, 12), (5, 18), (8, 12), ...]
-    
     % 3. Write collision_id for each object
-    write_collision_ids(Pairs, Ctx1, CtxOut).
+    write_collision_ids(Pairs).
 
 % ----------------------------------------------------------
 % Step 1: Clear collision_id attributes
 % ----------------------------------------------------------
-clear_all_collisions(CtxIn, CtxOut) :-
-    ctx_attrs(StoreIn, CtxIn, CtxIn),
-    ctx_objs(Objects, CtxIn, CtxIn),
-    foldl(clear_one_collision, 
+clear_all_collisions -->
+    ctx_attrs(StoreIn),
+    ctx_objs(Objects),
+    {foldl(clear_one_collision, 
           Objects, 
           StoreIn, 
-          StoreOut),
-    ctx_set_attrs(StoreOut, CtxIn, CtxOut).
+          StoreOut)},
+    ctx_set_attrs(StoreOut).
 
 clear_one_collision(Obj, StoreIn, StoreOut) :-
     obj_id(Obj, ID),
@@ -70,11 +68,10 @@ same_position(AttrStore, ID1, ID2) :-
 % ----------------------------------------------------------
 % Step 3: Write collision_id (last wins)
 % ----------------------------------------------------------
-write_collision_ids([], Ctx, Ctx).
-write_collision_ids([(ID1, ID2)|Rest], 
-                    CtxIn, CtxOut) :-
+write_collision_ids([]) --> [].
+write_collision_ids([(ID1, ID2)|Rest]) -->
     % Write both directions
-    ctx_set_attr_val(ID1/collision_id, ID2, CtxIn, Ctx1),
-    ctx_set_attr_val(ID2/collision_id, ID1, Ctx1, Ctx2),
+    ctx_set_attr_val(ID1/collision_id, ID2),
+    ctx_set_attr_val(ID2/collision_id, ID1),
     % Continue (later writes override)
-    write_collision_ids(Rest, Ctx2, CtxOut).
+    write_collision_ids(Rest).

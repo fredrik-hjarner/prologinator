@@ -4,11 +4,9 @@
 execute_action_impl(
     action(loop(Actions)),
     obj_old(ObjIn),
-    result(completed, ObjOut),
-    Ctx,
-    Ctx
-) :-
-    execute_loop(Actions, ObjIn, ObjOut).
+    result(completed, ObjOut)
+) -->
+    {execute_loop(Actions, ObjIn, ObjOut)}.
 
 % ==========================================================
 % execute_loop/3

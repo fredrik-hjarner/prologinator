@@ -8,16 +8,11 @@
 execute_action_impl(
     action(define_action(Signature, Body)),
     obj_old(ObjIn),
-    result(completed, ObjOut),
-    Ctx,
-    Ctx  % Context unchanged
-) :-
-    execute_define_action(
-        Signature,
-        Body,
-        ObjIn,
-        ObjOut
-    ).
+    result(completed, ObjOut)
+) -->
+    {execute_define_action(
+        Signature, Body, ObjIn, ObjOut
+    )}.
 
 % ==========================================================
 % execute_define_action/4

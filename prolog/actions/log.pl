@@ -5,11 +5,9 @@
 execute_action_impl(
     action(log(Msg)),
     obj_old(ObjIn),
-    result(completed, ObjOut),
-    Ctx,
-    Ctx  % Context unchanged
-) :-
-    execute_log(Msg, ObjIn, ObjOut).
+    result(completed, ObjOut)
+) -->
+    {execute_log(Msg, ObjIn, ObjOut)}.
 
 % ==========================================================
 % execute_log/3

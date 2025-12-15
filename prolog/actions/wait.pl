@@ -3,11 +3,9 @@
 execute_action_impl(
     action(wait(N)),
     obj_old(ObjIn),
-    result(Status, ObjOut),
-    Ctx,
-    Ctx  % Context unchanged
-) :-
-    execute_wait(N, ObjIn, Status, ObjOut).
+    result(Status, ObjOut)
+) -->
+    {execute_wait(N, ObjIn, Status, ObjOut)}.
 
 % ==========================================================
 % execute_wait/4
