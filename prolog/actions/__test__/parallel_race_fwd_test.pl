@@ -22,7 +22,7 @@ test("parallel_race: stops on child completion", (
     % Arrange
     % ------------------------------------------------------
     Obj = object(
-        id(0), type(tower),
+        id(0),
         actions([
             parallel_race([
                 wait(5),
@@ -32,8 +32,11 @@ test("parallel_race: stops on child completion", (
             wait(3)
         ])
     ),
-    empty_ctx(CtxTemp),
-    ctx_set_objs([Obj], CtxTemp, Ctx),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(type, tower)],
+              EmptyAttrs),
+    ctx_with_objs([Obj], Ctx0),
+    ctx_set_attrs(EmptyAttrs, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -59,7 +62,7 @@ done", (
     % Arrange
     % ------------------------------------------------------
     Obj = object(
-        id(0), type(tower),
+        id(0),
         actions([
             parallel_race([
                 wait(5), wait(10)
@@ -67,8 +70,11 @@ done", (
             wait(3)
         ])
     ),
-    empty_ctx(CtxTemp),
-    ctx_set_objs([Obj], CtxTemp, Ctx),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(type, tower)],
+              EmptyAttrs),
+    ctx_with_objs([Obj], Ctx0),
+    ctx_set_attrs(EmptyAttrs, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -96,7 +102,6 @@ test("parallel_race: despawns parent when child \
 despawns", (
     Obj = object(
         id(1),
-        type(static),
         actions([
             parallel_race([
                 despawn,
@@ -107,7 +112,8 @@ despawns", (
         ])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(

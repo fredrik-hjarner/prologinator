@@ -24,7 +24,6 @@ actions from executing", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             despawn,
             wait(5),
@@ -33,7 +32,8 @@ actions from executing", (
         ])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -60,14 +60,14 @@ test("despawn: prevents game_over state change from \
 executing after despawn", (
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             despawn,
             trigger_state_change(game_over(won)),
             wait(5)
         ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     execute_action(
         action(despawn),
         obj_old(ObjIn),

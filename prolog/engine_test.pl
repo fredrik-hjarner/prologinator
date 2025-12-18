@@ -16,10 +16,10 @@ test("tick_object: empty action list returns unchanged \
 object", (
     ObjIn = object(
         id(1),
-        type(static),
         actions([        ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     tick_object(
         obj_old(ObjIn),
         result(Status, ObjOut),
@@ -30,7 +30,6 @@ object", (
     Status = completed,
     ObjOut = object(
         id(1),
-        type(static),
         actions([            ])
     )
 )).
@@ -39,10 +38,10 @@ test("tick_object: yielding action (wait) stops \
 after one execution", (
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait(5)        ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     tick_object(
         obj_old(ObjIn),
         result(Status, ObjOut),
@@ -53,7 +52,6 @@ after one execution", (
     Status = yielded,
     ObjOut = object(
         id(1),
-        type(static),
         actions([wait(4)            ])
     )
 )).
@@ -62,10 +60,10 @@ test("tick_object: wait(0) is removed and execution \
 continues until empty", (
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait(0)        ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     tick_object(
         obj_old(ObjIn),
         result(Status, ObjOut),
@@ -76,7 +74,6 @@ continues until empty", (
     Status = completed,
     ObjOut = object(
         id(1),
-        type(static),
         actions([            ])
     )
 )).
@@ -87,17 +84,14 @@ continues until empty", (
 
 test("tick: increments frame and processes empty game \
 state", (
-    empty_ctx(CtxIn0),
-    ctx_set_objs([object(
+    ctx_with_objs([object(
         id(0),
-        type(static),
         actions([            ])
-    )], CtxIn0, CtxIn),
+    )], CtxIn),
     tick(CtxIn, CtxOut),
     ctx_frame(1, CtxOut, CtxOut),
     ctx_objs([object(
         id(0),
-        type(static),
         actions([            ])
     )], CtxOut, CtxOut)
 )).
@@ -107,14 +101,12 @@ test("tick: processes object with yielding action \
     empty_ctx(CtxIn0),
     ctx_set_objs([object(
         id(0),
-        type(static),
         actions([wait(3)            ])
     )], CtxIn0, CtxIn),
     tick(CtxIn, CtxOut),
     ctx_frame(1, CtxOut, CtxOut),
     ctx_objs([object(
         id(0),
-        type(static),
         actions([wait(2)            ])
     )], CtxOut, CtxOut)
 )).
@@ -124,7 +116,6 @@ object", (
     empty_ctx(CtxIn0),
     ctx_set_objs([object(
         id(0),
-        type(static),
         actions([
             spawn(enemy, 5, 5, [])
             ])
@@ -136,7 +127,6 @@ object", (
     member(
         object(
             id(0),
-            type(static),
             actions([        ])
     ),
         FinalObjs
@@ -144,11 +134,11 @@ object", (
     member(
         object(
             id(_NewID),
-            type(enemy),
             actions([        ])
     ),
         FinalObjs
-    )
+    ),
+    ctx_attr_val(_NewID/type, enemy, CtxOut, CtxOut)
 )).
 
 % ==========================================================
@@ -162,14 +152,16 @@ test("collision: simple enemy-projectile collision", (
     % Both move towards the same target position so they
     % collide
     empty_assoc(EmptyAttrs0),
-    put_assoc(0, EmptyAttrs0, [attr(x, 5), attr(y, 10)],
+    put_assoc(0, EmptyAttrs0,
+              [attr(type, enemy), attr(x, 5), attr(y, 10)],
               Attrs1),
-    put_assoc(1, Attrs1, [attr(x, 5), attr(y, 10)],
+    put_assoc(1, Attrs1,
+              [attr(type, proj), attr(x, 5), attr(y, 10)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
     ctx_set_objs([
         object(
-            id(0), type(enemy),
+            id(0),
             actions([
                 % Moving right, arrives at (10, 10) in 1
                 % frame
@@ -177,7 +169,7 @@ test("collision: simple enemy-projectile collision", (
             ])
         ),
         object(
-            id(1), type(proj),
+            id(1),
             actions([
                 % Moving to same target, arrives at
                 % (10, 10) in 1 frame
@@ -209,16 +201,21 @@ test("performance: run game to frame 32 to reproduce \
 freeze (first collision)", (
     % Same initial state as game.pl
     empty_assoc(EmptyAttrs0),
-    put_assoc(0, EmptyAttrs0, [attr(x, 5), attr(y, 19)],
+    put_assoc(0, EmptyAttrs0,
+              [attr(type, tower), attr(x, 5), attr(y, 19)],
               Attrs1),
-    put_assoc(1, Attrs1, [attr(x, 10), attr(y, 19)],
+    put_assoc(1, Attrs1,
+              [attr(type, tower), attr(x, 10), attr(y, 19)],
               Attrs2),
-    put_assoc(2, Attrs2, [attr(x, 15), attr(y, 19)],
+    put_assoc(2, Attrs2,
+              [attr(type, tower), attr(x, 15), attr(y, 19)],
+              Attrs3),
+    put_assoc(3, Attrs3, [attr(type, static)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
     ctx_set_objs([
         object(
-            id(0), type(tower),
+            id(0),
             actions([
                 loop([
                     wait(3),
@@ -229,7 +226,7 @@ freeze (first collision)", (
             ])
         ),
         object(
-            id(1), type(tower),
+            id(1),
             actions([
                 loop([
                     wait(3),
@@ -240,7 +237,7 @@ freeze (first collision)", (
             ])
         ),
         object(
-            id(2), type(tower),
+            id(2),
             actions([
                 loop([
                     wait(3),
@@ -251,7 +248,7 @@ freeze (first collision)", (
             ])
         ),
         object(
-            id(3), type(static),
+            id(3),
             actions([
                 loop([
                     wait(5),

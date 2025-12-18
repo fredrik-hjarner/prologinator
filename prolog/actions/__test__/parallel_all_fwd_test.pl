@@ -42,7 +42,6 @@ attributes.", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             parallel_all([
                 set_attr(x, 10),
@@ -55,7 +54,8 @@ attributes.", (
     put_assoc(
         1,
         EmptyAttrs0,
-        [attr(x, 0), attr(y, 0), attr(z, 0)],
+        [attr(type, static), attr(x, 0), attr(y, 0),
+         attr(z, 0)],
         EmptyAttrs
     ),
     ctx_with_attrs(EmptyAttrs, Ctx),
@@ -93,7 +93,6 @@ test("parallel_all: yields when child yields", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             parallel_all([
                 set_attr(x, 10),
@@ -104,7 +103,9 @@ test("parallel_all: yields when child yields", (
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(
-        1, EmptyAttrs0, [attr(x, 0), attr(y, 0)], EmptyAttrs
+        1, EmptyAttrs0,
+        [attr(type, static), attr(x, 0), attr(y, 0)],
+        EmptyAttrs
     ),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -151,7 +152,6 @@ test("parallel_all: despawns when child despawns", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             parallel_all([
                 set_attr(x, 10),
@@ -162,7 +162,9 @@ test("parallel_all: despawns when child despawns", (
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(
-        1, EmptyAttrs0, [attr(x, 0), attr(y, 0)], EmptyAttrs
+        1, EmptyAttrs0,
+        [attr(type, static), attr(x, 0), attr(y, 0)],
+        EmptyAttrs
     ),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -200,12 +202,13 @@ test("parallel_all: should continue until all complete", (
     ]),
     ObjIn = object(
         id(1),
-        type(static),
         actions([Actions])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(
-        1, EmptyAttrs0, [attr(a, 0), attr(b, 0)], EmptyAttrs
+        1, EmptyAttrs0,
+        [attr(type, static), attr(a, 0), attr(b, 0)],
+        EmptyAttrs
         ),
         ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------

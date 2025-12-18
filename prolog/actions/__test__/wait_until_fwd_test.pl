@@ -18,12 +18,11 @@ test("wait_until: completes when path exists", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_until(collision_id), noop        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, 
-              [attr(x, 0), attr(y, 0), 
+              [attr(type, static), attr(x, 0), attr(y, 0), 
                attr(collision_id, 5)], 
               Attrs),
     ctx_with_attrs(Attrs, Ctx),
@@ -52,12 +51,11 @@ test("wait_until: yields when path does not exist", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_until(collision_id), noop        ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, 
-              [attr(x, 0), attr(y, 0)], 
+              [attr(type, static), attr(x, 0), attr(y, 0)], 
               Attrs),
     ctx_with_attrs(Attrs, Ctx),
     % --------------------------------------------------
@@ -85,14 +83,13 @@ test("wait_until: works with nested paths", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_until(collision_id/collisionType), 
                  noop        ])
     ),
     empty_attr_store(EmptyAttrs0),
     % Object 1 has collision_id pointing to object 5
     put_assoc(1, EmptyAttrs0, 
-              [attr(x, 0), attr(y, 0), 
+              [attr(type, static), attr(x, 0), attr(y, 0), 
                attr(collision_id, 5)], 
               Attrs1),
     % Object 5 has collisionType
@@ -125,14 +122,13 @@ test("wait_until: yields when nested path does not exist", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_until(collision_id/collisionType), 
                  noop        ])
     ),
     empty_attr_store(EmptyAttrs0),
     % Object 1 has collision_id pointing to object 5
     put_assoc(1, EmptyAttrs0, 
-              [attr(x, 0), attr(y, 0), 
+              [attr(type, static), attr(x, 0), attr(y, 0), 
                attr(collision_id, 5)], 
               Attrs1),
     % Object 5 exists but has no collisionType
@@ -168,14 +164,13 @@ exist", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_until(collision_id/collisionType), 
                  noop        ])
     ),
     empty_attr_store(EmptyAttrs0),
     % Object 1 has no collision_id at all
     put_assoc(1, EmptyAttrs0, 
-              [attr(x, 0), attr(y, 0)], 
+              [attr(type, static), attr(x, 0), attr(y, 0)], 
               Attrs),
     ctx_with_attrs(Attrs, Ctx),
     % --------------------------------------------------

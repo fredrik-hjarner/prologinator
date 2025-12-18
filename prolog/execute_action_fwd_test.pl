@@ -25,11 +25,11 @@ remaining", (
     Action = move_to(10, 20, 3),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(10, 20, 3)])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -50,7 +50,6 @@ remaining", (
     % ------------------------------------------------------
     ( ObjOut = object(
         id(1),
-        type(static),
         actions([move_to(10, 20, 2)|_])
     ) ; err_write("ObjOut mismatch") ),
     (NewX = 3 ; err_write("NewX != 3")),
@@ -66,7 +65,6 @@ remaining", (
     Action = move_to(0, 0, 3),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(0, 0, 3)])
     ),
     empty_attr_store(EmptyAttrs0),
@@ -91,7 +89,6 @@ remaining", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1),
-        type(static),
         actions([move_to(0, 0, 2)|_])
     ),
     (NewX = 7 ; err_write("NewX != 7")),
@@ -106,11 +103,11 @@ test("move_to: single frame, arrives at target", (
     Action = move_to(5, 5, 1),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(5, 5, 1)])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -131,7 +128,6 @@ test("move_to: single frame, arrives at target", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1),
-        type(static),
         actions([])
     ),
     (X = 5 ; err_write("X != 5")),
@@ -147,7 +143,6 @@ continues with remaining frames", (
     Action = move_to(10, 20, 3),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(10, 20, 3)])
     ),
     empty_attr_store(EmptyAttrs0),
@@ -172,7 +167,6 @@ continues with remaining frames", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1),
-        type(static),
         actions([move_to(10, 20, 2)|_])
     ),
     (X = 10 ; err_write("X != 10")),
@@ -184,11 +178,11 @@ test("move_to: negative target coordinates", (
     Action = move_to(-5, -10, 2),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(-5, -10, 2)])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(
@@ -206,7 +200,6 @@ test("move_to: negative target coordinates", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1),
-        type(static),
         actions([move_to(-5, -10, 1)|_])
     ),
     (NewX = -2 ; err_write("NewX != -2")),
@@ -226,7 +219,6 @@ to won", (
     Action = trigger_state_change(game_over(won)),
     ObjIn = object(
         id(1),
-        type(static),
         actions([trigger_state_change(game_over(won))])
     ),
     empty_ctx(CtxIn),
@@ -247,7 +239,6 @@ to won", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1),
-        type(static),
         actions([])
     ),
     (Status = won ; err_write("Status != won")),
@@ -262,7 +253,6 @@ to lost", (
     Action = trigger_state_change(game_over(lost)),
     ObjIn = object(
         id(1),
-        type(static),
         actions([trigger_state_change(game_over(lost))])
     ),
     empty_ctx(CtxIn),
@@ -283,7 +273,6 @@ to lost", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1),
-        type(static),
         actions([])
     ),
     (Status = lost ; err_write("Status != lost")),
@@ -298,7 +287,6 @@ override lost", (
     Action = trigger_state_change(game_over(won)),
     ObjIn = object(
         id(1),
-        type(static),
         actions([trigger_state_change(game_over(won))])
     ),
     empty_ctx(CtxTemp),
@@ -320,7 +308,6 @@ override lost", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1),
-        type(static),
         actions([])
     ),
     (Status = lost ; err_write("Status != lost")),
@@ -336,10 +323,11 @@ test("noop: removes self from action queue", (
     % Arrange
     % ------------------------------------------------------
     ObjIn = object(
-        id(0), type(static),
+        id(0),
         actions([noop, wait(1)])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -357,7 +345,7 @@ test("noop: removes self from action queue", (
     % Assert
     % ------------------------------------------------------
     ObjOut = object(
-        id(0), type(static),
+        id(0),
         actions([wait(1)])
     ),
     (Commands = [] ; err_write("Commands != []")),
@@ -371,13 +359,14 @@ test("noop: removes self from action queue", (
 
 test("list: executes actions immediately", (
     ObjIn = object(
-        id(0), type(static),
+        id(0),
         actions([
             list([wait(1), move_to(5, 5, 2)]),
             wait(3)
         ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
         action(list([wait(1), move_to(5, 5, 2)])),
         obj_old(ObjIn),
@@ -388,7 +377,7 @@ test("list: executes actions immediately", (
     % list now executes immediately, wait(1) yields
     Status = yielded,
     ObjOut = object(
-        id(0), type(static),
+        id(0),
         actions([list([move_to(5, 5, 2)]), wait(3)])
     ),
     ctx_cmds([], CtxNew, CtxNew),
@@ -398,10 +387,11 @@ test("list: executes actions immediately", (
 
 test("list: empty list removes itself", (
     ObjIn = object(
-        id(0), type(static),
+        id(0),
         actions([list([]), wait(1)])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
         action(list([])),
         obj_old(ObjIn),
@@ -410,7 +400,7 @@ test("list: empty list removes itself", (
         _
     ),
     ObjOut = object(
-        id(0), type(static),
+        id(0),
         actions([wait(1)])
     )
 )).
@@ -426,7 +416,6 @@ actions from executing", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             despawn,
             wait(5),
@@ -435,7 +424,8 @@ actions from executing", (
         ])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -462,14 +452,14 @@ test("despawn: prevents game_over state change from \
 executing after despawn", (
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             despawn,
             trigger_state_change(game_over(won)),
             wait(5)
         ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
         action(despawn),
         obj_old(ObjIn),
@@ -495,7 +485,7 @@ test("set_attr: set new attribute", (
     % Arrange
     % ------------------------------------------------------
     ObjIn = object(
-        id(1), type(enemy),
+        id(1),
         actions([set_attr(hp, 100)])
     ),
     empty_attr_store(EmptyAttrs0),
@@ -520,7 +510,7 @@ test("set_attr: set new attribute", (
     % Assert
     % ------------------------------------------------------
     ObjOut = object(
-        id(1), type(enemy),
+        id(1),
         actions([])
     ),
     (HP = 100 ; err_write("HP != 100")),
@@ -534,12 +524,14 @@ test("set_attr: replace existing attribute", (
     % Arrange
     % ------------------------------------------------------
     ObjIn = object(
-        id(1), type(enemy),
+        id(1),
         actions([set_attr(hp, 50)])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
-              [attr(hp, 100), attr(x, 5), attr(y, 10)],
+              [attr(type, static),
+               attr(hp, 100), attr(x, 5),
+               attr(y, 10)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -559,7 +551,7 @@ test("set_attr: replace existing attribute", (
     % Assert
     % ------------------------------------------------------
     ObjOut = object(
-        id(1), type(enemy),
+        id(1),
         actions([])
     ),
     (HP = 50 ; err_write("HP != 50")),
@@ -576,7 +568,7 @@ test("parallel_race: stops on child completion", (
     % Arrange
     % ------------------------------------------------------
     Obj = object(
-        id(0), type(tower),
+        id(0),
         actions([
             parallel_race([
                 wait(5),
@@ -586,8 +578,11 @@ test("parallel_race: stops on child completion", (
             wait(3)
         ])
     ),
-    empty_ctx(CtxTemp),
-    ctx_set_objs([Obj], CtxTemp, Ctx),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(type, static)],
+              EmptyAttrs),
+    ctx_with_objs([Obj], Ctx0),
+    ctx_set_attrs(EmptyAttrs, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -613,7 +608,7 @@ done", (
     % Arrange
     % ------------------------------------------------------
     Obj = object(
-        id(0), type(tower),
+        id(0),
         actions([
             parallel_race([
                 wait(5), wait(10)
@@ -621,8 +616,11 @@ done", (
             wait(3)
         ])
     ),
-    empty_ctx(CtxTemp),
-    ctx_set_objs([Obj], CtxTemp, Ctx),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(type, static)],
+              EmptyAttrs),
+    ctx_with_objs([Obj], Ctx0),
+    ctx_set_attrs(EmptyAttrs, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -650,7 +648,6 @@ test("parallel_race: despawns parent when child \
 despawns", (
     Obj = object(
         id(1),
-        type(static),
         actions([
             parallel_race([
                 despawn,
@@ -661,7 +658,8 @@ despawns", (
         ])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(
@@ -687,14 +685,15 @@ duplicates", (
     % Arrange
     % ------------------------------------------------------
     ObjIn = object(
-        id(1), type(enemy),
+        id(1),
         actions([
             set_attr(hp, 100),
             set_attr(hp, 75),
             set_attr(hp, 50)
         ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -733,13 +732,13 @@ duplicates", (
 test("repeat: expands actions once and decrements", (
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             repeat(3, [noop, set_attr(count, 1)]),
             despawn
         ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
         action(repeat(3, [noop, set_attr(count, 1)])),
         obj_old(ObjIn),
@@ -765,10 +764,10 @@ test("repeat: last repetition doesn't add repeat", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([repeat(1, [noop]), despawn])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -796,7 +795,6 @@ test("repeat: multiple actions in repeat list", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             repeat(2, [
                 noop,
@@ -806,7 +804,8 @@ test("repeat: multiple actions in repeat list", (
             despawn
         ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -846,7 +845,6 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_delta(1, 5, -3)])
     ),
     empty_attr_store(EmptyAttrs0),
@@ -871,7 +869,6 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1),
-        type(static),
         actions([])
     ),
     (X = 15 ; err_write("X != 15")),
@@ -885,11 +882,11 @@ test("move_delta: multiple frames continues", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_delta(3, 10, 5)])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -923,7 +920,6 @@ test("move_delta: negative deltas work", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_delta(2, -10, -5)])
     ),
     empty_attr_store(EmptyAttrs0),
@@ -958,7 +954,6 @@ test("move_delta: negative deltas work", (
 test("move_delta: preserves other attributes", (
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_delta(1, 5, -3)])
     ),
     empty_attr_store(EmptyAttrs0),
@@ -987,7 +982,6 @@ test("move_delta: preserves other attributes", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1),
-        type(static),
         actions([])
     ),
     (X = 15 ; err_write("X != 15")),
@@ -1012,7 +1006,6 @@ test("value_resolution: move_to with attr() references", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(attr(target_x),
                          attr(target_y), 5)])
     ),
@@ -1041,7 +1034,6 @@ test("value_resolution: set_attr with attr() source", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([set_attr(source_x, attr(x))])
     ),
     execute_action(
@@ -1070,7 +1062,6 @@ test("value_resolution: path syntax parent_id/target_y", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([set_attr(my_target_y,
                           attr(parent_id/target_y))])
     ),
@@ -1105,7 +1096,6 @@ test("value_resolution: multi-hop path a/b/c", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([set_attr(result,
                           attr(first_id/second_id/
                                 final_value))])
@@ -1135,7 +1125,6 @@ test("value_resolution: spawn at attr() position", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([spawn(enemy, attr(spawn_x),
                        attr(spawn_y), [])])
     ),
@@ -1150,7 +1139,8 @@ test("value_resolution: spawn at attr() position", (
     % Should spawn enemy at (200, 300) - spawn immediately
     % creates object, so check it exists in context
     ctx_objs(Objects, CtxNew, CtxNew),
-    member(object(id(_ID), type(enemy), _), Objects),
+    member(object(id(_ID), _), Objects),
+    ctx_attr_val(_ID/type, enemy, CtxNew, CtxNew),
     ctx_attr_val(_ID/x, 200, CtxNew, CtxNew),
     ctx_attr_val(_ID/y, 300, CtxNew, CtxNew)
 )).
@@ -1166,7 +1156,6 @@ test("value_resolution: mixed plain and attr() values", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(attr(target_x), 200,
                          attr(speed))])
     ),
@@ -1200,7 +1189,6 @@ test("value_resolution: backward compatible plain values", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(100, 200, 5)])
     ),
     execute_action(

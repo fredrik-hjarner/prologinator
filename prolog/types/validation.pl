@@ -135,17 +135,23 @@ state_validation_helper(Term) :-
               attrs(Attrs),
               status(Status),
               next_id(NextID),
-              commands(Commands)
+              commands(Commands),
+              actionstore(ActionStore)
           ) ->
             % Structure matches, validate content
             integer(Frame),
             length(Objects, _),
             % Attrs is an assoc tree - just check it's
             % ground
+            % TODO: Better validation of Attrs
             ground(Attrs),
             game_status_validation(Status),
             integer(NextID),
             length(Commands, _),
+            % ActionStore is an assoc tree - just check it's
+            % ground
+            % TODO: Better validation of ActionStore
+            ground(ActionStore),
             extract_ids(Objects, IDs),
             is_ascending_ids(IDs),
             ( IDs = [] ->
@@ -176,7 +182,7 @@ state_validation_helper(Term) :-
 
 extract_ids([], []).
 extract_ids(
-    [object(id(ID), _, _)|Rest], [ID|IDs]
+    [object(id(ID), _)|Rest], [ID|IDs]
 ) :-
     extract_ids(Rest, IDs).
 
@@ -211,12 +217,11 @@ object_validation(Term) :-
 object_validation_helper(Term) :-
     ( ground(Term) ->
         ( Term = object(
-              id(ID), type(Type),
+              id(ID),
               actions(Actions)
           ) ->
             % Structure matches, validate content
             integer(ID),
-            object_type_validation(Type),
             length(Actions, _)
         ;
             % Structure doesn't match - throw
@@ -274,7 +279,7 @@ spawn_request_validation(Term) :-
     ( ground(Term) ->
         ( Term = spawn_request(Type, _X, _Y, Acts) ->
             % Structure matches, validate content
-            object_type_validation(Type),
+            atom(Type),
             % X and Y: no validation needed
             length(Acts, _)
         ;
@@ -341,12 +346,6 @@ integer_or_evaluable(Term) :-
     ;
         fail
     ).
-
-object_type_validation(static).
-object_type_validation(enemy).
-object_type_validation(proj).
-object_type_validation(player).
-object_type_validation(tower).
 
 pos_validation(Term) :-
     ( ground(Term) ->
@@ -422,7 +421,7 @@ action_validation_helper(Term) :-
             true
         ; Term = spawn(Type, _X, _Y, Acts) ->
             % Structure matches, validate content
-            object_type_validation(Type),
+            atom(Type),
             % X and Y: no validation needed
             length(Acts, _)
         ; Term = set_attr(_Name, _Value) ->

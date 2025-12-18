@@ -28,10 +28,11 @@ execute_spawn(
     ctx_set_nextid(NextID),
     % 2. Create Object (no attributes - stored separately)
     {NewObj = object(
-        id(ID), type(Type),
+        id(ID),
         actions(Actions)
     )},
     % 3. Initialize attributes in store
+    ctx_set_attr_val(ID/type, Type),
     ctx_set_attr_val(ID/x, X),
     ctx_set_attr_val(ID/y, Y),
     % 4. Append to Context

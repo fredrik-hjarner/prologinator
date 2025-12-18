@@ -11,12 +11,10 @@ execute_action_impl(
     action(move_delta(Frames, DX, DY)),
     obj_old(object(
         id(ID),
-        type(Type),
         actions([_|Rest])
     )),
     result(Status, object(
         id(ID),
-        type(Type),
         actions(NewActions)
     ))
 ) -->

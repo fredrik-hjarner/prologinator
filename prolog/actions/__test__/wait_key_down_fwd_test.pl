@@ -18,22 +18,12 @@ test("wait_key_down: completes when key pressed", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_key_down(39), noop])
     ),
     % Create context with key 39 down event
-    Ctx = ctx(
-        state(
-            frame(0),
-            objects([]),
-            attrs(EmptyAttrs),
-            status(playing),
-            next_id(1),
-            commands([])
-        ),
-        input(events([event(key(39), down)]), held([]))
-    ),
-    empty_attr_store(EmptyAttrs),
+    ctx_with_inputevents_inputheld(
+        [event(key(39), down)], [], Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
@@ -59,11 +49,11 @@ test("wait_key_down: yields when key not pressed", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_key_down(39), noop])
     ),
     % Create context with no key events
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
@@ -89,22 +79,12 @@ test("wait_key_down: waits for different key", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_key_down(37)])
     ),
     % Create context with key 39 down event (not 37)
-    Ctx = ctx(
-        state(
-            frame(0),
-            objects([]),
-            attrs(EmptyAttrs),
-            status(playing),
-            next_id(1),
-            commands([])
-        ),
-        input(events([event(key(39), down)]), held([]))
-    ),
-    empty_attr_store(EmptyAttrs),
+    ctx_with_inputevents_inputheld(
+        [event(key(39), down)], [], Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
@@ -130,26 +110,15 @@ test("wait_key_down: multiple key events", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_key_down(37)])
     ),
     % Create context with multiple key events
-    Ctx = ctx(
-        state(
-            frame(0),
-            objects([]),
-            attrs(EmptyAttrs),
-            status(playing),
-            next_id(1),
-            commands([])
-        ),
-        input(events([
-            event(key(65), down),
-            event(key(37), down),
-            event(key(39), down)
-        ]), held([]))
-    ),
-    empty_attr_store(EmptyAttrs),
+    ctx_with_inputevents_inputheld([
+        event(key(65), down),
+        event(key(37), down),
+        event(key(39), down)
+    ], [], Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
@@ -175,22 +144,12 @@ test("wait_key_down: ignores key up events", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_key_down(39)])
     ),
     % Create context with key 39 up event (not down)
-    Ctx = ctx(
-        state(
-            frame(0),
-            objects([]),
-            attrs(EmptyAttrs),
-            status(playing),
-            next_id(1),
-            commands([])
-        ),
-        input(events([event(key(39), up)]), held([]))
-    ),
-    empty_attr_store(EmptyAttrs),
+    ctx_with_inputevents_inputheld(
+        [event(key(39), up)], [], Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
@@ -216,27 +175,17 @@ test("wait_key_down: in loop pattern", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             loop([wait_key_down(39), set_attr(x, 10)])
         ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(
-        1, EmptyAttrs0, [attr(x, 0)], EmptyAttrs
+        1, EmptyAttrs0,
+        [attr(type, static), attr(x, 0)], EmptyAttrs
     ),
     % Context without key event
-    Ctx = ctx(
-        state(
-            frame(0),
-            objects([]),
-            attrs(EmptyAttrs),
-            status(playing),
-            next_id(1),
-            commands([])
-        ),
-        input(events([]), held([]))
-    ),
+    ctx_with_attrs(EmptyAttrs, Ctx),
     % --------------------------------------------------
     % Act
     % --------------------------------------------------

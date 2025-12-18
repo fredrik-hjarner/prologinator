@@ -20,13 +20,13 @@
 test("repeat: expands actions once and decrements", (
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             repeat(3, [noop, set_attr(count, 1)]),
             despawn
         ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     execute_action(
         action(repeat(3, [noop, set_attr(count, 1)])),
         obj_old(ObjIn),
@@ -52,10 +52,10 @@ test("repeat: last repetition doesn't add repeat", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([repeat(1, [noop]), despawn])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -83,7 +83,6 @@ test("repeat: multiple actions in repeat list", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             repeat(2, [
                 noop,
@@ -93,7 +92,8 @@ test("repeat: multiple actions in repeat list", (
             despawn
         ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------

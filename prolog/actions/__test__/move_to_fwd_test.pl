@@ -25,11 +25,11 @@ remaining", (
     Action = move_to(10, 20, 3),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(10, 20, 3)        ])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -51,7 +51,6 @@ remaining", (
     (Status = yielded ; err_write("Status != yielded")),
     ( ObjOut = object(
         id(1),
-        type(static),
         actions([move_to(10, 20, 2)|_])
     ) ; err_write("ObjOut mismatch") ),
     (NewX = 3 ; err_write("NewX != 3")),
@@ -67,11 +66,12 @@ remaining", (
     Action = move_to(0, 0, 3),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(0, 0, 3)        ])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 10), attr(y, 20)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static),
+               attr(x, 10), attr(y, 20)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -93,7 +93,6 @@ remaining", (
     (Status = yielded ; err_write("Status != yielded")),
     ObjOut = object(
         id(1),
-        type(static),
         actions([move_to(0, 0, 2)|_        ])
     ),
     (NewX = 7 ; err_write("NewX != 7")),
@@ -108,11 +107,11 @@ test("move_to: single frame, arrives at target", (
     Action = move_to(5, 5, 1),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(5, 5, 1)        ])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -134,7 +133,6 @@ test("move_to: single frame, arrives at target", (
     (Status = yielded ; err_write("Status != yielded")),
     ObjOut = object(
         id(1),
-        type(static),
         actions([        ])
     ),
     (X = 5 ; err_write("X != 5")),
@@ -150,11 +148,12 @@ continues with remaining frames", (
     Action = move_to(10, 20, 3),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(10, 20, 3)        ])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 10), attr(y, 20)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static),
+               attr(x, 10), attr(y, 20)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -176,7 +175,6 @@ continues with remaining frames", (
     (Status = yielded ; err_write("Status != yielded")),
     ObjOut = object(
         id(1),
-        type(static),
         actions([move_to(10, 20, 2)|_        ])
     ),
     (X = 10 ; err_write("X != 10")),
@@ -188,11 +186,11 @@ test("move_to: negative target coordinates", (
     Action = move_to(-5, -10, 2),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(-5, -10, 2)        ])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(
@@ -211,7 +209,6 @@ test("move_to: negative target coordinates", (
     (Status = yielded ; err_write("Status != yielded")),
     ObjOut = object(
         id(1),
-        type(static),
         actions([move_to(-5, -10, 1)|_        ])
     ),
     (NewX = -2 ; err_write("NewX != -2")),

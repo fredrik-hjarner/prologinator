@@ -151,11 +151,11 @@ actions_schema(struct(actions, [
     value(list(schema(action_schema)))
 ])).
 
-% Object: object(id(ID), type(Type),
-%   actions(Actions))
+% Object: object(id(ID), actions(Actions))
+% Note: type is now stored as an attribute, not in the
+%   object structure
 object_schema(struct(object, [
     id(schema(id_schema)),
-    type(schema(type_schema)),
     actions(schema(actions_schema))
 ])).
 
@@ -202,14 +202,23 @@ commands_schema(struct(commands, [
     value(list(schema(command_schema)))
 ])).
 
-% State schema: validates state/6 with wrapped arguments
+% For actionstore(ActionStore), validate actionstore/1 and
+%   ActionStore is assoc mapping obj_id to lists of lists of
+%   actions
+actionstore_schema(struct(actionstore, [
+    value(any)  % assoc list - validation handled by assoc
+                % operations
+])).
+
+% State schema: validates state/7 with wrapped arguments
 state_schema(struct(state, [
     frame(schema(frame_schema)),
     objects(schema(objects_schema)),
     attrs(schema(attrs_schema)),
     status(schema(status_schema)),
     next_id(schema(next_id_schema)),
-    commands(schema(commands_schema))
+    commands(schema(commands_schema)),
+    actionstore(schema(actionstore_schema))
 ])).
 
 % Context schema: ctx(State) where State is a state
@@ -225,37 +234,48 @@ context_schema(struct(ctx, [
 :- discontiguous(test/2).
 
 test("game_state_validation: valid state passes", (
-    empty_assoc(EmptyAttrs),
+    empty_assoc(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(type, static)],
+              EmptyAttrs),
+    empty_assoc(EmptyActionStore),
     State = state(
         frame(0),
         objects([object(
-            id(0), type(static),
+            id(0),
             actions([])
         )]),
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([])
+        commands([]),
+        actionstore(EmptyActionStore)
     ),
     validate(State, state_schema)
 )).
 
 test("game_state_validation: complex state with \
 multiple objects and commands", (
-    empty_assoc(EmptyAttrs),
+    empty_assoc(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(type, tower)],
+              Attrs1),
+    put_assoc(1, Attrs1, [attr(type, enemy)],
+              Attrs2),
+    put_assoc(2, Attrs2, [attr(type, proj)],
+              EmptyAttrs),
+    empty_assoc(EmptyActionStore),
     State = state(
         frame(5),
         objects([
             object(
-                id(0), type(tower),
+                id(0),
                 actions([wait(3)])
             ),
             object(
-                id(1), type(enemy),
+                id(1),
                 actions([move_to(10, 10, 5)])
             ),
             object(
-                id(2), type(proj),
+                id(2),
                 actions([])
             )
         ]),
@@ -265,58 +285,64 @@ multiple objects and commands", (
         commands([
             spawn_request(enemy, pos(0, 0), []),
             spawn_request(enemy, pos(0, 0), [])
-        ])
+        ]),
+        actionstore(EmptyActionStore)
     ),
     validate(State, state_schema)
 )).
 
 test("context_validation: complex context with multiple \
 objects and commands", (
-    Ctx = ctx(state(
-        frame(42),
-        objects([
-            object(
-                id(0), type(tower),
-                actions([
-                    loop([
-                        wait(3),
-                        spawn(proj, pos(5, 19), [
-                            move_to(5, 0, 20)
-                        ])
+    empty_assoc(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(type, tower)],
+              Attrs1),
+    put_assoc(1, Attrs1, [attr(type, enemy)],
+              Attrs2),
+    put_assoc(2, Attrs2, [attr(type, proj)],
+              Attrs3),
+    put_assoc(3, Attrs3, [attr(type, static)],
+              EmptyAttrs),
+    ctx_with_frame_objs_input(42, [
+        object(
+            id(0),
+            actions([
+                loop([
+                    wait(3),
+                    spawn(proj, pos(5, 19), [
+                        move_to(5, 0, 20)
                     ])
                 ])
-            ),
-            object(
-                id(1), type(enemy),
-                actions([
-                    move_to(19, 5, 15),
-                    wait(1)
-                ])
-            ),
-            object(
-                id(2), type(proj),
-                actions([move_to(15, 0, 10)])
-            ),
-            object(
-                id(3), type(static),
-                actions([
-                    parallel_all([
-                        wait(5),
-                        spawn(enemy, pos(0, 10), [])
-                    ])
-                ])
-            )
-        ]),
-        attrs(t),
-        status(playing),
-        next_id(4),
-        commands([
-            spawn_request(enemy, pos(0, 0), []),
-            spawn_request(proj, pos(10, 10), [
-                move_to(10, 0, 10)
             ])
+        ),
+        object(
+            id(1),
+            actions([
+                move_to(19, 5, 15),
+                wait(1)
+            ])
+        ),
+        object(
+            id(2),
+            actions([move_to(15, 0, 10)])
+        ),
+        object(
+            id(3),
+            actions([
+                parallel_all([
+                    wait(5),
+                    spawn(enemy, pos(0, 10), [])
+                ])
+            ])
+        )
+    ], [], [], Ctx0),
+    ctx_set_attrs(EmptyAttrs, Ctx0, Ctx1),
+    ctx_set_nextid(4, Ctx1, Ctx2),
+    ctx_set_cmds([
+        spawn_request(enemy, pos(0, 0), []),
+        spawn_request(proj, pos(10, 10), [
+            move_to(10, 0, 10)
         ])
-    )),
+    ], Ctx2, Ctx),
     validate(Ctx, context_schema)
 )).
 
@@ -355,12 +381,15 @@ expect_exception(Goal) :-
 % ----------------------------------------------------------
 
 test("game_state_validation: invalid status fails", (
+    empty_assoc(EmptyActionStore),
     State = state(
         frame(0),
         objects([]),
+        attrs(t),
         status(invalid_status),
         next_id(1),
-        commands([])
+        commands([]),
+        actionstore(EmptyActionStore)
     ),
     expect_exception(
         validate(State, state_schema)
@@ -368,12 +397,15 @@ test("game_state_validation: invalid status fails", (
 )).
 
 test("game_state_validation: non-integer frame fails", (
+    empty_assoc(EmptyActionStore),
     State = state(
         frame(not_an_int),
         objects([]),
+        attrs(t),
         status(playing),
         next_id(1),
-        commands([])
+        commands([]),
+        actionstore(EmptyActionStore)
     ),
     expect_exception(
         validate(State, state_schema)
@@ -405,18 +437,6 @@ test("object_validation: wrong structure (ID not \
 wrapped) throws", (
     Obj = object(
         5,
-        type(static),
-        actions([])
-    ),
-    expect_exception(
-        validate(Obj, object_schema)
-    )
-)).
-
-test("object_validation: invalid object type fails", (
-    Obj = object(
-        id(0),
-        type(invalid_type),
         actions([])
     ),
     expect_exception(
@@ -502,13 +522,15 @@ test("game_state_validation: wrong arity throws", (
 )).
 
 test("game_state_validation: wrong functor throws", (
+    empty_assoc(EmptyActionStore),
     State = not_state(
         frame(0),
         objects([]),
         attrs(t),
         status(playing),
         next_id(1),
-        commands([])
+        commands([]),
+        actionstore(EmptyActionStore)
     ),
     expect_exception(
         validate(State, state_schema)
@@ -517,7 +539,7 @@ test("game_state_validation: wrong functor throws", (
 
 test("object_validation: wrong arity throws", (
     Obj = object(
-        id(0), type(static), attrs([]), actions([])
+        id(0), actions([]), extra_field(123)
     ),
     expect_exception(
         validate(Obj, object_schema)
@@ -527,7 +549,6 @@ test("object_validation: wrong arity throws", (
 test("object_validation: wrong functor throws", (
     Obj = not_object(
         id(0),
-        type(static),
         actions([])
     ),
     expect_exception(

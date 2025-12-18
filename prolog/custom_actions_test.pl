@@ -29,7 +29,6 @@ test("define_action: stores action definition", (
     
     ObjIn = object(
         id(0),
-        type(static),
         actions([
             define_action(
                 zigzag(Amplitude, Times),
@@ -40,7 +39,9 @@ test("define_action: stores action definition", (
             )
         ])
     ),
-    empty_attr_store(EmptyAttrs),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(type, static)],
+              EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
     ctx_set_objs([], Ctx0, Ctx1),
     ctx_set_nextid(1, Ctx1, Ctx),
@@ -92,11 +93,12 @@ test("custom_action: zigzag expands and executes", (
     
     ObjIn = object(
         id(0),
-        type(static),
         actions([zigzag(30, 2)])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(0, EmptyAttrs0, [attr(x, 100), attr(y, 100)],
+    put_assoc(0, EmptyAttrs0,
+              [attr(type, static),
+               attr(x, 100), attr(y, 100)],
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     ctx_set_objs([], Ctx0, Ctx1),
@@ -141,7 +143,6 @@ test("custom_action: define and use in same action list", (
     
     ObjIn = object(
         id(0),
-        type(static),
         actions([
             % Define zigzag
             define_action(
@@ -203,7 +204,6 @@ test("custom_action: shoot_burst defines and executes", (
     
     ObjIn = object(
         id(0),
-        type(static),
         actions([
             define_action(
                 shoot_burst(Count),
@@ -266,7 +266,6 @@ test("custom_action: multiple definitions work", (
     
     ObjIn = object(
         id(0),
-        type(static),
         actions([
             % frame 1
             define_action(
@@ -355,11 +354,11 @@ substituted", (
     
     ObjIn = object(
         id(0),
-        type(static),
         actions([move_pattern(10, 10, 20, 20, 5)])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(0, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(0, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
     ctx_set_objs([], Ctx0, Ctx1),

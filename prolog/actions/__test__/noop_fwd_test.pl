@@ -22,10 +22,11 @@ test("noop: removes self from action queue", (
     % Arrange
     % ------------------------------------------------------
     ObjIn = object(
-        id(0), type(static),
+        id(0),
         actions([noop, wait(1)])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
@@ -45,7 +46,7 @@ test("noop: removes self from action queue", (
     (ActionStatus = completed
     ; err_write("ActionStatus != completed")),
     ObjOut = object(
-        id(0), type(static),
+        id(0),
         actions([wait(1)])
     ),
     (Commands = [] ; err_write("Commands != []")),

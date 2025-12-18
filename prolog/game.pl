@@ -36,29 +36,17 @@ main :-
           % Create root object that loads the game
           empty_assoc(AttrStore0),
           put_assoc(0, AttrStore0,
-                    [attr(x, 0), attr(y, 0)],
+                    [attr(type, static),
+                     attr(x, 0), attr(y, 0)],
                     AttrStore1),
-          
-          InitialContext = ctx(
-              state(
-                  frame(0),
-                  objects([
-                      object(
-                          id(0),
-                          type(static),
-                          actions([load(GameFile)])
-                      )
-                  ]),
-                  attrs(AttrStore1),
-                  status(playing),
-                  next_id(1),
-                  commands([])
-              ),
-              input(
-                  events([]),  % No events at frame 0
-                  held([])     % No keys held initially
+          ctx_with_objs_input([
+              object(
+                  id(0),
+                  actions([load(GameFile)])
               )
-          ),
+          ], [], [], InitialContext0),
+          ctx_set_attrs(AttrStore1, InitialContext0,
+                        InitialContext),
           
           game_loop(
             ctx_in(InitialContext), 

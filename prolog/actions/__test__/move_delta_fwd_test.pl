@@ -23,11 +23,12 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_delta(1, 5, -3)])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 10), attr(y, 20)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static),
+               attr(x, 10), attr(y, 20)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -48,9 +49,8 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     expect(ObjOut = object(
         id(1),
-        type(static),
         actions([])
-    ), 'ObjOut != object(id(1), type(static), actions(...'),
+    ), 'ObjOut != object(id(1), actions(...'),
     expect(X = 15, 'X != 15'),
     expect(Y = 17, 'Y != 17'),
     expect(Commands = [], 'Commands != []')
@@ -62,11 +62,11 @@ test("move_delta: multiple frames continues", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_delta(3, 10, 5)])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 0), attr(y, 0)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -100,7 +100,6 @@ test("move_delta: negative deltas work", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_delta(2, -10, -5)])
     ),
     empty_attr_store(EmptyAttrs0),
@@ -138,7 +137,6 @@ test("move_delta: preserves other attributes", (
     % ------------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_delta(1, 5, -3)])
     ),
     empty_attr_store(EmptyAttrs0),
@@ -167,7 +165,6 @@ test("move_delta: preserves other attributes", (
     % ------------------------------------------------------
     ObjOut = object(
         id(1),
-        type(static),
         actions([])
     ),
     (X = 15 ; err_write("X != 15")),

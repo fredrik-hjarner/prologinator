@@ -62,6 +62,8 @@
 #include "../prolog/actions/parallel_race.pl"
 
 % 7. Core Engine Components
+#include "../prolog/tick_action_stream.pl"
+#include "../prolog/tick_action_streams.pl"
 #include "../prolog/tick_object.pl"
 #include "../prolog/collisions.pl"
 #include "../prolog/input_helpers.pl"

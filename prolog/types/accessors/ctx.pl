@@ -41,15 +41,15 @@
 
 % getter ctx_frame/3 for dcg use
 ctx_frame(F, Ctx, Ctx) :-
-    Ctx = ctx(state(frame(F), _, _, _, _, _), _).
+    Ctx = ctx(state(frame(F), _, _, _, _, _, _), _).
 
 % getter ctx_objs/3 for dcg use
 ctx_objs(Objects, Ctx, Ctx) :-
-    Ctx = ctx(state(_, objects(Objects), _, _, _, _), _).
+    Ctx = ctx(state(_, objects(Objects), _, _, _, _, _), _).
 
 % getter ctx_attrs/3 for dcg use
 ctx_attrs(Attrs, Ctx, Ctx) :-
-    Ctx = ctx(state(_, _, attrs(Attrs), _, _, _), _).
+    Ctx = ctx(state(_, _, attrs(Attrs), _, _, _, _), _).
 
 % getter ctx_state/3 for dcg use
 ctx_state(State, Ctx, Ctx) :-
@@ -57,15 +57,21 @@ ctx_state(State, Ctx, Ctx) :-
 
 % getter ctx_cmds/3 for dcg use
 ctx_cmds(Commands, Ctx, Ctx) :-
-    Ctx = ctx(state(_, _, _, _, _, commands(Commands)), _).
+    Ctx = ctx(state(_, _, _, _, _,
+                    commands(Commands), _), _).
 
 % getter ctx_status/3 for dcg use
 ctx_status(Status, Ctx, Ctx) :-
-    Ctx = ctx(state(_, _, _, status(Status), _, _), _).
+    Ctx = ctx(state(_, _, _, status(Status), _, _, _), _).
 
 % getter ctx_nextid/3 for dcg use
 ctx_nextid(NID, Ctx, Ctx) :-
-    Ctx = ctx(state(_, _, _, _, next_id(NID), _), _).
+    Ctx = ctx(state(_, _, _, _, next_id(NID), _, _), _).
+
+% getter ctx_actionstore/3 for dcg use
+ctx_actionstore(ActionStore, Ctx, Ctx) :-
+    Ctx = ctx(state(_, _, _, _, _, _,
+                    actionstore(ActionStore)), _).
 
 % getter ctx_input/3 for dcg use
 ctx_input(Input, Ctx, Ctx) :-
@@ -118,27 +124,29 @@ ctx_objs_nextid_cmds(Objs, NextID, Cmds) -->
 ctx_set_frame(
     NewFrame,
     ctx(state(_, Objects, Attrs, Status, NextID,
-              Commands), Input),
+              Commands, ActionStore), Input),
     ctx(state(frame(NewFrame), Objects, Attrs, Status,
-              NextID, Commands), Input)
+              NextID, Commands, ActionStore), Input)
 ).
 
 % Set objects in context
 ctx_set_objs(
     NewObjects,
-    ctx(state(F, _, Attrs, Status, NextID, Commands),
+    ctx(state(F, _, Attrs, Status, NextID, Commands,
+              ActionStore),
         Input),
     ctx(state(F, objects(NewObjects), Attrs, Status,
-              NextID, Commands), Input)
+              NextID, Commands, ActionStore), Input)
 ).
 
 % Set attributes in context
 ctx_set_attrs(
     NewAttrs,
-    ctx(state(F, Objects, _, Status, NextID, Commands),
+    ctx(state(F, Objects, _, Status, NextID, Commands,
+              ActionStore),
         Input),
     ctx(state(F, Objects, attrs(NewAttrs), Status,
-              NextID, Commands), Input)
+              NextID, Commands, ActionStore), Input)
 ).
 
 % Set state in context
@@ -151,27 +159,40 @@ ctx_set_state(
 % Set commands in context
 ctx_set_cmds(
     NewCommands,
-    ctx(state(F, Objects, Attrs, Status, NextID, _),
+    ctx(state(F, Objects, Attrs, Status, NextID, _,
+              ActionStore),
         Input),
     ctx(state(F, Objects, Attrs, Status, NextID,
-              commands(NewCommands)), Input)
+              commands(NewCommands), ActionStore), Input)
 ).
 
 % Set status in context
 ctx_set_status(
     NewStatus,
-    ctx(state(F, Objects, Attrs, _, NextID, Commands),
+    ctx(state(F, Objects, Attrs, _, NextID, Commands,
+              ActionStore),
         Input),
     ctx(state(F, Objects, Attrs, status(NewStatus),
-              NextID, Commands), Input)
+              NextID, Commands, ActionStore), Input)
 ).
 
 % Set next_id in context
 ctx_set_nextid(
     NewNID,
-    ctx(state(F, Objs, Attrs, Status, _, Cmds), Input),
+    ctx(state(F, Objs, Attrs, Status, _, Cmds,
+              ActionStore), Input),
     ctx(state(F, Objs, Attrs, Status, next_id(NewNID),
-              Cmds), Input)
+              Cmds, ActionStore), Input)
+).
+
+% Set actionstore in context
+ctx_set_actionstore(
+    NewActionStore,
+    ctx(state(F, Objects, Attrs, Status, NextID,
+              Commands, _),
+        Input),
+    ctx(state(F, Objects, Attrs, Status, NextID,
+              Commands, actionstore(NewActionStore)), Input)
 ).
 
 % Set input in context

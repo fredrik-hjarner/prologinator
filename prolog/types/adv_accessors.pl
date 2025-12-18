@@ -70,3 +70,20 @@ set_attr_in_store_helper(AttrStoreIn, ObjectID, Key,
                   AttrStoreOut)
     ).
 
+% ==========================================================
+% Object Type Accessors
+% ==========================================================
+
+% Extract type from object (reads from attributes via
+%   context)
+% DCG version for use with -->
+obj_type(Obj, Type) -->
+    {obj_id(Obj, ID)},
+    ctx_attr_val(ID/type, Type).
+
+% Extract ID and type from object (requires context)
+% DCG version for use with -->
+obj_id_type(Obj, ID, Type) -->
+    {obj_id(Obj, ID)},
+    ctx_attr_val(ID/type, Type).
+

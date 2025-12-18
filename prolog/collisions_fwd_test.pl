@@ -18,21 +18,23 @@
 test("collisions: no collisions when objects are at \
 different positions", (
     empty_attr_store(EmptyAttrs0),
-    put_assoc(0, EmptyAttrs0, [attr(x, 5), attr(y, 5)],
+    put_assoc(0, EmptyAttrs0,
+              [attr(type, enemy), attr(x, 5), attr(y, 5)],
               Attrs1),
-    put_assoc(1, Attrs1, [attr(x, 10), attr(y, 10)],
+    put_assoc(1, Attrs1,
+              [attr(type, proj), attr(x, 10), attr(y, 10)],
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     ctx_set_objs([
-        object(id(0), type(enemy), actions([])),
-        object(id(1), type(proj), actions([]))
+        object(id(0), actions([])),
+        object(id(1), actions([]))
     ], Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
     detect_collisions(CtxIn, CtxOut),
     ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = [
-        object(id(0), type(enemy), actions([])),
-        object(id(1), type(proj), actions([]))
+        object(id(0), actions([])),
+        object(id(1), actions([]))
     ]  % No objects removed
 )).
 
@@ -43,14 +45,16 @@ different positions", (
 test("collisions: enemy and projectile at same position \
 get collision_id attributes", (
     empty_attr_store(EmptyAttrs0),
-    put_assoc(0, EmptyAttrs0, [attr(x, 10), attr(y, 10)],
+    put_assoc(0, EmptyAttrs0,
+              [attr(type, enemy), attr(x, 10), attr(y, 10)],
               Attrs1),
-    put_assoc(1, Attrs1, [attr(x, 10), attr(y, 10)],
+    put_assoc(1, Attrs1,
+              [attr(type, proj), attr(x, 10), attr(y, 10)],
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     Objects = [
-        object(id(0), type(enemy), actions([])),
-        object(id(1), type(proj), actions([]))
+        object(id(0), actions([])),
+        object(id(1), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
@@ -58,8 +62,8 @@ get collision_id attributes", (
     % Objects remain
     ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = [
-        object(id(0), type(enemy), actions([])),
-        object(id(1), type(proj), actions([]))
+        object(id(0), actions([])),
+        object(id(1), actions([]))
     ],
     % But collision_id attributes are set
     ctx_attr_val(0/collision_id, 1, CtxOut, CtxOut),
@@ -69,17 +73,20 @@ get collision_id attributes", (
 test("collisions: enemy and projectile collision sets \
 collision_id only on colliding objects", (
     empty_attr_store(EmptyAttrs0),
-    put_assoc(0, EmptyAttrs0, [attr(x, 10), attr(y, 10)],
+    put_assoc(0, EmptyAttrs0,
+              [attr(type, enemy), attr(x, 10), attr(y, 10)],
               Attrs1),
-    put_assoc(1, Attrs1, [attr(x, 10), attr(y, 10)],
+    put_assoc(1, Attrs1,
+              [attr(type, proj), attr(x, 10), attr(y, 10)],
               Attrs2),
-    put_assoc(2, Attrs2, [attr(x, 5), attr(y, 5)],
+    put_assoc(2, Attrs2,
+              [attr(type, enemy), attr(x, 5), attr(y, 5)],
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     Objects = [
-        object(id(0), type(enemy), actions([])),
-        object(id(1), type(proj), actions([])),
-        object(id(2), type(enemy), actions([]))
+        object(id(0), actions([])),
+        object(id(1), actions([])),
+        object(id(2), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(3, Ctx1, CtxIn),
@@ -87,9 +94,9 @@ collision_id only on colliding objects", (
     % All objects remain
     ctx_objs(NewObjects, CtxOut, CtxOut),
     NewObjects = [
-        object(id(0), type(enemy), actions([])),
-        object(id(1), type(proj), actions([])),
-        object(id(2), type(enemy), actions([]))
+        object(id(0), actions([])),
+        object(id(1), actions([])),
+        object(id(2), actions([]))
     ],
     % Collision IDs set only for colliding objects (0 and 1)
     ctx_attr_val(0/collision_id, 1, CtxOut, CtxOut),
@@ -106,14 +113,16 @@ collision_id only on colliding objects", (
 test("collisions: enemy and enemy at same position get \
 collision_id", (
     empty_attr_store(EmptyAttrs0),
-    put_assoc(0, EmptyAttrs0, [attr(x, 10), attr(y, 10)],
+    put_assoc(0, EmptyAttrs0,
+              [attr(type, enemy), attr(x, 10), attr(y, 10)],
               Attrs1),
-    put_assoc(1, Attrs1, [attr(x, 10), attr(y, 10)],
+    put_assoc(1, Attrs1,
+              [attr(type, enemy), attr(x, 10), attr(y, 10)],
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     Objects = [
-        object(id(0), type(enemy), actions([])),
-        object(id(1), type(enemy), actions([]))
+        object(id(0), actions([])),
+        object(id(1), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
@@ -129,14 +138,16 @@ collision_id", (
 test("collisions: projectile and projectile at same \
 position get collision_id", (
     empty_attr_store(EmptyAttrs0),
-    put_assoc(0, EmptyAttrs0, [attr(x, 10), attr(y, 10)],
+    put_assoc(0, EmptyAttrs0,
+              [attr(type, proj), attr(x, 10), attr(y, 10)],
               Attrs1),
-    put_assoc(1, Attrs1, [attr(x, 10), attr(y, 10)],
+    put_assoc(1, Attrs1,
+              [attr(type, proj), attr(x, 10), attr(y, 10)],
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     Objects = [
-        object(id(0), type(proj), actions([])),
-        object(id(1), type(proj), actions([]))
+        object(id(0), actions([])),
+        object(id(1), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
@@ -155,11 +166,15 @@ position get collision_id", (
 
 test("collisions: objects without x/y attributes are \
 ignored", (
-    empty_attr_store(EmptyAttrs),
+    empty_attr_store(EmptyAttrs0),
+    put_assoc(0, EmptyAttrs0, [attr(type, enemy)],
+              Attrs1),
+    put_assoc(1, Attrs1, [attr(type, proj)],
+              EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
     Objects = [
-        object(id(0), type(enemy), actions([])),
-        object(id(1), type(proj), actions([]))
+        object(id(0), actions([])),
+        object(id(1), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(2, Ctx1, CtxIn),
@@ -172,11 +187,12 @@ ignored", (
 test("collisions: object with only x attribute is \
 ignored", (
     empty_attr_store(EmptyAttrs0),
-    put_assoc(0, EmptyAttrs0, [attr(x, 10)],
+    put_assoc(0, EmptyAttrs0,
+              [attr(type, enemy), attr(x, 10)],
               Attrs),
     ctx_with_attrs(Attrs, Ctx0),
     Objects = [
-        object(id(0), type(enemy), actions([]))
+        object(id(0), actions([]))
     ],
     ctx_set_objs(Objects, Ctx0, Ctx1),
     ctx_set_nextid(1, Ctx1, CtxIn),

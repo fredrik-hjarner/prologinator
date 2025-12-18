@@ -19,14 +19,13 @@ test("value_resolution: move_to with attr() references", (
     % Object moves to position stored in its attributes
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
-              [attr(x, 0), attr(y, 0),
+              [attr(type, static), attr(x, 0), attr(y, 0),
                attr(target_x, 100),
                attr(target_y, 200)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(attr(target_x),
                          attr(target_y), 5)])
     ),
@@ -49,13 +48,12 @@ test("value_resolution: set_attr with attr() source", (
     % Copy one attribute to another
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
-              [attr(x, 50), attr(y, 75),
+              [attr(type, static), attr(x, 50), attr(y, 75),
                attr(source_x, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([set_attr(source_x, attr(x))])
     ),
     execute_action(
@@ -74,7 +72,7 @@ test("value_resolution: path syntax parent_id/target_y", (
     % Object references another object's attribute via path
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
-              [attr(x, 0), attr(y, 0),
+              [attr(type, static), attr(x, 0), attr(y, 0),
                attr(parent_id, 2)],
               Attrs1),
     put_assoc(2, Attrs1,
@@ -84,7 +82,6 @@ test("value_resolution: path syntax parent_id/target_y", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([set_attr(my_target_y,
                           attr(parent_id/target_y))])
     ),
@@ -105,7 +102,7 @@ test("value_resolution: multi-hop path a/b/c", (
     % Navigate through multiple object IDs
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
-              [attr(x, 0), attr(y, 0),
+              [attr(type, static), attr(x, 0), attr(y, 0),
                attr(first_id, 2)],
               Attrs1),
     put_assoc(2, Attrs1,
@@ -119,7 +116,6 @@ test("value_resolution: multi-hop path a/b/c", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([set_attr(result,
                           attr(first_id/second_id/
                                 final_value))        ])
@@ -142,14 +138,14 @@ test("value_resolution: spawn at attr() position", (
     % Spawn object at position stored in attributes
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
-              [attr(x, 50), attr(y, 100),
+              [attr(type, static),
+               attr(x, 50), attr(y, 100),
                attr(spawn_x, 200),
                attr(spawn_y, 300)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([spawn(enemy, attr(spawn_x),
                        attr(spawn_y), [])        ])
     ),
@@ -164,7 +160,8 @@ test("value_resolution: spawn at attr() position", (
     % Should spawn enemy at (200, 300) - spawn immediately
     % creates object, so check it exists in context
     ctx_objs(Objects, CtxNew, CtxNew),
-    member(object(id(_ID), type(enemy), _), Objects),
+    member(object(id(_ID), _), Objects),
+    ctx_attr_val(_ID/type, enemy, CtxNew, CtxNew),
     ctx_attr_val(_ID/x, 200, CtxNew, CtxNew),
     ctx_attr_val(_ID/y, 300, CtxNew, CtxNew)
 )).
@@ -173,14 +170,13 @@ test("value_resolution: mixed plain and attr() values", (
     % Mix plain values with attribute references
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
-              [attr(x, 0), attr(y, 0),
+              [attr(type, static), attr(x, 0), attr(y, 0),
                attr(target_x, 100),
                attr(speed, 5)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(attr(target_x), 200,
                          attr(speed))        ])
     ),
@@ -209,12 +205,11 @@ test("value_resolution: backward compatible plain values", (
     % Plain values still work without attr() wrapper
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
-              [attr(x, 0), attr(y, 0)],
+              [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     ObjIn = object(
         id(1),
-        type(static),
         actions([move_to(100, 200, 5)        ])
     ),
     execute_action(

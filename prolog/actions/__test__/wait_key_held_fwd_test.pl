@@ -18,22 +18,11 @@ test("wait_key_held: completes when key is held", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_key_held(39), noop])
     ),
     % Create context with key 39 held
-    Ctx = ctx(
-        state(
-            frame(0),
-            objects([]),
-            attrs(EmptyAttrs),
-            status(playing),
-            next_id(1),
-            commands([])
-        ),
-        input(events([]), held([39]))
-    ),
-    empty_attr_store(EmptyAttrs),
+    ctx_with_inputevents_inputheld([], [39], Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
@@ -59,11 +48,11 @@ test("wait_key_held: yields when key not held", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_key_held(39), noop])
     ),
     % Create context with no keys held
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
@@ -89,22 +78,11 @@ test("wait_key_held: waits for different key", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_key_held(37)])
     ),
     % Create context with key 39 held (not 37)
-    Ctx = ctx(
-        state(
-            frame(0),
-            objects([]),
-            attrs(EmptyAttrs),
-            status(playing),
-            next_id(1),
-            commands([])
-        ),
-        input(events([]), held([39]))
-    ),
-    empty_attr_store(EmptyAttrs),
+    ctx_with_inputevents_inputheld([], [39], Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
@@ -130,22 +108,11 @@ test("wait_key_held: multiple keys held", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([wait_key_held(37)])
     ),
     % Create context with multiple keys held
-    Ctx = ctx(
-        state(
-            frame(0),
-            objects([]),
-            attrs(EmptyAttrs),
-            status(playing),
-            next_id(1),
-            commands([])
-        ),
-        input(events([]), held([37, 39, 65]))
-    ),
-    empty_attr_store(EmptyAttrs),
+    ctx_with_inputevents_inputheld([], [37, 39, 65], Ctx0),
+    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
@@ -171,27 +138,17 @@ test("wait_key_held: in loop pattern", (
     % --------------------------------------------------
     ObjIn = object(
         id(1),
-        type(static),
         actions([
             loop([wait_key_held(39), set_attr(x, 10)])
         ])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(
-        1, EmptyAttrs0, [attr(x, 0)], EmptyAttrs
+        1, EmptyAttrs0,
+        [attr(type, static), attr(x, 0)], EmptyAttrs
     ),
     % Context without key held
-    Ctx = ctx(
-        state(
-            frame(0),
-            objects([]),
-            attrs(EmptyAttrs),
-            status(playing),
-            next_id(1),
-            commands([])
-        ),
-        input(events([]), held([]))
-    ),
+    ctx_with_attrs(EmptyAttrs, Ctx),
     % --------------------------------------------------
     % Act
     % --------------------------------------------------

@@ -59,7 +59,8 @@ state_constraint(
       attrs(_Attrs),
       status(Status),
       next_id(NextID),
-      commands(Commands)
+      commands(Commands),
+      actionstore(_ActionStore)
   )
 ) :-
     Frame #>= 0,
@@ -100,13 +101,11 @@ game_status_constraint(lost).
 object_constraint(
   object(
       id(ID),
-      type(Type),
       actions(Actions)
   )
 ) :-
     ID #>= 0,
     ID #=< 1000,
-    object_type_constraint(Type),
     bounded_list_of(action_constraint, Actions, 100).
 
 % ==========================================================

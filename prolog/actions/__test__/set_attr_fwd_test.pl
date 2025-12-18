@@ -21,11 +21,12 @@ test("set_attr: set new attribute", (
     % Arrange
     % ------------------------------------------------------
     ObjIn = object(
-        id(1), type(enemy),
+        id(1),
         actions([set_attr(hp, 100)])
     ),
     empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 5), attr(y, 10)],
+    put_assoc(1, EmptyAttrs0,
+              [attr(type, enemy), attr(x, 5), attr(y, 10)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -46,7 +47,7 @@ test("set_attr: set new attribute", (
     % Assert
     % ------------------------------------------------------
     ObjOut = object(
-        id(1), type(enemy),
+        id(1),
         actions([])
     ),
     (HP = 100 ; err_write("HP != 100")),
@@ -60,12 +61,13 @@ test("set_attr: replace existing attribute", (
     % Arrange
     % ------------------------------------------------------
     ObjIn = object(
-        id(1), type(enemy),
+        id(1),
         actions([set_attr(hp, 50)])
     ),
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
-              [attr(hp, 100), attr(x, 5), attr(y, 10)],
+              [attr(type, enemy), attr(hp, 100), attr(x, 5),
+               attr(y, 10)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     % ------------------------------------------------------
@@ -85,7 +87,7 @@ test("set_attr: replace existing attribute", (
     % Assert
     % ------------------------------------------------------
     ObjOut = object(
-        id(1), type(enemy),
+        id(1),
         actions([])
     ),
     (HP = 50 ; err_write("HP != 50")),
@@ -99,14 +101,15 @@ duplicates", (
     % Arrange
     % ------------------------------------------------------
     ObjIn = object(
-        id(1), type(enemy),
+        id(1),
         actions([
             set_attr(hp, 100),
             set_attr(hp, 75),
             set_attr(hp, 50)
         ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(1/type, enemy, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------

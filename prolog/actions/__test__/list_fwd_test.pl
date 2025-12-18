@@ -20,13 +20,14 @@
 test("list: executes actions and yields when child \
 yields", (
     ObjIn = object(
-        id(0), type(static),
+        id(0),
         actions([
             list([wait(1), move_to(5, 5, 2)]),
             wait(3)
         ])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
         action(list([wait(1), move_to(5, 5, 2)])),
         obj_old(ObjIn),
@@ -51,10 +52,11 @@ yields", (
 
 test("list: empty list removes itself", (
     ObjIn = object(
-        id(0), type(static),
+        id(0),
         actions([list([]), wait(1)])
     ),
-    empty_ctx(Ctx),
+    empty_ctx(Ctx0),
+    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
         action(list([])),
         obj_old(ObjIn),
@@ -63,7 +65,7 @@ test("list: empty list removes itself", (
         _
     ),
     ObjOut = object(
-        id(0), type(static),
+        id(0),
         actions([wait(1)])
     )
 )).

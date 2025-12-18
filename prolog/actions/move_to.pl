@@ -4,12 +4,10 @@ execute_action_impl(
     action(move_to(TargetX, TargetY, Frames)),
     obj_old(object(
         id(ID),
-        type(Type),
         actions([_|Rest])
     )),
     result(Status, object(
         id(ID),
-        type(Type),
         actions(NewActions)
     ))
 ) -->

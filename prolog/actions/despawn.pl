@@ -1,9 +1,9 @@
 % despawn action implementation
 
-
+% TODO: Should send up a despawn command.
 execute_action_impl(
     action(despawn),
-    obj_old(object(id(ID), _, _)),
+    obj_old(object(id(ID), _)),
     result(despawned, _)
 ) -->
     execute_despawn(ID).

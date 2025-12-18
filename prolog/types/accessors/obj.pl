@@ -28,21 +28,15 @@
 % ==========================================================
 
 % Extract ID from object
-obj_id(object(id(ID), _, _), ID).
+obj_id(object(id(ID), _), ID).
 
 % Extract actions from object
-obj_acns(object(_, _, actions(Actions)), Actions).
-
-% Extract type from object
-obj_type(object(_, type(Type), _), Type).
-
-% Extract ID and type from object
-obj_id_type(object(id(ID), type(Type), _), ID, Type).
+obj_acns(object(_, actions(Actions)), Actions).
 
 % Set actions in object
 obj_acns_obj(
-    object(id(ID), type(Type), _),
+    object(id(ID), _),
     NewActions,
-    object(id(ID), type(Type), actions(NewActions))
+    object(id(ID), actions(NewActions))
 ).
 
