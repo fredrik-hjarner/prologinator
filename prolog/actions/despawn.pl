@@ -1,10 +1,10 @@
 % despawn action implementation
 
-% TODO: Should send up a despawn command.
 execute_action_impl(
     action(despawn),
-    obj_old(object(id(ID), _)),
-    result(despawned, _)
+    actions_old(_Actions),
+    obj_id(ID),
+    result(despawned, actions_new([]))
 ) -->
     execute_despawn(ID).
 
@@ -22,4 +22,5 @@ execute_despawn(ID) -->
         )
     },
     ctx_set_attrs(NewAttrStore).
+
 

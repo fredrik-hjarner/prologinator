@@ -1,6 +1,5 @@
 % wait_key_up action implementation
 
-
 % wait_key_up(+KeyCode)
 % Mode: wait_key_up(+KeyCode)
 % Description: Waits until specified key is released
@@ -9,32 +8,24 @@
 
 execute_action_impl(
     action(wait_key_up(KeyCode)),
-    obj_old(ObjIn),
-    result(Status, ObjOut)
+    actions_old([_|Rest]),
+    obj_id(_ID),
+    result(Status, actions_new(ActionsOut))
 ) -->
-    execute_wait_key_up(KeyCode, ObjIn, Status, ObjOut).
+    execute_wait_key_up(KeyCode, Rest, Status, ActionsOut).
 
 % ==========================================================
 % execute_wait_key_up/6
 % ==========================================================
-execute_wait_key_up(KeyCode, ObjIn, Status, ObjOut) -->
-    {obj_acns(ObjIn, [_|Rest])},
+execute_wait_key_up(KeyCode, Rest, Status, ActionsOut) -->
     % Check if key released THIS frame
     ( key_up(KeyCode) ->
         % Key released: action complete
-        {
-            obj_acns_obj(ObjIn, Rest, ObjOut),
-            Status = completed
-        }
+        {ActionsOut = Rest, Status = completed}
     ;
         % Key still pressed: keep waiting
-        {
-            obj_acns_obj(
-                ObjIn,
-                [wait_key_up(KeyCode)|Rest],
-                ObjOut
-            ),
-            Status = yielded
-        }
+        {ActionsOut = [wait_key_up(KeyCode)|Rest],
+         Status = yielded}
     ).
+
 

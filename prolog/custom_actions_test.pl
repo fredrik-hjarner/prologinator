@@ -48,6 +48,8 @@ test("define_action: stores action definition", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(define_action(
             zigzag(Amplitude, Times),
@@ -56,11 +58,13 @@ test("define_action: stores action definition", (
                 move_delta(-Amplitude, 0, 10)
             ])
         )),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -106,13 +110,17 @@ test("custom_action: zigzag expands and executes", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(zigzag(30, 2)),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -366,13 +374,17 @@ substituted", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_pattern(10, 10, 20, 20, 5)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------

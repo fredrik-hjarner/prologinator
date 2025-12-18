@@ -38,9 +38,11 @@ tick_objects_loop(LastID) -->
     ( find_next_object(LastID, TargetObj) ->
         % Found an object to tick
         {obj_id(TargetObj, TargetID)},
+        {obj_acns(TargetObj, ActionsIn)},
         tick_object(
-            obj_old(TargetObj),
-            result(Status, ObjResult)
+            actions_old(ActionsIn),
+            obj_id(TargetID),
+            result(Status, actions_new(ActionsOut))
         ),
         % Update the context with the result of this
         % specific object based on status
@@ -49,6 +51,12 @@ tick_objects_loop(LastID) -->
             update_object_in_context(TargetID, [])
         ;
             % Keep object (yielded or completed)
+            % Reconstruct object with new actions
+            {obj_acns_obj(
+                TargetObj,
+                ActionsOut,
+                ObjResult
+            )},
             update_object_in_context(TargetID, [ObjResult])
         ),
         % Recurse using the current TargetID as the new

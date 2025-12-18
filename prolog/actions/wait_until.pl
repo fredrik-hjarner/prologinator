@@ -10,29 +10,24 @@
 
 execute_action_impl(
     action(wait_until(Path)),
-    obj_old(ObjIn),
-    result(Status, ObjOut)
+    actions_old([_|Rest]),
+    obj_id(ID),
+    result(Status, actions_new(ActionsOut))
 ) -->
-    execute_wait_until(Path, ObjIn, Status, ObjOut).
+    execute_wait_until(ID, Path, Rest, Status, ActionsOut).
 
 % ==========================================================
 % execute_wait_until/6
 % ==========================================================
-execute_wait_until(Path, ObjIn, Status, ObjOut) -->
-    {obj_id(ObjIn, MyID)},
-    {obj_acns(ObjIn, [_|Rest])},
+execute_wait_until(ID, Path, Rest, Status, ActionsOut) -->
     % Try to resolve path (fails if path doesn't exist)
-    ( resolve_path(MyID, Path, _Val) ->
+    ( resolve_path(ID, Path, _Val) ->
         % Path exists - proceed
-        {obj_acns_obj(ObjIn, Rest, ObjOut)},
-        {Status = completed}
+        {ActionsOut = Rest, Status = completed}
     ;
         % Path doesn't exist - wait (keep action in queue)
-        {obj_acns_obj(
-            ObjIn,
-            [wait_until(Path)|Rest],
-            ObjOut
-        )},
-        {Status = yielded}
+        {ActionsOut = [wait_until(Path)|Rest],
+         Status = yielded}
     ).
+
 

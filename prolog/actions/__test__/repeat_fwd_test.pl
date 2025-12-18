@@ -27,13 +27,17 @@ test("repeat: expands actions once and decrements", (
     ),
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(repeat(3, [noop, set_attr(count, 1)])),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % Should expand to: [noop, set_attr(count, 1),
     %   repeat(2, [noop, set_attr(count, 1)]), despawn]
     obj_acns(ObjOut, Actions),
@@ -59,13 +63,17 @@ test("repeat: last repetition doesn't add repeat", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(repeat(1, [noop])),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     obj_acns(ObjOut, Actions),
     ctx_cmds(Commands, CtxNew, CtxNew),
     % ------------------------------------------------------
@@ -97,17 +105,21 @@ test("repeat: multiple actions in repeat list", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(repeat(2, [
             noop,
             set_attr(a, 1),
             set_attr(b, 2)
         ])),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     obj_acns(ObjOut, Actions),
     ctx_cmds(Commands, CtxNew, CtxNew),
     % ------------------------------------------------------

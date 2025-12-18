@@ -35,13 +35,17 @@ remaining", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
     ctx_attr_val(1/y, NewY, CtxNew, CtxNew),
@@ -77,13 +81,17 @@ remaining", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
     ctx_attr_val(1/y, NewY, CtxNew, CtxNew),
@@ -117,13 +125,17 @@ test("move_to: single frame, arrives at target", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
@@ -159,13 +171,17 @@ continues with remaining frames", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
@@ -193,13 +209,17 @@ test("move_to: negative target coordinates", (
               [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
     ctx_attr_val(1/y, NewY, CtxNew, CtxNew),

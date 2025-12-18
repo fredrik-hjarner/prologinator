@@ -29,11 +29,14 @@ test("value_resolution: move_to with attr() references", (
         actions([move_to(attr(target_x),
                          attr(target_y), 5)])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_to(attr(target_x),
                        attr(target_y), 5)),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -56,10 +59,13 @@ test("value_resolution: set_attr with attr() source", (
         id(1),
         actions([set_attr(source_x, attr(x))])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(set_attr(source_x, attr(x))),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -85,11 +91,14 @@ test("value_resolution: path syntax parent_id/target_y", (
         actions([set_attr(my_target_y,
                           attr(parent_id/target_y))])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(set_attr(my_target_y,
                         attr(parent_id/target_y))),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -120,12 +129,15 @@ test("value_resolution: multi-hop path a/b/c", (
                           attr(first_id/second_id/
                                 final_value))        ])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(set_attr(result,
                         attr(first_id/second_id/
                               final_value))),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -149,11 +161,14 @@ test("value_resolution: spawn at attr() position", (
         actions([spawn(enemy, attr(spawn_x),
                        attr(spawn_y), [])        ])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(spawn(enemy, attr(spawn_x),
                      attr(spawn_y), [])),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -180,11 +195,14 @@ test("value_resolution: mixed plain and attr() values", (
         actions([move_to(attr(target_x), 200,
                          attr(speed))        ])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_to(attr(target_x), 200,
                        attr(speed))),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -212,13 +230,17 @@ test("value_resolution: backward compatible plain values", (
         id(1),
         actions([move_to(100, 200, 5)        ])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_to(100, 200, 5)),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, _ObjOut),
     % Should work exactly as before
     ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
     ctx_attr_val(1/y, NewY, CtxNew, CtxNew),

@@ -20,12 +20,16 @@ object", (
     ),
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     tick_object(
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds([], CtxNew, CtxNew),
     Status = completed,
     ObjOut = object(
@@ -42,12 +46,16 @@ after one execution", (
     ),
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     tick_object(
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds([], CtxNew, CtxNew),
     Status = yielded,
     ObjOut = object(
@@ -64,12 +72,16 @@ continues until empty", (
     ),
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     tick_object(
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds([], CtxNew, CtxNew),
     Status = completed,
     ObjOut = object(

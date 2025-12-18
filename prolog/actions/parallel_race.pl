@@ -1,60 +1,44 @@
 execute_action_impl(
     action(parallel_race(Children)),
-    obj_old(ObjIn),
-    result(Status, ObjOut)
+    actions_old([_ParentAction|RestActions]),
+    obj_id(ID),
+    result(Status, actions_new(ActionsOut))
 ) -->
-    execute_parallel_race(
-        Children,
-        ObjIn,
-        result(Status, ObjOut)
-    ).
-
-% ==========================================================
-% Implementation
-% ==========================================================
-
-execute_parallel_race(
-    Children, ObjIn, result(Status, ObjOut)
-) -->
-    {obj_acns(ObjIn, [_ParentAction|RestActions])},
-    % Execute children sequentially
-    % (stop immediately if one finishes).
-    tick_children_race(Children, ObjIn, Result),
+    % Execute children sequentially (stop immediately
+    % if one finishes).
+    tick_children_race(Children, ID, Result),
     {( Result = despawned ->
         Status = despawned,
-        ObjOut = _
-    ; Result = race_won(FinalObj) ->
+        ActionsOut = []
+    ; Result = race_won ->
         % A child finished! The race is won.
         % We discard losers' actions and restore parent
         % actions.
         Status = completed,
-        obj_acns_obj(FinalObj, RestActions, ObjOut)
-    ; Result = ongoing(RemainingChildren, FinalObj) ->
+        ActionsOut = RestActions
+    ; Result = ongoing(RemainingChildren) ->
         % Everyone yielded.
         % We yield and update the parallel_race state.
         Status = yielded,
-        obj_acns_obj(
-            FinalObj,
-            [parallel_race(RemainingChildren)|RestActions],
-            ObjOut
-        )
+        ActionsOut = [parallel_race(
+            RemainingChildren)|RestActions]
     )}.
 
 % ==========================================================
 % Helpers
 % ==========================================================
 
-% tick_children_race(+Children, +ObjIn, -Result, +CtxIn,
-%     -CtxOut)
+% tick_children_race(+Children, +ID, -Result, +CtxIn,
+% -CtxOut)
 % Result is one of:
 %   - despawned
-%   - race_won(FinalObj)       <-- At least one finished
-%   - ongoing(List, FinalObj)  <-- All children yielded
-tick_children_race([], Obj, ongoing([], Obj)) --> [].
+%   - race_won       <-- At least one finished
+%   - ongoing(List)  <-- All children yielded
+tick_children_race([], _ID, ongoing([])) --> [].
 
 tick_children_race(
     [ChildAction|RestChildren],
-    ObjIn,
+    ID,
     Result
 ) -->
     % 1. Normalize child to list
@@ -63,32 +47,31 @@ tick_children_race(
     ;
         ChildList = [ChildAction]
     )},
-    % 2. Prepare temp object
-    {obj_acns_obj(ObjIn, ChildList, TempObj)},
-    % 3. Tick the child
+    % 2. Tick the child
     tick_object(
-        obj_old(TempObj), result(ChildStatus, ObjAfterTick)
+        actions_old(ChildList),
+        obj_id(ID),
+        result(ChildStatus, actions_new(RemainingActions))
     ),
     ( {ChildStatus = despawned} ->
         {Result = despawned}
     ; {ChildStatus = completed} ->
         % WINNER: Stop immediately (Skip fairness).
         % Subsequent children are NOT executed.
-        {Result = race_won(ObjAfterTick)}
+        {Result = race_won}
     ; % ChildStatus = yielded
-        {obj_acns(ObjAfterTick, RemainingActions)},
         % Child yielded, check the next racer
         tick_children_race(
             RestChildren,
-            ObjAfterTick, % Thread state
+            ID,
             RestResult
         ),
         {( RestResult = despawned ->
             Result = despawned
-        ; RestResult = race_won(FinalObj) ->
+        ; RestResult = race_won ->
             % Someone downstream won. Propagate the win.
-            Result = race_won(FinalObj)
-        ; RestResult = ongoing(RestRemaining, FinalObj) ->
+            Result = race_won
+        ; RestResult = ongoing(RestRemaining) ->
             % No one won. Flatten the list
             % (Fix nested list bug).
             append(
@@ -96,6 +79,8 @@ tick_children_race(
                 RestRemaining,
                 AllRemaining
             ),
-            Result = ongoing(AllRemaining, FinalObj)
+            Result = ongoing(AllRemaining)
         )}
     ).
+
+

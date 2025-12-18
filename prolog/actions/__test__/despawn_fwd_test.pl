@@ -39,13 +39,17 @@ actions from executing", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(despawn),
-        obj_old(ObjIn),
-        result(Status, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, _ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_frame(Frame, CtxNew, CtxNew),
     % ------------------------------------------------------
@@ -68,13 +72,17 @@ executing after despawn", (
     ),
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(despawn),
-        obj_old(ObjIn),
-        result(Status, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, _ObjOut),
     % Object must be despawned
     Status = despawned,
     % Despawn hint must be recorded

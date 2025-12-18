@@ -26,13 +26,17 @@ test("wait_key_held: completes when key is held", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_key_held(39)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -56,13 +60,17 @@ test("wait_key_held: yields when key not held", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_key_held(39)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -86,13 +94,17 @@ test("wait_key_held: waits for different key", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_key_held(37)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         _
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -116,13 +128,17 @@ test("wait_key_held: multiple keys held", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_key_held(37)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         _
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -152,12 +168,16 @@ test("wait_key_held: in loop pattern", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     tick_object(
-        obj_old(ObjIn),
-        result(Status1, Obj1),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status1, actions_new(ActionsOut)),
         Ctx,
         Ctx1
     ),
+    obj_acns_obj(ObjIn, ActionsOut, Obj1),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------

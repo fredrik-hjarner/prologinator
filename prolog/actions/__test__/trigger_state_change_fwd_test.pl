@@ -31,13 +31,17 @@ to won", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxOut, CtxOut),
     ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------
@@ -66,13 +70,17 @@ to lost", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxOut, CtxOut),
     ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------
@@ -102,13 +110,17 @@ override lost", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxOut, CtxOut),
     ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------

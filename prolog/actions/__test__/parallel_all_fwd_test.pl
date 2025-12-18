@@ -19,12 +19,18 @@
 tick_n(0, Obj, Obj, Ctx, Ctx).
 tick_n(N, ObjIn, ObjOut, CtxIn, CtxOut) :-
     N > 0,
-    tick_object(
-        obj_old(ObjIn),
-        result(_, Obj1),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
+    phrase(
+        tick_object(
+            actions_old(ActionsIn),
+            obj_id(ID),
+            result(_, actions_new(ActionsOut))
+        ),
         CtxIn,
         Ctx1
     ),
+    obj_acns_obj(ObjIn, ActionsOut, Obj1),
     N1 is N - 1,
     tick_n(N1, Obj1, ObjOut, Ctx1, CtxOut).
 
@@ -62,17 +68,21 @@ attributes.", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(parallel_all([
             set_attr(x, 10),
             set_attr(y, 20),
             set_attr(z, 30)
         ])),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
     ctx_attr_val(1/y, NewY, CtxNew, CtxNew),
     ctx_attr_val(1/z, NewZ, CtxNew, CtxNew),
@@ -111,17 +121,21 @@ test("parallel_all: yields when child yields", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(parallel_all([
             set_attr(x, 10),
             wait(2),  % Yields after 1 frame (becomes wait(1))
             set_attr(y, 20)
         ])),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     expect(ctx_attr_val(1/x, NewX, CtxNew, CtxNew)),
     expect(ctx_attr_val(1/y, NewY, CtxNew, CtxNew)),
     expect(obj_acns(ObjOut, Actions)),
@@ -170,14 +184,17 @@ test("parallel_all: despawns when child despawns", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(parallel_all([
             set_attr(x, 10),
             despawn,  % Despawns immediately
             set_attr(y, 20)
         ])),
-        obj_old(ObjIn),
-        result(Status, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -214,12 +231,16 @@ test("parallel_all: should continue until all complete", (
     % ------------------------------------------------------
     % Act - Frame 0 -> 1
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     tick_object(
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % ------------------------------------------------------
     % Assert - frame 1
     % ------------------------------------------------------
@@ -235,12 +256,16 @@ test("parallel_all: should continue until all complete", (
     % ------------------------------------------------------
     % Act - Frame 1 -> 2
     % ------------------------------------------------------
+    obj_acns(ObjOut, ActionsIn2),
+    obj_id(ObjOut, ID2),
     tick_object(
-        obj_old(ObjOut),
-        result(Status2, Obj2),
+        actions_old(ActionsIn2),
+        obj_id(ID2),
+        result(Status2, actions_new(ActionsOut2)),
         CtxNew,
         Ctx2
     ),
+    obj_acns_obj(ObjOut, ActionsOut2, Obj2),
     % ------------------------------------------------------
     % Assert - frame 2
     % ------------------------------------------------------
@@ -256,12 +281,16 @@ test("parallel_all: should continue until all complete", (
     % ------------------------------------------------------
     % Act - Frame 2 -> 3
     % ------------------------------------------------------
+    obj_acns(Obj2, ActionsIn3),
+    obj_id(Obj2, ID3),
     tick_object(
-        obj_old(Obj2),
-        result(Status3, Obj3),
+        actions_old(ActionsIn3),
+        obj_id(ID3),
+        result(Status3, actions_new(ActionsOut3)),
         Ctx2,
         Ctx3
     ),
+    obj_acns_obj(Obj2, ActionsOut3, Obj3),
     % ------------------------------------------------------
     % Assert - frame 3
     % ------------------------------------------------------

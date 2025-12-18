@@ -1,6 +1,5 @@
 % wait_key_down action implementation
 
-
 % wait_key_down(+KeyCode)
 % Mode: wait_key_down(+KeyCode)
 % Description: Waits until specified key is pressed
@@ -9,32 +8,29 @@
 
 execute_action_impl(
     action(wait_key_down(KeyCode)),
-    obj_old(ObjIn),
-    result(Status, ObjOut)
+    actions_old([_|Rest]),
+    obj_id(_ID),
+    result(Status, actions_new(ActionsOut))
 ) -->
-    execute_wait_key_down(KeyCode, ObjIn, Status, ObjOut).
+    execute_wait_key_down(
+        KeyCode,
+        Rest,
+        Status,
+        ActionsOut
+    ).
 
 % ==========================================================
 % execute_wait_key_down/6
 % ==========================================================
-execute_wait_key_down(KeyCode, ObjIn, Status, ObjOut) -->
-    {obj_acns(ObjIn, [_|Rest])},
+execute_wait_key_down(KeyCode, Rest, Status, ActionsOut) -->
     % Check if key was pressed THIS frame
     ( key_down(KeyCode) ->
         % Key pressed: action complete
-        {
-            obj_acns_obj(ObjIn, Rest, ObjOut),
-            Status = completed
-        }
+        {ActionsOut = Rest, Status = completed}
     ;
         % Key not pressed: keep waiting
-        {
-            obj_acns_obj(
-                ObjIn,
-                [wait_key_down(KeyCode)|Rest],
-                ObjOut
-            ),
-            Status = yielded
-        }
+        {ActionsOut = [wait_key_down(KeyCode)|Rest],
+         Status = yielded}
     ).
+
 

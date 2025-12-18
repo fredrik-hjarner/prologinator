@@ -1,47 +1,33 @@
 % spawn action implementation
 
-
-% IMMEDIATELY spawns the object into the context
 execute_action_impl(
     action(spawn(Type, X, Y, Actions)),
-    obj_old(ObjIn),
-    result(completed, ObjOut)
+    actions_old([_|Rest]),
+    obj_id(_ID),
+    result(completed, actions_new(Rest))
 ) -->
-    execute_spawn(Type, X, Y, Actions, ObjIn, ObjOut).
+    execute_spawn(Type, X, Y, Actions).
 
 % ==========================================================
 % execute_spawn/8
 % ==========================================================
-execute_spawn(
-    Type,
-    X,
-    Y,
-    Actions,
-    ObjIn,
-    ObjOut
-) -->
-    {obj_acns(ObjIn, [_|Rest])},
-    {obj_acns_obj(ObjIn, Rest, ObjOut)},
+execute_spawn(Type, X, Y, Actions) -->
     % 1. Generate ID
-    ctx_nextid(ID),
-    {NextID #= ID + 1},
+    ctx_nextid(NewID),
+    {NextID #= NewID + 1},
     ctx_set_nextid(NextID),
     % 2. Create Object (no attributes - stored separately)
     {NewObj = object(
-        id(ID),
+        id(NewID),
         actions(Actions)
     )},
     % 3. Initialize attributes in store
-    ctx_set_attr_val(ID/type, Type),
-    ctx_set_attr_val(ID/x, X),
-    ctx_set_attr_val(ID/y, Y),
+    ctx_set_attr_val(NewID/type, Type),
+    ctx_set_attr_val(NewID/x, X),
+    ctx_set_attr_val(NewID/y, Y),
     % 4. Append to Context
-    % Since ID is increasing, appending to end keeps the
-    % list sorted.
-    % Note: append/3 is O(N), but for typical game sizes
-    % (<1000 objects) this is acceptable. For larger scales,
-    % consider difference lists or reverse-order storage.
     ctx_objs(CurrentSpawns),
     {append(CurrentSpawns, [NewObj], NewSpawns)},
     ctx_set_objs(NewSpawns).
+
 

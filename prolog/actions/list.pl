@@ -1,47 +1,49 @@
-% Delegate to implementation
+% list action implementation
+
 execute_action_impl(
-    action(list(Actions)),
-    obj_old(ObjIn),
-    result(Status, ObjOut)
+    action(list(ListActions)),
+    actions_old([_ListAction|RestActions]),
+    obj_id(ID),
+    result(Status, actions_new(ActionsOut))
 ) -->
-    execute_list(Actions, ObjIn, Status, ObjOut).
+    execute_list(
+        ListActions,
+        RestActions,
+        ID,
+        Status,
+        ActionsOut
+    ).
 
 % ==========================================================
 % execute_list/6
 % ==========================================================
-execute_list(ListActions, ObjIn, Status, ObjOut) -->
-    % 1. Separate the current list action from the rest of
-    % the queue
-    {obj_acns(ObjIn, [_ListAction|RestActions])},
-    % 2. Create a temporary object context for the inner
-    %    list
-    %    This isolates the list's execution scope
-    {obj_acns_obj(ObjIn, ListActions, TempObj)},
-    % 3. Execute the inner list until it yields, completes,
+execute_list(
+    ListActions,
+    RestActions,
+    ID,
+    Status,
+    ActionsOut
+) -->
+    % Execute the inner list until it yields, completes,
     % or despawns
     tick_object(
-        obj_old(TempObj),
-        result(ListStatus, ObjResult)
+        actions_old(ListActions),
+        obj_id(ID),
+        result(ListStatus, actions_new(RemainingInner))
     ),
-    % 4. Handle the result to determine how to reconstruct
-    % the main object
+    % Handle the result
     ( {ListStatus = despawned} ->
-        {Status = despawned, ObjOut = _}
+        {Status = despawned, ActionsOut = []}
     ; {ListStatus = yielded} ->
         % The inner list paused. Wrap remaining actions back
-        %  in list()
-        % and keep them at the head of the queue.
-        {Status = yielded,
-         obj_acns(ObjResult, RemainingInner),
-         obj_acns_obj(
-            ObjResult,
-            [list(RemainingInner)|RestActions],
-            ObjOut
-        )}
+        % in list() and keep them at the head of the queue.
+        {ActionsOut = [list(RemainingInner)|RestActions],
+         Status = yielded}
     ; % ListStatus = completed
-        % The inner list finished. We are done with this
-        % scope.
-        % Continue with the rest of the original queue.
-        {Status = completed,
-         obj_acns_obj(ObjResult, RestActions, ObjOut)}
+        % The inner list finished. Continue with the rest of
+        % the original queue.
+        {ActionsOut = RestActions,
+         Status = completed}
     ).
+
+

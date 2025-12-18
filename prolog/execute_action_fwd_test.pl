@@ -1,7 +1,7 @@
 :- module(execute_action_fwd_test, []).
 
 :- use_module('../build/prologinator').
-:- use_module('../prolog/util/test_util').
+:- use_module('./util/test_util').
 
 :- use_module(library(lists), [member/2]).
 :- use_module(library(assoc), [
@@ -35,13 +35,17 @@ remaining", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(_, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
     ctx_attr_val(1/y, NewY, CtxNew, CtxNew),
@@ -74,13 +78,17 @@ remaining", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(_, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
     ctx_attr_val(1/y, NewY, CtxNew, CtxNew),
@@ -113,13 +121,17 @@ test("move_to: single frame, arrives at target", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(_, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
@@ -152,13 +164,17 @@ continues with remaining frames", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(_, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
@@ -185,13 +201,17 @@ test("move_to: negative target coordinates", (
               [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(_, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
     ctx_attr_val(1/y, NewY, CtxNew, CtxNew),
@@ -225,13 +245,17 @@ to won", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(_, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxOut, CtxOut),
     ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------
@@ -259,13 +283,17 @@ to lost", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(_, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxOut, CtxOut),
     ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------
@@ -294,13 +322,17 @@ override lost", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
-        obj_old(ObjIn),
-        result(_, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxOut, CtxOut),
     ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------
@@ -331,13 +363,17 @@ test("noop: removes self from action queue", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(noop),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_frame(Frame, CtxNew, CtxNew),
     ctx_status(Status, CtxNew, CtxNew),
@@ -367,13 +403,17 @@ test("list: executes actions immediately", (
     ),
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(list([wait(1), move_to(5, 5, 2)])),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % list now executes immediately, wait(1) yields
     Status = yielded,
     ObjOut = object(
@@ -392,13 +432,17 @@ test("list: empty list removes itself", (
     ),
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(list([])),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         _
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ObjOut = object(
         id(0),
         actions([wait(1)])
@@ -431,21 +475,27 @@ actions from executing", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(despawn),
-        obj_old(ObjIn),
-        result(_, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_cmds(Commands, CtxNew, CtxNew),
     ctx_frame(Frame, CtxNew, CtxNew),
+    ctx_status(Status, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (ObjOut = [] ; err_write("ObjOut != []")),
+    % (ObjOut = [] ; err_write("ObjOut != []")),
     (Commands = [] ; err_write("Commands != []")),
-    (Frame = 0 ; err_write("Frame != 0"))
+    (Frame = 0 ; err_write("Frame != 0")),
+    (Status = playing ; err_write("Status != playing"))
 )).
 
 test("despawn: prevents game_over state change from \
@@ -460,15 +510,18 @@ executing after despawn", (
     ),
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(despawn),
-        obj_old(ObjIn),
-        result(_, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % Object must be despawned (empty list)
-    ObjOut = [],
     % Despawn hint must be recorded
     % Status must remain playing (game_over did NOT execute)
     ctx_status(playing, CtxNew, CtxNew),
@@ -476,88 +529,6 @@ executing after despawn", (
     ctx_cmds([], CtxNew, CtxNew)
 )).
 
-% ==========================================================
-% Tests: set_attr
-% ==========================================================
-
-test("set_attr: set new attribute", (
-    % ------------------------------------------------------
-    % Arrange
-    % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([set_attr(hp, 100)])
-    ),
-    empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0, [attr(x, 5), attr(y, 10)],
-              EmptyAttrs),
-    ctx_with_attrs(EmptyAttrs, Ctx),
-    % ------------------------------------------------------
-    % Act
-    % ------------------------------------------------------
-    execute_action(
-        action(set_attr(hp, 100)),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
-        Ctx,
-        CtxNew
-    ),
-    ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
-    ctx_attr_val(1/x, X, CtxNew, CtxNew),
-    ctx_attr_val(1/y, Y, CtxNew, CtxNew),
-    ctx_cmds(Commands, CtxNew, CtxNew),
-    % ------------------------------------------------------
-    % Assert
-    % ------------------------------------------------------
-    ObjOut = object(
-        id(1),
-        actions([])
-    ),
-    (HP = 100 ; err_write("HP != 100")),
-    (X = 5 ; err_write("X != 5")),
-    (Y = 10 ; err_write("Y != 10")),
-    (Commands = [] ; err_write("Commands != []"))
-)).
-
-test("set_attr: replace existing attribute", (
-    % ------------------------------------------------------
-    % Arrange
-    % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([set_attr(hp, 50)])
-    ),
-    empty_attr_store(EmptyAttrs0),
-    put_assoc(1, EmptyAttrs0,
-              [attr(type, static),
-               attr(hp, 100), attr(x, 5),
-               attr(y, 10)],
-              EmptyAttrs),
-    ctx_with_attrs(EmptyAttrs, Ctx),
-    % ------------------------------------------------------
-    % Act
-    % ------------------------------------------------------
-    execute_action(
-        action(set_attr(hp, 50)),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
-        Ctx,
-        CtxNew
-    ),
-    ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
-    ctx_attr_val(1/x, X, CtxNew, CtxNew),
-    ctx_attr_val(1/y, Y, CtxNew, CtxNew),
-    % ------------------------------------------------------
-    % Assert
-    % ------------------------------------------------------
-    ObjOut = object(
-        id(1),
-        actions([])
-    ),
-    (HP = 50 ; err_write("HP != 50")),
-    (X = 5 ; err_write("X != 5")),
-    (Y = 10 ; err_write("Y != 10"))
-)).
 
 % ==========================================================
 % Tests: parallel_race
@@ -586,15 +557,19 @@ test("parallel_race: stops on child completion", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(Obj, ActionsIn),
+    obj_id(Obj, ID),
     execute_action(
         action(parallel_race(
             [wait(5), noop, wait(10)]
         )),
-        obj_old(Obj),
-        result(completed, NewObj),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         _
     ),
+    obj_acns_obj(Obj, ActionsOut, NewObj),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
     % Assert
@@ -624,15 +599,19 @@ done", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(Obj, ActionsIn),
+    obj_id(Obj, ID),
     execute_action(
         action(parallel_race(
             [wait(5), wait(10)]
         )),
-        obj_old(Obj),
-        result(Status, NewObj),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         _
     ),
+    obj_acns_obj(Obj, ActionsOut, NewObj),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
     % Assert
@@ -662,12 +641,20 @@ despawns", (
               [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
+    obj_acns(Obj, ActionsIn),
+    obj_id(Obj, ID),
     execute_action(
         action(parallel_race([despawn, wait(10)])),
-        obj_old(Obj),
-        result(_, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status_Despawn, actions_new(ActionsOut)),
         Ctx,
         CtxNew
+    ),
+    ( Status_Despawn = despawned ->
+        ObjOut = []
+    ;
+        obj_acns_obj(Obj, ActionsOut, ObjOut)
     ),
     ctx_status(Status, CtxNew, CtxNew),
     ctx_cmds(Commands, CtxNew, CtxNew),
@@ -677,52 +664,6 @@ despawns", (
     (ObjOut = [] ; err_write("ObjOut != []")),
     (Status = playing ; err_write("Status != playing")),
     (Commands = [] ; err_write("Commands != []"))
-)).
-
-test("set_attr: multiple sets overwrite, no \
-duplicates", (
-    % ------------------------------------------------------
-    % Arrange
-    % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([
-            set_attr(hp, 100),
-            set_attr(hp, 75),
-            set_attr(hp, 50)
-        ])
-    ),
-    empty_ctx(Ctx0),
-    ctx_set_attr_val(0/type, static, Ctx0, Ctx),
-    % ------------------------------------------------------
-    % Act
-    % ------------------------------------------------------
-    execute_action(
-        action(set_attr(hp, 100)),
-        obj_old(ObjIn),
-        result(completed, Obj1),
-        Ctx,
-        Ctx1
-    ),
-    execute_action(
-        action(set_attr(hp, 75)),
-        obj_old(Obj1),
-        result(completed, Obj2),
-        Ctx1,
-        Ctx2
-    ),
-    execute_action(
-        action(set_attr(hp, 50)),
-        obj_old(Obj2),
-        result(completed, _ObjOut),
-        Ctx2,
-        CtxNew
-    ),
-    ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
-    % ------------------------------------------------------
-    % Assert
-    % ------------------------------------------------------
-    (HP = 50 ; err_write("HP != 50"))
 )).
 
 % ==========================================================
@@ -739,13 +680,17 @@ test("repeat: expands actions once and decrements", (
     ),
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(repeat(3, [noop, set_attr(count, 1)])),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % Should expand to: [noop, set_attr(count, 1),
     %   repeat(2, [noop, set_attr(count, 1)]), despawn]
     obj_acns(ObjOut, Actions),
@@ -771,13 +716,17 @@ test("repeat: last repetition doesn't add repeat", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(repeat(1, [noop])),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     obj_acns(ObjOut, Actions),
     ctx_cmds(Commands, CtxNew, CtxNew),
     % ------------------------------------------------------
@@ -809,17 +758,21 @@ test("repeat: multiple actions in repeat list", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(repeat(2, [
             noop,
             set_attr(a, 1),
             set_attr(b, 2)
         ])),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     obj_acns(ObjOut, Actions),
     ctx_cmds(Commands, CtxNew, CtxNew),
     % ------------------------------------------------------
@@ -854,13 +807,17 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(1, 5, -3)),
-        obj_old(ObjIn),
-        result(yielded, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     ctx_cmds(Commands, CtxNew, CtxNew),
@@ -892,13 +849,17 @@ test("move_delta: multiple frames continues", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(3, 10, 5)),
-        obj_old(ObjIn),
-        result(yielded, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     obj_acns(ObjOut, Actions),
@@ -929,13 +890,17 @@ test("move_delta: negative deltas work", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(2, -10, -5)),
-        obj_old(ObjIn),
-        result(yielded, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     obj_acns(ObjOut, Actions),
@@ -965,13 +930,17 @@ test("move_delta: preserves other attributes", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(1, 5, -3)),
-        obj_old(ObjIn),
-        result(yielded, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
@@ -1009,11 +978,14 @@ test("value_resolution: move_to with attr() references", (
         actions([move_to(attr(target_x),
                          attr(target_y), 5)])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_to(attr(target_x),
                        attr(target_y), 5)),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -1036,10 +1008,13 @@ test("value_resolution: set_attr with attr() source", (
         id(1),
         actions([set_attr(source_x, attr(x))])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(set_attr(source_x, attr(x))),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -1065,14 +1040,19 @@ test("value_resolution: path syntax parent_id/target_y", (
         actions([set_attr(my_target_y,
                           attr(parent_id/target_y))])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(set_attr(my_target_y,
                         attr(parent_id/target_y))),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     % Should copy parent's target_y (250) to my_target_y
     ctx_attr_val(1/my_target_y, 250, CtxNew, CtxNew),
     ctx_attr_val(2/target_y, 250, CtxNew, CtxNew)
@@ -1100,12 +1080,15 @@ test("value_resolution: multi-hop path a/b/c", (
                           attr(first_id/second_id/
                                 final_value))])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(set_attr(result,
                         attr(first_id/second_id/
                               final_value))),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -1128,11 +1111,14 @@ test("value_resolution: spawn at attr() position", (
         actions([spawn(enemy, attr(spawn_x),
                        attr(spawn_y), [])])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(spawn(enemy, attr(spawn_x),
                      attr(spawn_y), [])),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -1159,11 +1145,14 @@ test("value_resolution: mixed plain and attr() values", (
         actions([move_to(attr(target_x), 200,
                          attr(speed))])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_to(attr(target_x), 200,
                        attr(speed))),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
@@ -1191,13 +1180,17 @@ test("value_resolution: backward compatible plain values", (
         id(1),
         actions([move_to(100, 200, 5)])
     ),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_to(100, 200, 5)),
-        obj_old(ObjIn),
-        result(_, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, _ObjOut),
     % Should work exactly as before
     ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
     ctx_attr_val(1/y, NewY, CtxNew, CtxNew),

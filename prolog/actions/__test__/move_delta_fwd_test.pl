@@ -34,13 +34,17 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(1, 5, -3)),
-        obj_old(ObjIn),
-        result(yielded, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     ctx_cmds(Commands, CtxNew, CtxNew),
@@ -72,13 +76,17 @@ test("move_delta: multiple frames continues", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(3, 10, 5)),
-        obj_old(ObjIn),
-        result(yielded, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     obj_acns(ObjOut, Actions),
@@ -109,13 +117,17 @@ test("move_delta: negative deltas work", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(2, -10, -5)),
-        obj_old(ObjIn),
-        result(yielded, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     obj_acns(ObjOut, Actions),
@@ -148,13 +160,17 @@ test("move_delta: preserves other attributes", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(1, 5, -3)),
-        obj_old(ObjIn),
-        result(yielded, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     ctx_attr_val(1/hp, HP, CtxNew, CtxNew),

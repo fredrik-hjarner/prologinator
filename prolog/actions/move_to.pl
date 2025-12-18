@@ -2,14 +2,9 @@
 
 execute_action_impl(
     action(move_to(TargetX, TargetY, Frames)),
-    obj_old(object(
-        id(ID),
-        actions([_|Rest])
-    )),
-    result(Status, object(
-        id(ID),
-        actions(NewActions)
-    ))
+    actions_old([_|Rest]),
+    obj_id(ID),
+    result(Status, actions_new(NewActions))
 ) -->
     execute_move_to(
         TargetX,
@@ -80,4 +75,5 @@ execute_move_to(
         % We must yield execution to the next frame.
         Status = yielded
     )}.
+
 

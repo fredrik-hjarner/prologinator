@@ -29,13 +29,17 @@ test("wait_until: completes when path exists", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_until(collision_id)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -61,13 +65,17 @@ test("wait_until: yields when path does not exist", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_until(collision_id)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         _CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -101,13 +109,17 @@ test("wait_until: works with nested paths", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_until(collision_id/collisionType)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         _CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -139,13 +151,17 @@ test("wait_until: yields when nested path does not exist", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_until(collision_id/collisionType)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         _CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -176,13 +192,17 @@ exist", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_until(collision_id/collisionType)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         _CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------

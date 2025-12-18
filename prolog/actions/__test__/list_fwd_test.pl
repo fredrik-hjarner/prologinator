@@ -28,13 +28,17 @@ yields", (
     ),
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(list([wait(1), move_to(5, 5, 2)])),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % list now executes actions immediately using
     % tick_object
     % wait(1) yields and removes itself, so list yields
@@ -57,13 +61,17 @@ test("list: empty list removes itself", (
     ),
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(list([])),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         _
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ObjOut = object(
         id(0),
         actions([wait(1)])

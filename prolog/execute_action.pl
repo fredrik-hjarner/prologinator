@@ -19,45 +19,22 @@
 % NOTE: dynamic declaration is now in prolog/dynamic.pl
 
 % ==========================================================
-% execute_action/5
-% ==========================================================
-
-% Forward execution (normal game)
-% :- pred execute_action(+ActionWrapper, +ObjWrapper,
-%     -ResultWrapper, +CtxIn, -CtxOut)
-%     :: (action_wrapper(ActionWrapper),
-%         obj_wrapper(ObjWrapper), context(CtxIn))
-%     => (result_wrapper(ResultWrapper), context(CtxOut))
-%     + is_det.
-
-% Reverse execution (undo/replay)
-% :- pred execute_action(-ActionWrapper, -ObjWrapper,
-%     +ResultWrapper, -CtxIn, +CtxOut) + is_det.
-
-% Action inference - which must the action have been?
-% :- pred execute_action(-ActionWrapper, +ObjWrapper,
-%     +ResultWrapper, -CtxIn, +CtxOut).
-
-% Validation (consistency check)
-% :- pred execute_action(+ActionWrapper, +ObjWrapper,
-%     +ResultWrapper, +CtxIn, +CtxOut).
-
-% ==========================================================
 % Top-level execute_action (with resolution)
 % ==========================================================
 execute_action(
     action(Action),
-    obj_old(ObjIn),
-    result(Status, ObjOut)
+    actions_old(ActionsIn),
+    obj_id(ID),
+    result(Status, actions_new(ActionsOut))
 ) -->
     % 1. Resolve value specs in action
-    {obj_id(ObjIn, MyID)},
-    resolve_action(MyID, Action, ResolvedAction),
+    resolve_action(ID, Action, ResolvedAction),
     % 2. Delegate to existing logic (renamed)
     execute_action_resolved(
         action(ResolvedAction),
-        obj_old(ObjIn),
-        result(Status, ObjOut)
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut))
     ).
 
 % ==========================================================
@@ -68,8 +45,9 @@ execute_action(
 % Also handles user-defined actions via runtime expansion.
 execute_action_resolved(
     action(Action),
-    obj_old(ObjIn),
-    result(Status, ObjOut)
+    actions_old(ActionsIn),
+    obj_id(ID),
+    result(Status, actions_new(ActionsOut))
 ) -->
     % TODO: action_validation nowadays it almost useless
     %       since custom actions allow anything.
@@ -80,8 +58,9 @@ execute_action_resolved(
         % It's a built-in action - execute normally
         execute_action_impl(
             action(Action),
-            obj_old(ObjIn),
-            result(Status, ObjOut)
+            actions_old(ActionsIn),
+            obj_id(ID),
+            result(Status, actions_new(ActionsOut))
         )
     ; {user_action(Action, Body)} -> % total prolog voodoo!
         % It's a user-defined action!
@@ -92,8 +71,9 @@ execute_action_resolved(
         % through top-level execute_action for resolution
         execute_action(
             action(Body),
-            obj_old(ObjIn),
-            result(Status, ObjOut)
+            actions_old(ActionsIn),
+            obj_id(ID),
+            result(Status, actions_new(ActionsOut))
         )
     ;
         % Unknown action
@@ -101,7 +81,7 @@ execute_action_resolved(
     ).
 
 % ==========================================================
-% execute_action_impl/5
+% execute_action_impl/6
 % ==========================================================
 % Internal implementation (no validation)
 % Implementation clauses are provided by individual action

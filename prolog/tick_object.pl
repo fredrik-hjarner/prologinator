@@ -3,27 +3,35 @@
 % ==========================================================
 
 % tick_object threads the context via DCG.
-% Returns result(Status, Obj) where Status is completed,
-% yielded, or despawned.
-tick_object(obj_old(Obj), result(completed, Obj)) -->
-    {obj_acns(Obj, [])}, % guard.
-    !. % TODO: Can this cut hurt bidirectionality?
+% Returns result(Status, actions_new(ActionsOut)) where
+% Status is completed, yielded, or despawned.
+tick_object(
+    actions_old([]),
+    obj_id(_ID),
+    result(completed, actions_new([]))
+) --> [].
 
-tick_object(obj_old(ObjOld), result(Status, ObjOut)) -->
-    {object_validation(ObjOld)},
-    {obj_acns(ObjOld, [Act|_Rest])},
+tick_object(
+    actions_old([Act|_Rest]),
+    obj_id(ID),
+    result(Status, actions_new(ActionsOut))
+) -->
+    % Call execute_action with actions passed separately
     execute_action(
         action(Act),
-        obj_old(ObjOld),
-        result(ActStatus, ObjTemp)
+        actions_old([Act|_Rest]),
+        obj_id(ID),
+        result(ActStatus, actions_new(ActionsTemp))
     ),
     ( {ActStatus = despawned} ->
-        {Status = despawned, ObjOut = _}
+        {Status = despawned, ActionsOut = []}
     ; {ActStatus = yielded} ->
-        {Status = yielded, ObjOut = ObjTemp}
+        {Status = yielded, ActionsOut = ActionsTemp}
     ; % ActStatus = completed
         tick_object(
-            obj_old(ObjTemp), result(Status, ObjOut)
+            actions_old(ActionsTemp),
+            obj_id(ID),
+            result(Status, actions_new(ActionsOut))
         )
     ).
 

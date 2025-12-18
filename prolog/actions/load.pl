@@ -1,6 +1,5 @@
 % load action implementation
 
-
 % load(+Path)
 % Mode: load(+Path)
 % Description: Loads a file containing a list of actions
@@ -9,33 +8,34 @@
 
 execute_action_impl(
     action(load(Path)),
-    obj_old(ObjIn),
-    result(completed, ObjOut)
+    actions_old([_|Rest]),
+    obj_id(_ID),
+    result(completed, actions_new(NewActions))
 ) -->
-    {execute_load(Path, ObjIn, ObjOut)}.
+    execute_load(Path, Rest, NewActions).
 
 % ==========================================================
 % execute_load/3
 % ==========================================================
-execute_load(Path, ObjIn, ObjOut) :-
-    obj_acns(ObjIn, [_|Rest]),
-    % Convert Path (list of chars) to atom for open/3
-    % Path must be a string (list of chars), not an atom
-    atom_chars(PathAtom, Path),
-    % Read file as term (expects list of actions)
-    setup_call_cleanup(
-        open(PathAtom, read, Stream),
-        read_term(Stream, Actions, []),
-        close(Stream)
-    ),
-    % Validate it's a list
-    ( is_list(Actions) ->
-        append(Actions, Rest, NewActions),
-        obj_acns_obj(ObjIn, NewActions, ObjOut)
-    ;
-        throw(error(
-            type_error(list, Actions),
-            load/1
-        ))
-    ).
+execute_load(Path, Rest, NewActions) -->
+    {
+        % Convert Path (list of chars) to atom for open/3
+        atom_chars(PathAtom, Path),
+        % Read file as term (expects list of actions)
+        setup_call_cleanup(
+            open(PathAtom, read, Stream),
+            read_term(Stream, Actions, []),
+            close(Stream)
+        ),
+        % Validate it's a list
+        ( is_list(Actions) ->
+            append(Actions, Rest, NewActions)
+        ;
+            throw(error(
+                type_error(list, Actions),
+                load/1
+            ))
+        )
+    }.
+
 

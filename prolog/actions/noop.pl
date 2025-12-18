@@ -1,17 +1,15 @@
 % noop action implementation
 
-
 execute_action_impl(
     action(noop),
-    obj_old(ObjIn),
-    result(completed, ObjOut)
+    actions_old([_|Rest]),
+    obj_id(_ID),
+    result(completed, actions_new(Rest))
 ) -->
-    {execute_noop(ObjIn, ObjOut)}.
+    execute_noop.
 
 % ==========================================================
-% execute_noop/2
+% execute_noop/3
 % ==========================================================
-execute_noop(ObjIn, ObjOut) :-
-    obj_acns(ObjIn, [_|Rest]),
-    obj_acns_obj(ObjIn, Rest, ObjOut).
+execute_noop --> [].
 

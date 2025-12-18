@@ -1,19 +1,20 @@
 % loop action implementation
 
-
 execute_action_impl(
     action(loop(Actions)),
-    obj_old(ObjIn),
-    result(completed, ObjOut)
+    actions_old([_|Rest]),
+    obj_id(_ID),
+    result(completed, actions_new(NewActions))
 ) -->
-    {execute_loop(Actions, ObjIn, ObjOut)}.
+    execute_loop(Actions, Rest, NewActions).
 
 % ==========================================================
 % execute_loop/3
 % ==========================================================
-execute_loop(Actions, ObjIn, ObjOut) :-
-    obj_acns(ObjIn, [_|Rest]),
-    append(Actions, [loop(Actions)], Expanded),
-    append(Expanded, Rest, NewActions),
-    obj_acns_obj(ObjIn, NewActions, ObjOut).
+execute_loop(Actions, Rest, NewActions) -->
+    {
+        append(Actions, [loop(Actions)], Expanded),
+        append(Expanded, Rest, NewActions)
+    }.
+
 

@@ -1,6 +1,5 @@
 % wait_key_held action implementation
 
-
 % wait_key_held(+KeyCode)
 % Mode: wait_key_held(+KeyCode)
 % Description: Yields every frame while key is held
@@ -9,31 +8,28 @@
 
 execute_action_impl(
     action(wait_key_held(KeyCode)),
-    obj_old(ObjIn),
-    result(Status, ObjOut)
+    actions_old([_|Rest]),
+    obj_id(_ID),
+    result(Status, actions_new(ActionsOut))
 ) -->
-    execute_wait_key_held(KeyCode, ObjIn, Status, ObjOut).
+    execute_wait_key_held(
+        KeyCode,
+        Rest,
+        Status,
+        ActionsOut
+    ).
 
 % ==========================================================
 % execute_wait_key_held/6
 % ==========================================================
-execute_wait_key_held(KeyCode, ObjIn, Status, ObjOut) -->
-    {obj_acns(ObjIn, [_|Rest])},
+execute_wait_key_held(KeyCode, Rest, Status, ActionsOut) -->
     ( key_held(KeyCode) ->
         % Key held: yield (action complete)
-        {
-            obj_acns_obj(ObjIn, Rest, ObjOut),
-            Status = completed
-        }
+        {ActionsOut = Rest, Status = completed}
     ;
         % Key not held: keep waiting
-        {
-            obj_acns_obj(
-                ObjIn,
-                [wait_key_held(KeyCode)|Rest],
-                ObjOut
-            ),
-            Status = yielded
-        }
+        {ActionsOut = [wait_key_held(KeyCode)|Rest],
+         Status = yielded}
     ).
+
 

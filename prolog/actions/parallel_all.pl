@@ -4,50 +4,28 @@
 
 execute_action_impl(
     action(parallel_all(Children)),
-    obj_old(ObjIn),
-    result(Status, ObjOut)
+    actions_old([_ParentAction|RestActions]),
+    obj_id(ID),
+    result(Status, actions_new(ActionsOut))
 ) -->
-    execute_parallel_all(
-        Children,
-        ObjIn,
-        result(Status, ObjOut)
-    ).
-
-% ==========================================================
-% Implementation
-% ==========================================================
-
-execute_parallel_all(
-    Children, ObjIn, result(Status, ObjOut)
-) -->
-    {obj_acns(ObjIn, [_ParentAction|RestActions])},
     % Execute children sequentially, threading the object
-    % state.
-    % Stop immediately if any child despawns.
-    tick_children(Children, ObjIn, Result),
+    % state. Stop immediately if any child despawns.
+    tick_children(Children, ID, Result),
     {( Result = despawned ->
         Status = despawned,
-        ObjOut = _
-    ; Result = remaining(RemainingChildren, FinalObj) ->
+        ActionsOut = []
+    ; Result = remaining(RemainingChildren) ->
         ( RemainingChildren = [] ->
             % All children finished actions.
-            % Restore parent actions to the final object
-            % state.
             Status = completed,
-            obj_acns_obj(FinalObj, RestActions, ObjOut)
+            ActionsOut = RestActions
         ;
             % Some children yielded or are still running.
             % We yield the parallel_all action itself to
             % continue next tick.
-            % Update actions on the final object state.
             Status = yielded,
-            obj_acns_obj(
-                FinalObj,
-                [parallel_all(
-                    RemainingChildren)|RestActions
-                ],
-                ObjOut
-            )
+            ActionsOut = [parallel_all(
+                RemainingChildren)|RestActions]
         )
     )}.
 
@@ -55,12 +33,12 @@ execute_parallel_all(
 % Helpers
 % ==========================================================
 
-% tick_children(+Children, +ObjIn, -Result, +CtxIn, -CtxOut)
-% Result's either 'despawned' or 'remaining(List, FinalObj)'
+% tick_children(+Children, +ID, -Result, +CtxIn, -CtxOut)
+% Result's either 'despawned' or 'remaining(List)'
 % Threads the object state (attributes) through each child
-% execution.
+% execution via context.
 
-tick_children([], Obj, remaining([], Obj)) --> [].
+tick_children([], _ID, remaining([])) --> [].
 
 % NOTE: Only the upper-/outer-most actions are executed in
 % parallel so to speak. If those are composite actions then
@@ -69,7 +47,7 @@ tick_children([], Obj, remaining([], Obj)) --> [].
 % parallel_all, parallel_race or similar)
 tick_children(
     [FirstTopLayerAcn|TopLayerAcnsRest],
-    ObjIn,
+    ID,
     Result
 ) -->
     % Normalize child to a list of actions (handle single
@@ -79,32 +57,29 @@ tick_children(
     ;
         FirstTopLayerAcnList = [FirstTopLayerAcn]
     )},
-    % Prepare temp object with child actions (preserving
-    % ObjIn attributes)
-    {obj_acns_obj(ObjIn, FirstTopLayerAcnList, ObjWithAcn)},
-    % Tick the object (executes until yield, despawn, or
+    % Tick the actions (executes until yield, despawn, or
     % complete)
     tick_object(
-        obj_old(ObjWithAcn),
-        result(ChildStatusAfterTick, ObjChildAfterTick)
+        actions_old(FirstTopLayerAcnList),
+        obj_id(ID),
+        result(
+            ChildStatusAfterTick,
+            actions_new(RemainingAcnsAfterTick)
+        )
     ),
     % So after tick the `remaining actions` in
-    % ChildStatusAfterTick.
+    % RemainingAcnsAfterTick.
     ( {ChildStatusAfterTick = despawned} ->
         % Immediate exit on despawn
         {Result = despawned}
     ;
         % FirstTopLayerAcn yielded or completed.
-        % ObjChildAfterTick contains the updated attributes
-        % and remaining actions.
-        % We extract actions to store them, but pass the
-        % object state to the next child.
-        {obj_acns(
-            ObjChildAfterTick, RemainingAcnsAfterTick
-        )},
+        % Attributes are updated in context automatically.
+        % We collect remaining actions and continue with
+        % next child.
         tick_children(
             TopLayerAcnsRest,
-            ObjChildAfterTick,
+            ID,
             % RestResult contains all remaining actions
             % of the top level actions (except the first
             % which we already executed above) have each
@@ -114,16 +89,18 @@ tick_children(
         ),
         {( RestResult = despawned ->
             Result = despawned
-        ; RestResult = remaining(RestRemaining, FinalObj) ->
+        ; RestResult = remaining(RestRemaining) ->
             ( RemainingAcnsAfterTick = [] ->
-                Result = remaining(RestRemaining, FinalObj)
+                Result = remaining(RestRemaining)
             ;
                 append(
                     RemainingAcnsAfterTick,
                     RestRemaining,
                     AllRemaining
                 ),
-                Result = remaining(AllRemaining, FinalObj)
+                Result = remaining(AllRemaining)
             )
         )}
     ).
+
+

@@ -9,14 +9,9 @@
 
 execute_action_impl(
     action(move_delta(Frames, DX, DY)),
-    obj_old(object(
-        id(ID),
-        actions([_|Rest])
-    )),
-    result(Status, object(
-        id(ID),
-        actions(NewActions)
-    ))
+    actions_old([_|Rest]),
+    obj_id(ID),
+    result(Status, actions_new(NewActions))
 ) -->
     execute_move_delta(
         Frames,
@@ -107,4 +102,5 @@ execute_move_delta(
         % We must yield execution to the next frame.
         Status = yielded
     )}.
+
 

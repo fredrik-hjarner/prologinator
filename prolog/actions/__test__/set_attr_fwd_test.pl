@@ -32,13 +32,17 @@ test("set_attr: set new attribute", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(set_attr(hp, 100)),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
@@ -73,13 +77,17 @@ test("set_attr: replace existing attribute", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(set_attr(hp, 50)),
-        obj_old(ObjIn),
-        result(completed, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
@@ -113,27 +121,39 @@ duplicates", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(set_attr(hp, 100)),
-        obj_old(ObjIn),
-        result(completed, Obj1),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         Ctx1
     ),
+    obj_acns_obj(ObjIn, ActionsOut, Obj1),
+    obj_acns(Obj1, ActionsIn2),
+    obj_id(Obj1, ID2),
     execute_action(
         action(set_attr(hp, 75)),
-        obj_old(Obj1),
-        result(completed, Obj2),
+        actions_old(ActionsIn2),
+        obj_id(ID2),
+        result(completed, actions_new(ActionsOut2)),
         Ctx1,
         Ctx2
     ),
+    obj_acns_obj(Obj1, ActionsOut2, Obj2),
+    obj_acns(Obj2, ActionsIn3),
+    obj_id(Obj2, ID3),
     execute_action(
         action(set_attr(hp, 50)),
-        obj_old(Obj2),
-        result(completed, _ObjOut),
+        actions_old(ActionsIn3),
+        obj_id(ID3),
+        result(completed, actions_new(ActionsOut3)),
         Ctx2,
         CtxNew
     ),
+    obj_acns_obj(Obj2, ActionsOut3, _ObjOut),
     ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert

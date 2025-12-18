@@ -1,19 +1,17 @@
 % log action implementation
 
-
-% Confirmed that it works! Don't worry!
 execute_action_impl(
     action(log(Msg)),
-    obj_old(ObjIn),
-    result(completed, ObjOut)
+    actions_old([_|Rest]),
+    obj_id(_ID),
+    result(completed, actions_new(Rest))
 ) -->
-    {execute_log(Msg, ObjIn, ObjOut)}.
+    execute_log(Msg).
 
 % ==========================================================
 % execute_log/3
 % ==========================================================
-execute_log(Msg, ObjIn, ObjOut) :-
-    obj_acns(ObjIn, [_|Rest]),
-    format("~s~n", [Msg]),
-    obj_acns_obj(ObjIn, Rest, ObjOut).
+execute_log(Msg) -->
+    {format("~s~n", [Msg])}.
+
 

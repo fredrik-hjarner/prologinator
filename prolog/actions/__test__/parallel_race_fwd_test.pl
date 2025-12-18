@@ -40,15 +40,19 @@ test("parallel_race: stops on child completion", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(Obj, ActionsIn),
+    obj_id(Obj, ID),
     execute_action(
         action(parallel_race(
             [wait(5), noop, wait(10)]
         )),
-        obj_old(Obj),
-        result(completed, NewObj),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(completed, actions_new(ActionsOut)),
         Ctx,
         _
     ),
+    obj_acns_obj(Obj, ActionsOut, NewObj),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
     % Assert
@@ -78,15 +82,19 @@ done", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
+    obj_acns(Obj, ActionsIn),
+    obj_id(Obj, ID),
     execute_action(
         action(parallel_race(
             [wait(5), wait(10)]
         )),
-        obj_old(Obj),
-        result(Status, NewObj),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         _
     ),
+    obj_acns_obj(Obj, ActionsOut, NewObj),
     obj_acns(NewObj, Actions),
     % ------------------------------------------------------
     % Assert
@@ -116,10 +124,13 @@ despawns", (
               [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
+    obj_acns(Obj, ActionsIn),
+    obj_id(Obj, ID),
     execute_action(
         action(parallel_race([despawn, wait(10)])),
-        obj_old(Obj),
-        result(ActionStatus, _ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(ActionStatus, actions_new(_)),
         Ctx,
         CtxNew
     ),

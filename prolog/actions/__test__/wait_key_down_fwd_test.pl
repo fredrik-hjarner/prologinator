@@ -27,13 +27,17 @@ test("wait_key_down: completes when key pressed", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_key_down(39)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -57,13 +61,17 @@ test("wait_key_down: yields when key not pressed", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_key_down(39)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -88,13 +96,17 @@ test("wait_key_down: waits for different key", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_key_down(37)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         _
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -122,13 +134,17 @@ test("wait_key_down: multiple key events", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_key_down(37)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         _
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -153,13 +169,17 @@ test("wait_key_down: ignores key up events", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     execute_action(
         action(wait_key_down(39)),
-        obj_old(ObjIn),
-        result(Status, ObjOut),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         _
     ),
+    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
@@ -189,12 +209,16 @@ test("wait_key_down: in loop pattern", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
+    obj_acns(ObjIn, ActionsIn),
+    obj_id(ObjIn, ID),
     tick_object(
-        obj_old(ObjIn),
-        result(Status1, Obj1),
+        actions_old(ActionsIn),
+        obj_id(ID),
+        result(Status1, actions_new(ActionsOut)),
         Ctx,
         Ctx1
     ),
+    obj_acns_obj(ObjIn, ActionsOut, Obj1),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
