@@ -49,22 +49,16 @@ in same frame", (
     (NumStreams = 2 ->
         true
     ;
-        err_write("Expected 2 streams, got: "),
-        err_write(NumStreams),
-        err_write(" Streams: "),
-        err_write(Streams)
+        format(string(ErrorMsg),
+               "Expected 2 streams, got: ~w Streams: ~w",
+               [NumStreams, Streams]),
+        expect(false, ErrorMsg)
     ),
     % Check that both streams exist
-    (member([wait(1)], Streams) ->
-        true
-    ;
-        err_write("Stream [wait(1)] not found")
-    ),
-    (member([noop], Streams) ->
-        true
-    ;
-        err_write("Forked stream [noop] not found")
-    ),
+    expect(member([wait(1)], Streams),
+           "Stream [wait(1)] not found"),
+    expect(member([noop], Streams),
+           "Forked stream [noop] not found"),
     % Fork commands should be cleared
     ctx_forkCmds([], CtxNew, CtxNew),
     % Frame should increment

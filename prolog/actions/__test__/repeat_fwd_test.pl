@@ -67,8 +67,8 @@ test("repeat: last repetition doesn't add repeat", (
     % ------------------------------------------------------
     (ActionsOut = [noop, despawn]
      ;
-     err_write("Actions wrong")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+     expect(false, "Actions wrong")),
+     expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("repeat: multiple actions in repeat list", (
@@ -110,7 +110,7 @@ test("repeat: multiple actions in repeat list", (
         set_attr(b, 2),
         repeat(1, [noop, set_attr(a, 1), set_attr(b, 2)]),
         despawn
-    ] ; err_write("Actions wrong")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    ] ; expect(false, "Actions wrong")),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 

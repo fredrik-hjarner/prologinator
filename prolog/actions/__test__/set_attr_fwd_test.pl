@@ -44,10 +44,10 @@ test("set_attr: set new attribute", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (HP = 100 ; err_write("HP != 100")),
-    (X = 5 ; err_write("X != 5")),
-    (Y = 10 ; err_write("Y != 10")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(HP = 100, "HP != 100"),
+    expect(X = 5, "X != 5"),
+    expect(Y = 10, "Y != 10"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("set_attr: replace existing attribute", (
@@ -78,9 +78,9 @@ test("set_attr: replace existing attribute", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (HP = 50 ; err_write("HP != 50")),
-    (X = 5 ; err_write("X != 5")),
-    (Y = 10 ; err_write("Y != 10"))
+    expect(HP = 50, "HP != 50"),
+    expect(X = 5, "X != 5"),
+    expect(Y = 10, "Y != 10")
 )).
 
 test("set_attr: multiple sets overwrite, no \
@@ -126,6 +126,6 @@ duplicates", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (HP = 50 ; err_write("HP != 50"))
+    expect(HP = 50, "HP != 50")
 )).
 

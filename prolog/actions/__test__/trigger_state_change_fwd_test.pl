@@ -41,8 +41,8 @@ to won", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = won ; err_write("Status != won")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(Status = won, "Status != won"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("trigger_state_change: forward test - updates status \
@@ -70,8 +70,8 @@ to lost", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = lost ; err_write("Status != lost")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(Status = lost, "Status != lost"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("trigger_state_change: forward test - won cannot \
@@ -100,7 +100,7 @@ override lost", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = lost ; err_write("Status != lost")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(Status = lost, "Status != lost"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 

@@ -47,10 +47,10 @@ remaining", (
     % Assert
     % ------------------------------------------------------
     ( ActionsOut = [move_to(10, 20, 2)|_]
-     ; err_write("ActionsOut mismatch") ),
-    (NewX = 3 ; err_write("NewX != 3")),
-    (NewY = 6 ; err_write("NewY != 6")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+     ; expect(false, "ActionsOut mismatch") ),
+    expect(NewX = 3, "NewX != 3"),
+    expect(NewY = 6, "NewY != 6"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_to: negative direction, multiple frames \
@@ -82,9 +82,9 @@ remaining", (
     % Assert
     % ------------------------------------------------------
     ActionsOut = [move_to(0, 0, 2)|_],
-    (NewX = 7 ; err_write("NewX != 7")),
-    (NewY = 14 ; err_write("NewY != 14")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(NewX = 7, "NewX != 7"),
+    expect(NewY = 14, "NewY != 14"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_to: single frame, arrives at target", (
@@ -115,9 +115,9 @@ test("move_to: single frame, arrives at target", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X = 5 ; err_write("X != 5")),
-    (Y = 5 ; err_write("Y != 5")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(X = 5, "X != 5"),
+    expect(Y = 5, "Y != 5"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_to: already at target, stays at position and \
@@ -149,9 +149,9 @@ continues with remaining frames", (
     % Assert
     % ------------------------------------------------------
     ActionsOut = [move_to(10, 20, 2)|_],
-    (X = 10 ; err_write("X != 10")),
-    (Y = 20 ; err_write("Y != 20")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(X = 10, "X != 10"),
+    expect(Y = 20, "Y != 20"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_to: negative target coordinates", (
@@ -177,9 +177,9 @@ test("move_to: negative target coordinates", (
     % Assert
     % ------------------------------------------------------
     ActionsOut = [move_to(-5, -10, 1)|_],
-    (NewX = -2 ; err_write("NewX != -2")),
-    (NewY = -5 ; err_write("NewY != -5")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(NewX = -2, "NewX != -2"),
+    expect(NewY = -5, "NewY != -5"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 % --------------------------------------------------------
@@ -210,8 +210,8 @@ to won", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = won ; err_write("Status != won")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(Status = won, "Status != won"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("trigger_state_change: forward test - updates status \
@@ -238,8 +238,8 @@ to lost", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = lost ; err_write("Status != lost")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(Status = lost, "Status != lost"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("trigger_state_change: forward test - won cannot \
@@ -267,8 +267,8 @@ override lost", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = lost ; err_write("Status != lost")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(Status = lost, "Status != lost"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 % ==========================================================
@@ -300,9 +300,9 @@ test("noop: removes self from action queue", (
     % Assert
     % ------------------------------------------------------
     ActionsOut = [wait(1)],
-    (SpawnCmds = [] ; err_write("SpawnCmds != []")),
-    (Frame = 0 ; err_write("Frame != 0")),
-    (Status = playing ; err_write("Status != playing"))
+    expect(SpawnCmds = [], "SpawnCmds != []"),
+    expect(Frame = 0, "Frame != 0"),
+    expect(Status = playing, "Status != playing")
 )).
 
 % ==========================================================
@@ -386,9 +386,9 @@ actions from executing", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (SpawnCmds = [] ; err_write("SpawnCmds != []")),
-    (Frame = 0 ; err_write("Frame != 0")),
-    (Status = playing ; err_write("Status != playing"))
+    expect(SpawnCmds = [], "SpawnCmds != []"),
+    expect(Frame = 0, "Frame != 0"),
+    expect(Status = playing, "Status != playing")
 )).
 
 test("despawn: prevents game_over state change from \
@@ -452,7 +452,7 @@ test("parallel_race: stops on child completion", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (ActionsOut = [wait(3)|_] ; err_write("Actions wrong"))
+    expect(ActionsOut = [wait(3)|_], "Actions wrong")
 )).
 
 test("parallel_race: continues if no child \
@@ -488,10 +488,10 @@ done", (
     % Assert
     % ------------------------------------------------------
     (Status = yielded
-     ; err_write("Status != yielded")),
+     ; expect(false, "Status != yielded")),
     (ActionsOut = [parallel_race([wait(4), wait(9)])|_]
      ;
-     err_write("Actions wrong"))
+     expect(false, "Actions wrong"))
 )).
 
 test("parallel_race: despawns parent when child \
@@ -523,9 +523,9 @@ despawns", (
     % Assert
     % ------------------------------------------------------
     (Status_Despawn = despawned ;
-     err_write("Status != despawned")),
-    (Status = playing ; err_write("Status != playing")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+     expect(false, "Status != despawned")),
+    expect(Status = playing, "Status != playing"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 % ==========================================================
@@ -582,8 +582,8 @@ test("repeat: last repetition doesn't add repeat", (
     % ------------------------------------------------------
     (ActionsOut = [noop, despawn]
      ;
-     err_write("Actions wrong")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+     expect(false, "Actions wrong")),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("repeat: multiple actions in repeat list", (
@@ -625,8 +625,8 @@ test("repeat: multiple actions in repeat list", (
         set_attr(b, 2),
         repeat(1, [noop, set_attr(a, 1), set_attr(b, 2)]),
         despawn
-    ] ; err_write("Actions wrong")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    ] ; expect(false, "Actions wrong")),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 % ==========================================================
@@ -659,10 +659,10 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (ActionsOut = [] ; err_write("ActionsOut != []")),
-    (X = 15 ; err_write("X != 15")),
-    (Y = 17 ; err_write("Y != 17")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(ActionsOut = [], "ActionsOut != []"),
+    expect(X = 15, "X != 15"),
+    expect(Y = 17, "Y != 17"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_delta: multiple frames continues", (
@@ -692,12 +692,12 @@ test("move_delta: multiple frames continues", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X = 10 ; err_write("X != 10")),
-    (Y = 5 ; err_write("Y != 5")),
+    expect(X = 10, "X != 10"),
+    expect(Y = 5, "Y != 5"),
     (ActionsOut = [move_delta(2, 10, 5)]
      ;
-     err_write("Actions wrong")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+     expect(false, "Actions wrong")),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_delta: negative deltas work", (
@@ -726,12 +726,12 @@ test("move_delta: negative deltas work", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X = 40 ; err_write("X != 40")),
-    (Y = 45 ; err_write("Y != 45")),
+    expect(X = 40, "X != 40"),
+    expect(Y = 45, "Y != 45"),
     (ActionsOut = [move_delta(1, -10, -5)]
      ;
-     err_write("Actions wrong")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+     expect(false, "Actions wrong")),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_delta: preserves other attributes", (
@@ -761,12 +761,12 @@ test("move_delta: preserves other attributes", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (ActionsOut = [] ; err_write("ActionsOut != []")),
-    (X = 15 ; err_write("X != 15")),
-    (Y = 17 ; err_write("Y != 17")),
-    (HP = 100 ; err_write("HP != 100")),
-    (Speed = 5 ; err_write("Speed != 5")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(ActionsOut = [], "ActionsOut != []"),
+    expect(X = 15, "X != 15"),
+    expect(Y = 17, "Y != 17"),
+    expect(HP = 100, "HP != 100"),
+    expect(Speed = 5, "Speed != 5"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 % ==========================================================

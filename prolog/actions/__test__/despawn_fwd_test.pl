@@ -53,9 +53,9 @@ actions from executing", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = despawned ; err_write("Status != despawned")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []")),
-    (Frame = 0 ; err_write("Frame != 0"))
+    expect(Status = despawned, "Status != despawned"),
+    expect(SpawnCmds = [], "SpawnCmds != []"),
+    expect(Frame = 0, "Frame != 0")
 )).
 
 test("despawn: prevents game_over state change from \

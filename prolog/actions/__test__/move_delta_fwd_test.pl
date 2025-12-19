@@ -77,12 +77,12 @@ test("move_delta: multiple frames continues", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X = 10 ; err_write("X != 10")),
-    (Y = 5 ; err_write("Y != 5")),
+    expect(X = 10, "X != 10"),
+    expect(Y = 5, "Y != 5"),
     (ActionsOut = [move_delta(2, 10, 5)]
      ;
-     err_write("Actions wrong")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+     expect(false, "Actions wrong")),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_delta: negative deltas work", (
@@ -111,12 +111,12 @@ test("move_delta: negative deltas work", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X = 40 ; err_write("X != 40")),
-    (Y = 45 ; err_write("Y != 45")),
+    expect(X = 40, "X != 40"),
+    expect(Y = 45, "Y != 45"),
     (ActionsOut = [move_delta(1, -10, -5)]
      ;
-     err_write("Actions wrong")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+     expect(false, "Actions wrong")),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_delta: preserves other attributes", (
@@ -149,10 +149,10 @@ test("move_delta: preserves other attributes", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (X = 15 ; err_write("X != 15")),
-    (Y = 17 ; err_write("Y != 17")),
-    (HP = 100 ; err_write("HP != 100")),
-    (Speed = 5 ; err_write("Speed != 5")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(X = 15, "X != 15"),
+    expect(Y = 17, "Y != 17"),
+    expect(HP = 100, "HP != 100"),
+    expect(Speed = 5, "Speed != 5"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 

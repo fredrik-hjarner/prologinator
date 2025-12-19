@@ -46,12 +46,12 @@ remaining", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = yielded ; err_write("Status != yielded")),
+    expect(Status = yielded, "Status != yielded"),
     ( ActionsOut = [move_to(10, 20, 2)|_]
-     ; err_write("ActionsOut mismatch") ),
-    (NewX = 3 ; err_write("NewX != 3")),
-    (NewY = 6 ; err_write("NewY != 6")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+     ; expect(false, "ActionsOut mismatch") ),
+    expect(NewX = 3, "NewX != 3"),
+    expect(NewY = 6, "NewY != 6"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_to: negative direction, multiple frames \
@@ -84,11 +84,11 @@ remaining", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = yielded ; err_write("Status != yielded")),
+    expect(Status = yielded, "Status != yielded"),
     ActionsOut = [move_to(0, 0, 2)|_],
-    (NewX = 7 ; err_write("NewX != 7")),
-    (NewY = 14 ; err_write("NewY != 14")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(NewX = 7, "NewX != 7"),
+    expect(NewY = 14, "NewY != 14"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_to: single frame, arrives at target", (
@@ -119,10 +119,10 @@ test("move_to: single frame, arrives at target", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = yielded ; err_write("Status != yielded")),
-    (X = 5 ; err_write("X != 5")),
-    (Y = 5 ; err_write("Y != 5")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(Status = yielded, "Status != yielded"),
+    expect(X = 5, "X != 5"),
+    expect(Y = 5, "Y != 5"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_to: already at target, stays at position and \
@@ -155,11 +155,11 @@ continues with remaining frames", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = yielded ; err_write("Status != yielded")),
+    expect(Status = yielded, "Status != yielded"),
     ActionsOut = [move_to(10, 20, 2)|_],
-    (X = 10 ; err_write("X != 10")),
-    (Y = 20 ; err_write("Y != 20")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(X = 10, "X != 10"),
+    expect(Y = 20, "Y != 20"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 test("move_to: negative target coordinates", (
@@ -184,10 +184,10 @@ test("move_to: negative target coordinates", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Status = yielded ; err_write("Status != yielded")),
+    expect(Status = yielded, "Status != yielded"),
     ActionsOut = [move_to(-5, -10, 1)|_],
-    (NewX = -2 ; err_write("NewX != -2")),
-    (NewY = -5 ; err_write("NewY != -5")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    expect(NewX = -2, "NewX != -2"),
+    expect(NewY = -5, "NewY != -5"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 

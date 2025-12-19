@@ -42,10 +42,10 @@ test("noop: removes self from action queue", (
     % Assert
     % ------------------------------------------------------
     (ActionStatus = completed
-    ; err_write("ActionStatus != completed")),
+    ; expect(false, "ActionStatus != completed")),
     ActionsOut = [wait(1)],
-    (SpawnCmds = [] ; err_write("SpawnCmds != []")),
-    (Frame = 0 ; err_write("Frame != 0")),
-    (Status = playing ; err_write("Status != playing"))
+    expect(SpawnCmds = [], "SpawnCmds != []"),
+    expect(Frame = 0, "Frame != 0"),
+    expect(Status = playing, "Status != playing")
 )).
 

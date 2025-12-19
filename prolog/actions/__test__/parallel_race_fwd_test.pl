@@ -50,7 +50,7 @@ test("parallel_race: stops on child completion", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (ActionsOut = [wait(3)|_] ; err_write("Actions wrong"))
+    expect(ActionsOut = [wait(3)|_], "Actions wrong")
 )).
 
 test("parallel_race: continues if no child \
@@ -86,10 +86,10 @@ done", (
     % Assert
     % ------------------------------------------------------
     (Status = yielded
-     ; err_write("Status != yielded")),
+     ; expect(false, "Status != yielded")),
     (ActionsOut = [parallel_race([wait(4), wait(9)])|_]
      ;
-     err_write("Actions wrong"))
+     expect(false, "Actions wrong"))
 )).
 
 test("parallel_race: despawns parent when child \
@@ -121,9 +121,9 @@ despawns", (
     % Assert
     % ------------------------------------------------------
     (ActionStatus = despawned
-    ; err_write("ActionStatus != despawned")),
-    (Status = playing ; err_write("Status != playing")),
-    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
+    ; expect(false, "ActionStatus != despawned")),
+    expect(Status = playing, "Status != playing"),
+    expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 
 % TODO: Complete and fix this test.

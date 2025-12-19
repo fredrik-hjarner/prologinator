@@ -1,31 +1,9 @@
-:- module(test_util, [err_write/1, err_format/2]).
+:- module(test_util, []).
 
 % ==========================================================
 % Test Utility Functions
 % ==========================================================
 % Test-related utilities for assertions and error reporting
-
-% ==========================================================
-% Error Output Helpers
-% ==========================================================
-% err_write(+Message)
-% Writes Message and then fails. Useful for error messages
-%   in test assertions.
-%
-% err_format(+Format, +Args)
-% Formats message using Format and Args, then fails.
-%   Useful for error messages in test assertions.
-
-err_write(Msg) :-
-    write(user_output, 'ERROR: '),
-    write(user_output, Msg),
-    nl,
-    halt(1).
-
-err_format(Fmt, Args) :-
-    format(Fmt, Args),
-    nl,
-    halt(1).
 
 % ==========================================================
 % Compiler Hooks
