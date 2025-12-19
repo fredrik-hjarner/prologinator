@@ -6,7 +6,8 @@
 :- use_module(library(lists), [member/2]).
 :- use_module(library(assoc), [
     empty_assoc/1,
-    put_assoc/4
+    put_assoc/4,
+    gen_assoc/3
 ]).
 :- use_module(library(format)).
 
@@ -16,23 +17,38 @@
 
 % Helper to tick object N times recursively
 % tick_n(+N, +ObjIn, -ObjOut, +CtxIn, -CtxOut)
+% NOTE: This helper is deprecated - it uses obj_acns which
+% returns empty list.
+% Tests should use tick_action_streams directly instead.
 tick_n(0, Obj, Obj, Ctx, Ctx).
 tick_n(N, ObjIn, ObjOut, CtxIn, CtxOut) :-
     N > 0,
-    obj_acns(ObjIn, ActionsIn),
     obj_id(ObjIn, ID),
-    phrase(
-        tick_object(
-            actions_old(ActionsIn),
-            obj_id(ID),
-            result(_, actions_new(ActionsOut))
+    % Get actions from actionstore
+    ctx_actionstore(ActionStoreIn, CtxIn, CtxIn),
+    ( gen_assoc(ID, ActionStoreIn, [ActionsIn]) ->
+        phrase(
+            tick_object(
+                actions_old(ActionsIn),
+                obj_id(ID),
+                result(_, actions_new(ActionsOut))
+            ),
+            CtxIn,
+            Ctx1
         ),
-        CtxIn,
-        Ctx1
-    ),
-    obj_acns_obj(ObjIn, ActionsOut, Obj1),
-    N1 is N - 1,
-    tick_n(N1, Obj1, ObjOut, Ctx1, CtxOut).
+        % Update actionstore
+        ctx_actionstore(ActionStoreTemp, Ctx1, Ctx1),
+        put_assoc(ID, ActionStoreTemp, [ActionsOut],
+                  ActionStoreOut),
+        ctx_set_actionstore(ActionStoreOut, Ctx1,
+                            Ctx1WithActions),
+        N1 is N - 1,
+        tick_n(N1, ObjIn, ObjOut, Ctx1WithActions, CtxOut)
+    ;
+        % No actions in actionstore, just pass through
+        N1 is N - 1,
+        tick_n(N1, ObjIn, ObjOut, CtxIn, CtxOut)
+    ).
 
 % ==========================================================
 % Forward Tests for parallel_all
@@ -46,16 +62,13 @@ attributes.", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([
-            parallel_all([
-                set_attr(x, 10),
-                set_attr(y, 20),
-                set_attr(z, 30)
-            ])
+    ActionsIn = [
+        parallel_all([
+            set_attr(x, 10),
+            set_attr(y, 20),
+            set_attr(z, 30)
         ])
-    ),
+    ],
     empty_attr_store(EmptyAttrs0),
     put_assoc(
         1,
@@ -68,8 +81,6 @@ attributes.", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(parallel_all([
             set_attr(x, 10),
@@ -77,12 +88,11 @@ attributes.", (
             set_attr(z, 30)
         ])),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
     ctx_attr_val(1/y, NewY, CtxNew, CtxNew),
     ctx_attr_val(1/z, NewZ, CtxNew, CtxNew),
@@ -93,7 +103,7 @@ attributes.", (
     NewX = 10,
     NewY = 20,
     NewZ = 30,
-    obj_acns(ObjOut, [])
+    ActionsOut = []
 )).
 
 % Test: parallel_all yields when a child yields
@@ -101,16 +111,13 @@ test("parallel_all: yields when child yields", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([
-            parallel_all([
-                set_attr(x, 10),
-                wait(2),  % Will yield (becomes wait(1))
-                set_attr(y, 20)
-            ])
+    ActionsIn = [
+        parallel_all([
+            set_attr(x, 10),
+            wait(2),  % Will yield (becomes wait(1))
+            set_attr(y, 20)
         ])
-    ),
+    ],
     empty_attr_store(EmptyAttrs0),
     put_assoc(
         1, EmptyAttrs0,
@@ -121,24 +128,21 @@ test("parallel_all: yields when child yields", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(parallel_all([
             set_attr(x, 10),
-            wait(2),  % Yields after 1 frame (becomes wait(1))
+            wait(2),  % Yields after 1 frame
+            % (becomes wait(1))
             set_attr(y, 20)
         ])),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     expect(ctx_attr_val(1/x, NewX, CtxNew, CtxNew)),
     expect(ctx_attr_val(1/y, NewY, CtxNew, CtxNew)),
-    expect(obj_acns(ObjOut, Actions)),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -156,7 +160,7 @@ test("parallel_all: yields when child yields", (
     % children
     % Structure: parallel_all([wait(1)]) - only the
     % yielded child remains
-    Actions = [parallel_all([wait(1)])]
+    ActionsOut = [parallel_all([wait(1)])]
 )).
 
 % Test: parallel_all despawns when a child despawns
@@ -164,16 +168,13 @@ test("parallel_all: despawns when child despawns", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([
-            parallel_all([
-                set_attr(x, 10),
-                despawn,  % This will despawn and stop all!
-                set_attr(y, 20)
-            ])
+    ActionsIn = [
+        parallel_all([
+            set_attr(x, 10),
+            despawn,  % This will despawn and stop all!
+            set_attr(y, 20)
         ])
-    ),
+    ],
     empty_attr_store(EmptyAttrs0),
     put_assoc(
         1, EmptyAttrs0,
@@ -184,8 +185,6 @@ test("parallel_all: despawns when child despawns", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(parallel_all([
             set_attr(x, 10),
@@ -193,7 +192,7 @@ test("parallel_all: despawns when child despawns", (
             set_attr(y, 20)
         ])),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(Status, actions_new(_)),
         Ctx,
         CtxNew
@@ -213,14 +212,10 @@ test("parallel_all: should continue until all complete", (
     % Arrange
     % ------------------------------------------------------
     ParAcn = parallel_all([wait(1), wait(2), wait(3)]),
-    Actions = list([
+    ActionsIn = [list([
         ParAcn,
         despawn
-    ]),
-    ObjIn = object(
-        id(1),
-        actions([Actions])
-    ),
+    ])],
     empty_attr_store(EmptyAttrs0),
     put_assoc(
         1, EmptyAttrs0,
@@ -231,71 +226,56 @@ test("parallel_all: should continue until all complete", (
     % ------------------------------------------------------
     % Act - Frame 0 -> 1
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     tick_object(
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % ------------------------------------------------------
     % Assert - frame 1
     % ------------------------------------------------------
     expect(Status = yielded),
-    expect(obj_acns(
-        ObjOut, [
-            list([
-                parallel_all([wait(1), wait(2)]),
-                despawn
-            ])
-        ]
-    )),
+    expect(ActionsOut = [
+        list([
+            parallel_all([wait(1), wait(2)]),
+            despawn
+        ])
+    ]),
     % ------------------------------------------------------
     % Act - Frame 1 -> 2
     % ------------------------------------------------------
-    obj_acns(ObjOut, ActionsIn2),
-    obj_id(ObjOut, ID2),
     tick_object(
-        actions_old(ActionsIn2),
-        obj_id(ID2),
+        actions_old(ActionsOut),
+        obj_id(1),
         result(Status2, actions_new(ActionsOut2)),
         CtxNew,
         Ctx2
     ),
-    obj_acns_obj(ObjOut, ActionsOut2, Obj2),
     % ------------------------------------------------------
     % Assert - frame 2
     % ------------------------------------------------------
     expect(Status2 = yielded),
-    expect(obj_acns(
-        Obj2, [
-            list([
-                parallel_all([wait(1)]),
-                despawn
-            ])
-        ]
-    )),
+    expect(ActionsOut2 = [
+        list([
+            parallel_all([wait(1)]),
+            despawn
+        ])
+    ]),
     % ------------------------------------------------------
     % Act - Frame 2 -> 3
     % ------------------------------------------------------
-    obj_acns(Obj2, ActionsIn3),
-    obj_id(Obj2, ID3),
     tick_object(
-        actions_old(ActionsIn3),
-        obj_id(ID3),
+        actions_old(ActionsOut2),
+        obj_id(1),
         result(Status3, actions_new(ActionsOut3)),
         Ctx2,
         Ctx3
     ),
-    obj_acns_obj(Obj2, ActionsOut3, Obj3),
     % ------------------------------------------------------
     % Assert - frame 3
     % ------------------------------------------------------
     expect(Status3 = despawned),
-    expect(obj_acns(
-        Obj3, []
-    ))
+    expect(ActionsOut3 = [])
 )).

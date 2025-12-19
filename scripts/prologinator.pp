@@ -49,6 +49,7 @@
 #include "../prolog/actions/decr.pl"
 #include "../prolog/actions/log.pl"
 #include "../prolog/actions/spawn.pl"
+#include "../prolog/actions/fork.pl"
 #include "../prolog/actions/loop.pl"
 #include "../prolog/actions/list.pl"
 #include "../prolog/actions/repeat.pl"
@@ -62,7 +63,6 @@
 #include "../prolog/actions/parallel_race.pl"
 
 % 7. Core Engine Components
-#include "../prolog/tick_action_stream.pl"
 #include "../prolog/tick_action_streams.pl"
 #include "../prolog/tick_object.pl"
 #include "../prolog/collisions.pl"

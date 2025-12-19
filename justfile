@@ -98,70 +98,12 @@ lint-all: build
 
 # lint the max length of files.
 lint-len: build
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/engine_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/tick_action_stream.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/tick_action_streams.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/tick_object.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/resolve_action.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/builtin_actions.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/move_to_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/trigger_state_change_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/despawn_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/noop_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/list_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/set_attr_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/parallel_race_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/repeat_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/move_delta_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/value_resolution_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/wait_key_down_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/wait_key_up_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/wait_key_held_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/__test__/wait_until_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/collisions.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/game.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/macros.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/test_macros.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/accessors/obj.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/accessors/ctx.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/adv_accessors.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/constructors.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/constraints.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/validation.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/validation2.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/adv_accessors_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/adv_accessors_bwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/types/validation_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/util/util.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/custom_actions_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/collisions_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/execute_action_fwd_test.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/input_helpers.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/xod/xod.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/move_to.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/move_delta.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/despawn.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/noop.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/define_action.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/set_attr.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/incr.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/decr.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/log.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/spawn.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/loop.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/list.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/repeat.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/load.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/trigger_state_change.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait_key_down.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait_key_up.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait_key_held.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/wait_until.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel_all.pl
-    MAX_LENGTH=60 bun scripts/max-len.ts prolog/actions/parallel_race.pl
+    MAX_LENGTH=60 bun scripts/max-lens.ts
+
+# lint the number of lines in each file.
+# NOTE: optional. I don't strictly enforce this.
+lint-lines: build
+    MAX_LINES=500 bun scripts/max-lines.ts
 
 # Run sconcat script to concatenate files
 # Usage: just sconcat [output_file]

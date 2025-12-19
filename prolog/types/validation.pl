@@ -135,7 +135,8 @@ state_validation_helper(Term) :-
               attrs(Attrs),
               status(Status),
               next_id(NextID),
-              commands(Commands),
+              commands(spawn_cmds(SpawnCmds),
+                       fork_cmds(ForkCmds)),
               actionstore(ActionStore)
           ) ->
             % Structure matches, validate content
@@ -147,11 +148,34 @@ state_validation_helper(Term) :-
             ground(Attrs),
             game_status_validation(Status),
             integer(NextID),
-            length(Commands, _),
+            % Validate commands structure
+            length(SpawnCmds, _),
+            length(ForkCmds, _),
             % ActionStore is an assoc tree - just check it's
             % ground
             % TODO: Better validation of ActionStore
             ground(ActionStore),
+            % Validate that number of objects matches
+            % number of actionstore entries
+            length(Objects, NumObjects),
+            assoc_to_keys(ActionStore, ActionStoreKeys),
+            length(ActionStoreKeys, NumActionStoreEntries),
+            ( NumObjects = NumActionStoreEntries ->
+                true
+            ;
+                val_format(
+                    "ERROR: Number of objects (~w) does \
+not match number of actionstore entries \
+(~w)~n",
+                    [NumObjects, NumActionStoreEntries]
+                ),
+                throw(
+                    error(
+                        validation_error,
+                        state_validation_helper/1
+                    )
+                )
+            ),
             extract_ids(Objects, IDs),
             is_ascending_ids(IDs),
             ( IDs = [] ->
@@ -182,7 +206,7 @@ state_validation_helper(Term) :-
 
 extract_ids([], []).
 extract_ids(
-    [object(id(ID), _)|Rest], [ID|IDs]
+    [object(id(ID))|Rest], [ID|IDs]
 ) :-
     extract_ids(Rest, IDs).
 
@@ -216,13 +240,9 @@ object_validation(Term) :-
 
 object_validation_helper(Term) :-
     ( ground(Term) ->
-        ( Term = object(
-              id(ID),
-              actions(Actions)
-          ) ->
+        ( Term = object(id(ID)) ->
             % Structure matches, validate content
-            integer(ID),
-            length(Actions, _)
+            integer(ID)
         ;
             % Structure doesn't match - throw
             val_format(
@@ -533,6 +553,13 @@ action_validation_helper(Term) :-
         ; Term = log(Msg) ->
             % Structure matches, validate Msg is a string
             is_list(Msg)
+        ; Term = fork(Acts) ->
+            % Structure matches, validate content
+            ( ground(Acts) ->
+                length(Acts, _)
+            ;
+                true
+            )
         ; builtin_action(Term) ->
             % Built-in action - allow it (arity already
             % validated by builtin_action/1)

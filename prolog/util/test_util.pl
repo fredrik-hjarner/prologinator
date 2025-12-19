@@ -72,7 +72,8 @@ user:goal_expansion(expect(Goal), Expanded) :-
 % Pretty Print Helper
 % ==========================================================
 % pretty_print(+Term)
-% Pretty prints Term with indentation (like JSON.stringify with 2 spaces)
+% Pretty prints Term with indentation (like
+% JSON.stringify with 2 spaces)
 % Makes complex Prolog terms much easier to read
 %
 % Example:
@@ -91,12 +92,14 @@ user:goal_expansion(expect(Goal), Expanded) :-
 %     )
 %   ]
 %
-% Note: This function does NOT handle cyclic terms (will cause
-%   infinite recursion). For cyclic terms, use write_term/2 with
-%   max_depth option instead.
+% Note: This function does NOT handle cyclic terms
+% (will cause infinite recursion). For cyclic
+% terms,
+% use write_term/2 with max_depth option instead.
 %
-% Note: Operators like 1 + 2 will be printed in canonical form
-%   as +(1, 2). This is intentional for structural clarity.
+% Note: Operators like 1 + 2 will be printed in
+% canonical form as +(1, 2). This is intentional
+% for structural clarity.
 
 pretty_print(Term) :-
     pretty_print(Term, 0).
@@ -140,8 +143,9 @@ pretty_print([H|T], Indent) :- !,
     write(']').
 
 % 6. Compounds (and Dicts/Strings if supported by dialect)
-% Note: Args = [] check is technically dead code (compound/1 fails
-%   for zero-arity terms), but kept for safety/clarity
+% Note: Args = [] check is technically dead code
+% (compound/1 fails for zero-arity terms), but kept
+% for safety/clarity
 pretty_print(Term, Indent) :-
     compound(Term), !,
     Term =.. [Functor|Args],
@@ -177,7 +181,8 @@ print_indent(Level) :-
 % Handle List Tails (including improper lists [a|b])
 pretty_print_list_tail([], _).
 pretty_print_list_tail([H|T], Indent) :-
-    !, % Cut ensures we don't fall through to improper list handler
+    !, % Cut ensures we don't fall through to
+    % improper list handler
     write(','),
     nl,
     pretty_print(H, Indent),
@@ -191,7 +196,8 @@ pretty_print_list_tail(Tail, Indent) :-
     writeq(Tail).
 
 % Handle Compound Arguments
-% Note: Indent here is the *Inner* indentation level (already calculated)
+% Note: Indent here is the *Inner* indentation
+% level (already calculated)
 pretty_print_args([Arg], Indent) :-
     pretty_print(Arg, Indent).
 pretty_print_args([Arg|Args], Indent) :-

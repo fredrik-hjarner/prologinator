@@ -56,9 +56,21 @@ ctx_state(State, Ctx, Ctx) :-
     Ctx = ctx(State, _).
 
 % getter ctx_cmds/3 for dcg use
-ctx_cmds(Commands, Ctx, Ctx) :-
+ctx_cmds(commands(SpawnCmds, ForkCmds), Ctx, Ctx) :-
     Ctx = ctx(state(_, _, _, _, _,
-                    commands(Commands), _), _).
+                    commands(SpawnCmds, ForkCmds), _), _).
+
+% getter ctx_spawnCmds/3 for dcg use
+ctx_spawnCmds(SpawnCmds, Ctx, Ctx) :-
+    Ctx = ctx(state(_, _, _, _, _,
+                    commands(spawn_cmds(SpawnCmds),
+                             fork_cmds(_)), _), _).
+
+% getter ctx_forkCmds/3 for dcg use
+ctx_forkCmds(ForkCmds, Ctx, Ctx) :-
+    Ctx = ctx(state(_, _, _, _, _,
+                    commands(spawn_cmds(_),
+                             fork_cmds(ForkCmds)), _), _).
 
 % getter ctx_status/3 for dcg use
 ctx_status(Status, Ctx, Ctx) :-
@@ -157,13 +169,41 @@ ctx_set_state(
 ).
 
 % Set commands in context
+% Accepts commands(SpawnCmds, ForkCmds) structure
 ctx_set_cmds(
-    NewCommands,
+    commands(NewSpawnCmds, NewForkCmds),
     ctx(state(F, Objects, Attrs, Status, NextID, _,
               ActionStore),
         Input),
     ctx(state(F, Objects, Attrs, Status, NextID,
-              commands(NewCommands), ActionStore), Input)
+              commands(NewSpawnCmds, NewForkCmds),
+              ActionStore), Input)
+).
+
+% Set spawnCmds in context
+ctx_set_spawnCmds(
+    NewSpawnCmds,
+    ctx(state(F, Objects, Attrs, Status, NextID,
+              commands(spawn_cmds(_),
+                       fork_cmds(ForkCmds)), ActionStore),
+        Input),
+    ctx(state(F, Objects, Attrs, Status, NextID,
+              commands(spawn_cmds(NewSpawnCmds),
+                       fork_cmds(ForkCmds)),
+              ActionStore), Input)
+).
+
+% Set forkCmds in context
+ctx_set_forkCmds(
+    NewForkCmds,
+    ctx(state(F, Objects, Attrs, Status, NextID,
+              commands(spawn_cmds(SpawnCmds),
+                       fork_cmds(_)), ActionStore),
+        Input),
+    ctx(state(F, Objects, Attrs, Status, NextID,
+              commands(spawn_cmds(SpawnCmds),
+                       fork_cmds(NewForkCmds)),
+              ActionStore), Input)
 ).
 
 % Set status in context

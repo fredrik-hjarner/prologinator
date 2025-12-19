@@ -5,7 +5,8 @@
 :- use_module(library(lists), [member/2, length/2]).
 :- use_module(library(assoc), [
     empty_assoc/1,
-    put_assoc/4
+    put_assoc/4,
+    gen_assoc/3
 ]).
 
 % ==========================================================
@@ -14,80 +15,77 @@
 
 test("tick_object: empty action list returns unchanged \
 object", (
-    ObjIn = object(
-        id(1),
-        actions([        ])
-    ),
+    ObjIn = object(id(1)),
+    ActionsIn = [],
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
-    obj_acns(ObjIn, ActionsIn),
     obj_id(ObjIn, ID),
+    % Set up actionstore
+    ctx_actionstore(ActionStoreIn, Ctx, Ctx),
+    put_assoc(ID, ActionStoreIn, [ActionsIn],
+              ActionStoreWithActions),
+    ctx_set_actionstore(ActionStoreWithActions, Ctx,
+                        CtxWithActions),
     tick_object(
         actions_old(ActionsIn),
         obj_id(ID),
         result(Status, actions_new(ActionsOut)),
-        Ctx,
+        CtxWithActions,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
-    ctx_cmds([], CtxNew, CtxNew),
+    ctx_spawnCmds([], CtxNew, CtxNew),
     Status = completed,
-    ObjOut = object(
-        id(1),
-        actions([            ])
-    )
+    ActionsOut = []
 )).
 
 test("tick_object: yielding action (wait) stops \
 after one execution", (
-    ObjIn = object(
-        id(1),
-        actions([wait(5)        ])
-    ),
+    ObjIn = object(id(1)),
+    ActionsIn = [wait(5)],
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
-    obj_acns(ObjIn, ActionsIn),
     obj_id(ObjIn, ID),
+    % Set up actionstore
+    ctx_actionstore(ActionStoreIn, Ctx, Ctx),
+    put_assoc(ID, ActionStoreIn, [ActionsIn],
+              ActionStoreWithActions),
+    ctx_set_actionstore(ActionStoreWithActions, Ctx,
+                        CtxWithActions),
     tick_object(
         actions_old(ActionsIn),
         obj_id(ID),
         result(Status, actions_new(ActionsOut)),
-        Ctx,
+        CtxWithActions,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
-    ctx_cmds([], CtxNew, CtxNew),
+    ctx_spawnCmds([], CtxNew, CtxNew),
     Status = yielded,
-    ObjOut = object(
-        id(1),
-        actions([wait(4)            ])
-    )
+    ActionsOut = [wait(4)]
 )).
 
 test("tick_object: wait(0) is removed and execution \
 continues until empty", (
-    ObjIn = object(
-        id(1),
-        actions([wait(0)        ])
-    ),
+    ObjIn = object(id(1)),
+    ActionsIn = [wait(0)],
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
-    obj_acns(ObjIn, ActionsIn),
     obj_id(ObjIn, ID),
+    % Set up actionstore
+    ctx_actionstore(ActionStoreIn, Ctx, Ctx),
+    put_assoc(ID, ActionStoreIn, [ActionsIn],
+              ActionStoreWithActions),
+    ctx_set_actionstore(ActionStoreWithActions, Ctx,
+                        CtxWithActions),
     tick_object(
         actions_old(ActionsIn),
         obj_id(ID),
         result(Status, actions_new(ActionsOut)),
-        Ctx,
+        CtxWithActions,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
-    ctx_cmds([], CtxNew, CtxNew),
+    ctx_spawnCmds([], CtxNew, CtxNew),
     Status = completed,
-    ObjOut = object(
-        id(1),
-        actions([            ])
-    )
+    ActionsOut = []
 )).
 
 % ==========================================================
@@ -96,60 +94,52 @@ continues until empty", (
 
 test("tick: increments frame and processes empty game \
 state", (
-    ctx_with_objs([object(
-        id(0),
-        actions([            ])
-    )], CtxIn),
+    ctx_with_objs([object(id(0))], CtxIn0),
+    % Set up actionstore with empty actions
+    ctx_actionstore(ActionStoreIn, CtxIn0, CtxIn0),
+    put_assoc(0, ActionStoreIn, [[]],
+              ActionStoreWithActions),
+    ctx_set_actionstore(ActionStoreWithActions, CtxIn0,
+                        CtxIn),
     tick(CtxIn, CtxOut),
     ctx_frame(1, CtxOut, CtxOut),
-    ctx_objs([object(
-        id(0),
-        actions([            ])
-    )], CtxOut, CtxOut)
+    ctx_objs([object(id(0))], CtxOut, CtxOut)
 )).
 
 test("tick: processes object with yielding action \
 (wait)", (
     empty_ctx(CtxIn0),
-    ctx_set_objs([object(
-        id(0),
-        actions([wait(3)            ])
-    )], CtxIn0, CtxIn),
+    ctx_set_objs([object(id(0))], CtxIn0, CtxIn1),
+    % Set up actionstore
+    ctx_actionstore(ActionStoreIn, CtxIn1, CtxIn1),
+    put_assoc(0, ActionStoreIn, [[wait(3)]],
+              ActionStoreWithActions),
+    ctx_set_actionstore(ActionStoreWithActions, CtxIn1,
+                        CtxIn),
     tick(CtxIn, CtxOut),
     ctx_frame(1, CtxOut, CtxOut),
-    ctx_objs([object(
-        id(0),
-        actions([wait(2)            ])
-    )], CtxOut, CtxOut)
+    ctx_objs([object(id(0))], CtxOut, CtxOut),
+    % Check actionstore
+    ctx_actionstore(ActionStoreOut, CtxOut, CtxOut),
+    gen_assoc(0, ActionStoreOut, [[wait(2)]])
 )).
 
 test("tick: processes spawn request and creates new \
 object", (
     empty_ctx(CtxIn0),
-    ctx_set_objs([object(
-        id(0),
-        actions([
-            spawn(enemy, 5, 5, [])
-            ])
-    )], CtxIn0, CtxIn),
+    ctx_set_objs([object(id(0))], CtxIn0, CtxIn1),
+    % Set up actionstore
+    ctx_actionstore(ActionStoreIn, CtxIn1, CtxIn1),
+    put_assoc(0, ActionStoreIn, [[spawn(enemy, 5, 5, [])]],
+              ActionStoreWithActions),
+    ctx_set_actionstore(ActionStoreWithActions, CtxIn1,
+                        CtxIn),
     tick(CtxIn, CtxOut),
     ctx_frame(1, CtxOut, CtxOut),
     ctx_nextid(2, CtxOut, CtxOut),
     ctx_objs(FinalObjs, CtxOut, CtxOut),
-    member(
-        object(
-            id(0),
-            actions([        ])
-    ),
-        FinalObjs
-    ),
-    member(
-        object(
-            id(_NewID),
-            actions([        ])
-    ),
-        FinalObjs
-    ),
+    member(object(id(0)), FinalObjs),
+    member(object(id(_NewID)), FinalObjs),
     ctx_attr_val(_NewID/type, enemy, CtxOut, CtxOut)
 )).
 
@@ -172,24 +162,18 @@ test("collision: simple enemy-projectile collision", (
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
     ctx_set_objs([
-        object(
-            id(0),
-            actions([
-                % Moving right, arrives at (10, 10) in 1
-                % frame
-                move_to(10, 10, 1)
-            ])
-        ),
-        object(
-            id(1),
-            actions([
-                % Moving to same target, arrives at
-                % (10, 10) in 1 frame
-                move_to(10, 10, 1)
-            ])
-        )
+        object(id(0)),
+        object(id(1))
     ], Ctx0, Ctx1),
-    ctx_set_nextid(2, Ctx1, InitialContext),
+    % Set up actionstore
+    ctx_actionstore(ActionStoreIn, Ctx1, Ctx1),
+    put_assoc(0, ActionStoreIn, [[move_to(10, 10, 1)]],
+              ActionStore1),
+    put_assoc(1, ActionStore1, [[move_to(10, 10, 1)]],
+              ActionStoreWithActions),
+    ctx_set_actionstore(ActionStoreWithActions, Ctx1,
+                        Ctx1WithActions),
+    ctx_set_nextid(2, Ctx1WithActions, InitialContext),
     % Run 1 frame - collision should happen when both reach
     % (10, 10)
     tick(InitialContext, Context1),
@@ -226,52 +210,36 @@ freeze (first collision)", (
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx0),
     ctx_set_objs([
-        object(
-            id(0),
-            actions([
-                loop([
-                    wait(3),
-                    spawn(proj, 5, 19, [
-                        move_to(5, 0, 20)
-                    ])
-                ])
-            ])
-        ),
-        object(
-            id(1),
-            actions([
-                loop([
-                    wait(3),
-                    spawn(proj, 10, 19, [
-                        move_to(10, 0, 20)
-                    ])
-                ])
-            ])
-        ),
-        object(
-            id(2),
-            actions([
-                loop([
-                    wait(3),
-                    spawn(proj, 15, 19, [
-                        move_to(15, 0, 20)
-                    ])
-                ])
-            ])
-        ),
-        object(
-            id(3),
-            actions([
-                loop([
-                    wait(5),
-                    spawn(enemy, 0, 10, [
-                        move_to(19, 10, 30)
-                    ])
-                ])
-            ])
-        )
+        object(id(0)),
+        object(id(1)),
+        object(id(2)),
+        object(id(3))
     ], Ctx0, Ctx1),
-    ctx_set_nextid(4, Ctx1, InitialContext),
+    % Set up actionstore
+    ctx_actionstore(ActionStoreIn, Ctx1, Ctx1),
+    put_assoc(0, ActionStoreIn,
+              [[loop([wait(3),
+                      spawn(proj, 5, 19,
+                            [move_to(5, 0, 20)])])]],
+              ActionStore1),
+    put_assoc(1, ActionStore1,
+              [[loop([wait(3),
+                      spawn(proj, 10, 19,
+                            [move_to(10, 0, 20)])])]],
+              ActionStore2),
+    put_assoc(2, ActionStore2,
+              [[loop([wait(3),
+                      spawn(proj, 15, 19,
+                            [move_to(15, 0, 20)])])]],
+              ActionStore3),
+    put_assoc(3, ActionStore3,
+              [[loop([wait(5),
+                      spawn(enemy, 0, 10,
+                            [move_to(19, 10, 30)])])]],
+              ActionStoreWithActions),
+    ctx_set_actionstore(ActionStoreWithActions, Ctx1,
+                        Ctx1WithActions),
+    ctx_set_nextid(4, Ctx1WithActions, InitialContext),
     % Run tick 32 times (first collision should happen
     % around here)
     run_ticks(InitialContext, 32, FinalContext),

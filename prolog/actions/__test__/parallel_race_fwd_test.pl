@@ -21,43 +21,36 @@ test("parallel_race: stops on child completion", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Obj = object(
-        id(0),
-        actions([
-            parallel_race([
-                wait(5),
-                noop,
-                wait(10)
-            ]),
-            wait(3)
-        ])
-    ),
+    ActionsIn = [
+        parallel_race([
+            wait(5),
+            noop,
+            wait(10)
+        ]),
+        wait(3)
+    ],
     empty_attr_store(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0, [attr(type, tower)],
               EmptyAttrs),
-    ctx_with_objs([Obj], Ctx0),
-    ctx_set_attrs(EmptyAttrs, Ctx0, Ctx),
+    ctx_with_attrs(EmptyAttrs, Ctx0),
+    ctx_set_objs([object(id(0))], Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(Obj, ActionsIn),
-    obj_id(Obj, ID),
     execute_action(
         action(parallel_race(
             [wait(5), noop, wait(10)]
         )),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(0),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         _
     ),
-    obj_acns_obj(Obj, ActionsOut, NewObj),
-    obj_acns(NewObj, Actions),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Actions = [wait(3)|_] ; err_write("Actions wrong"))
+    (ActionsOut = [wait(3)|_] ; err_write("Actions wrong"))
 )).
 
 test("parallel_race: continues if no child \
@@ -65,84 +58,72 @@ done", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Obj = object(
-        id(0),
-        actions([
-            parallel_race([
-                wait(5), wait(10)
-            ]),
-            wait(3)
-        ])
-    ),
+    ActionsIn = [
+        parallel_race([
+            wait(5), wait(10)
+        ]),
+        wait(3)
+    ],
     empty_attr_store(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0, [attr(type, tower)],
               EmptyAttrs),
-    ctx_with_objs([Obj], Ctx0),
-    ctx_set_attrs(EmptyAttrs, Ctx0, Ctx),
+    ctx_with_attrs(EmptyAttrs, Ctx0),
+    ctx_set_objs([object(id(0))], Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(Obj, ActionsIn),
-    obj_id(Obj, ID),
     execute_action(
         action(parallel_race(
             [wait(5), wait(10)]
         )),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(0),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
     ),
-    obj_acns_obj(Obj, ActionsOut, NewObj),
-    obj_acns(NewObj, Actions),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
     (Status = yielded
      ; err_write("Status != yielded")),
-    (Actions = [parallel_race([wait(4), wait(9)])|_]
+    (ActionsOut = [parallel_race([wait(4), wait(9)])|_]
      ;
      err_write("Actions wrong"))
 )).
 
 test("parallel_race: despawns parent when child \
 despawns", (
-    Obj = object(
-        id(1),
-        actions([
-            parallel_race([
-                despawn,
-                wait(10)
-            ]),
-            trigger_state_change(game_over(won)),
-            wait(5)
-        ])
-    ),
+    ActionsIn = [
+        parallel_race([
+            despawn,
+            wait(10)
+        ]),
+        trigger_state_change(game_over(won)),
+        wait(5)
+    ],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
               [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    obj_acns(Obj, ActionsIn),
-    obj_id(Obj, ID),
     execute_action(
         action(parallel_race([despawn, wait(10)])),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(ActionStatus, actions_new(_)),
         Ctx,
         CtxNew
     ),
     ctx_status(Status, CtxNew, CtxNew),
-    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
     (ActionStatus = despawned
     ; err_write("ActionStatus != despawned")),
     (Status = playing ; err_write("Status != playing")),
-    (Commands = [] ; err_write("Commands != []"))
+    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
 )).
 
 % TODO: Complete and fix this test.

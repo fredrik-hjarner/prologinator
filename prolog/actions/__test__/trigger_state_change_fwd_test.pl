@@ -22,37 +22,27 @@ to won", (
     % Arrange
     % ------------------------------------------------------
     Action = trigger_state_change(game_over(won)),
-    ObjIn = object(
-        id(1),
-        actions([trigger_state_change(game_over(won))])
-    ),
+    ActionsIn = [trigger_state_change(game_over(won))],
     empty_ctx(CtxTemp),
     ctx_set_attr_val(1/type, static, CtxTemp, CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(completed, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
-    ctx_cmds(Commands, CtxOut, CtxOut),
+    ctx_spawnCmds(SpawnCmds, CtxOut, CtxOut),
     ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = object(
-        id(1),
-        actions([])
-    ),
     (Status = won ; err_write("Status != won")),
-    (Commands = [] ; err_write("Commands != []"))
+    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
 )).
 
 test("trigger_state_change: forward test - updates status \
@@ -61,37 +51,27 @@ to lost", (
     % Arrange
     % ------------------------------------------------------
     Action = trigger_state_change(game_over(lost)),
-    ObjIn = object(
-        id(1),
-        actions([trigger_state_change(game_over(lost))])
-    ),
+    ActionsIn = [trigger_state_change(game_over(lost))],
     empty_ctx(CtxTemp),
     ctx_set_attr_val(1/type, static, CtxTemp, CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(completed, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
-    ctx_cmds(Commands, CtxOut, CtxOut),
+    ctx_spawnCmds(SpawnCmds, CtxOut, CtxOut),
     ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = object(
-        id(1),
-        actions([])
-    ),
     (Status = lost ; err_write("Status != lost")),
-    (Commands = [] ; err_write("Commands != []"))
+    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
 )).
 
 test("trigger_state_change: forward test - won cannot \
@@ -100,37 +80,27 @@ override lost", (
     % Arrange
     % ------------------------------------------------------
     Action = trigger_state_change(game_over(won)),
-    ObjIn = object(
-        id(1),
-        actions([trigger_state_change(game_over(won))])
-    ),
+    ActionsIn = [trigger_state_change(game_over(won))],
     empty_ctx(CtxTemp0),
     ctx_set_attr_val(1/type, static, CtxTemp0, CtxTemp),
     ctx_set_status(lost, CtxTemp, CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(Action),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(completed, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
-    ctx_cmds(Commands, CtxOut, CtxOut),
+    ctx_spawnCmds(SpawnCmds, CtxOut, CtxOut),
     ctx_status(Status, CtxOut, CtxOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = object(
-        id(1),
-        actions([])
-    ),
     (Status = lost ; err_write("Status != lost")),
-    (Commands = [] ; err_write("Commands != []"))
+    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
 )).
 

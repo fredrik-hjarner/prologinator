@@ -6,7 +6,8 @@
 :- use_module(library(lists), [member/2]).
 :- use_module(library(assoc), [
     empty_assoc/1,
-    put_assoc/4
+    put_assoc/4,
+    gen_assoc/3
 ]).
 :- use_module(library(format)).
 :- use_module(library(lists), [length/2]).
@@ -27,18 +28,15 @@ test("define_action: stores action definition", (
     % Clear any existing definitions
     retractall(prologinator:user_action(_, _)),
     
-    ObjIn = object(
-        id(0),
-        actions([
-            define_action(
-                zigzag(Amplitude, Times),
-                repeat(Times, [
-                    move_delta(Amplitude, 0, 10),
-                    move_delta(-Amplitude, 0, 10)
-                ])
-            )
-        ])
-    ),
+    ActionsIn = [
+        define_action(
+            zigzag(Amplitude, Times),
+            repeat(Times, [
+                move_delta(Amplitude, 0, 10),
+                move_delta(-Amplitude, 0, 10)
+            ])
+        )
+    ],
     empty_attr_store(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0, [attr(type, static)],
               EmptyAttrs),
@@ -48,8 +46,6 @@ test("define_action: stores action definition", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(define_action(
             zigzag(Amplitude, Times),
@@ -59,20 +55,19 @@ test("define_action: stores action definition", (
             ])
         )),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(0),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
     % Action should be removed from queue
-    expect(obj_acns(ObjOut, [])),
+    expect(ActionsOut = []),
     % Definition should be stored
     expect(prologinator:user_action(zigzag(_, _), _)),
-    expect(ctx_cmds([], CtxNew, CtxNew))
+    expect(ctx_spawnCmds([], CtxNew, CtxNew))
 )).
 
 % ----------------------------------------------------------
@@ -95,10 +90,7 @@ test("custom_action: zigzag expands and executes", (
         ])
     )),
     
-    ObjIn = object(
-        id(0),
-        actions([zigzag(30, 2)])
-    ),
+    ActionsIn = [zigzag(30, 2)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0,
               [attr(type, static),
@@ -110,32 +102,28 @@ test("custom_action: zigzag expands and executes", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(zigzag(30, 2)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(0),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
     % Should expand to repeat(2, [...])
     % After one execution, should have repeat(1, [...])
     % remaining
-    obj_acns(ObjOut, Actions),
     % The expanded action should be in the queue
     expect((
         member(repeat(1, [move_delta(30, 0, 10),
-            move_delta(-30, 0, 10)]), Actions)
-        ; member(move_delta(30, 0, 10), Actions)
+            move_delta(-30, 0, 10)]), ActionsOut)
+        ; member(move_delta(30, 0, 10), ActionsOut)
             % Or already expanded further
     )),
-    expect(ctx_cmds([], CtxNew, CtxNew))
+    expect(ctx_spawnCmds([], CtxNew, CtxNew))
 )).
 
 % --------------------------------------------------------
@@ -149,47 +137,63 @@ test("custom_action: define and use in same action list", (
     % Clear any existing definitions
     retractall(prologinator:user_action(_, _)),
     
-    ObjIn = object(
-        id(0),
-        actions([
-            % Define zigzag
-            define_action(
-                zigzag(Amp, N),
-                repeat(N, [
-                    move_delta(Amp, 0, 5),
-                    move_delta(-Amp, 0, 5)
-                ])
-            ),
-            wait(1),
-            % Use it
-            zigzag(20, 1),
-            despawn
-        ])
-    ),
+    ObjIn = object(id(0)),
+    ActionsIn = [
+        % Define zigzag
+        define_action(
+            zigzag(Amp, N),
+            repeat(N, [
+                move_delta(Amp, 0, 5),
+                move_delta(-Amp, 0, 5)
+            ])
+        ),
+        wait(1),
+        % Use it
+        zigzag(20, 1),
+        despawn
+    ],
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, CtxTemp),
     ctx_set_objs([ObjIn], CtxTemp, CtxTemp2),
     ctx_set_nextid(1, CtxTemp2, Ctx0),
+    % Add actions to actionstore
+    empty_assoc(EmptyActionStore),
+    put_assoc(0, EmptyActionStore, [ActionsIn],
+              ActionStore0),
+    ctx_set_actionstore(ActionStore0, Ctx0,
+                        Ctx0WithActions),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
     % First tick: define_action executes
-    tick(Ctx0, Ctx1),
-    expect(ctx_objs([Obj1], Ctx1, Ctx1)),
-    obj_acns(Obj1, Actions1),
-    % ------------------------------------------------------
-    % Assert
-    % ------------------------------------------------------
-    % define_action should be gone, zigzag should be there
-    expect(\+ member(define_action(_, _), Actions1)),
-    expect(member(zigzag(20, 1), Actions1)),
+    tick(Ctx0WithActions, Ctx1),
+    ctx_objs(Objects1, Ctx1, Ctx1),
+    expect(length(Objects1, 1), 'Should have one object'),
+    ctx_actionstore(ActionStore1, Ctx1, Ctx1),
+    ( gen_assoc(0, ActionStore1, Streams1) ->
+        ( Streams1 = [Actions1] ->
+            % define_action should be gone, zigzag should
+            % be there
+            expect(\+ member(define_action(_, _),
+                             Actions1)),
+            expect(member(zigzag(20, 1),
+                          Actions1))
+        ;
+            throw(error('Expected single stream, got',
+                        Streams1))
+        )
+    ;
+        throw(error('Object 0 not in actionstore'))
+    ),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
     % Second tick: zigzag expands and executes
     tick(Ctx1, Ctx2),
-    expect(ctx_objs([Obj2], Ctx2, Ctx2)),
-    obj_acns(Obj2, Actions2),
+    ctx_objs(Objects2, Ctx2, Ctx2),
+    expect(length(Objects2, 1), 'Should have one object'),
+    ctx_actionstore(ActionStore2, Ctx2, Ctx2),
+    gen_assoc(0, ActionStore2, [Actions2]),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
@@ -210,53 +214,77 @@ test("custom_action: shoot_burst defines and executes", (
     % Clear any existing definitions
     retractall(prologinator:user_action(_, _)),
     
-    ObjIn = object(
-        id(0),
-        actions([
-            define_action(
-                shoot_burst(Count),
-                repeat(Count, [
-                    spawn(proj, 100, 100, [
-                        move_delta(0, -5, 20)
-                    ]),
-                    wait(3)
-                ])
-            ),
-            wait(1),
-            shoot_burst(2)
-        ])
-    ),
+    ObjIn = object(id(0)),
+    ActionsIn = [
+        define_action(
+            shoot_burst(Count),
+            repeat(Count, [
+                spawn(proj, 100, 100, [
+                    move_delta(0, -5, 20)
+                ]),
+                wait(3)
+            ])
+        ),
+        wait(1),
+        shoot_burst(2)
+    ],
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, CtxTemp),
     ctx_set_objs([ObjIn], CtxTemp, CtxTemp2),
     ctx_set_nextid(1, CtxTemp2, Ctx0),
+    % Add actions to actionstore
+    empty_assoc(EmptyActionStore),
+    put_assoc(0, EmptyActionStore, [ActionsIn],
+              ActionStore0),
+    ctx_set_actionstore(ActionStore0, Ctx0,
+                        Ctx0WithActions),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
     % First tick: define_action executes
-    tick(Ctx0, Ctx1),
+    write('First tick: define_action executes'), nl,
+    tick(Ctx0WithActions, Ctx1),
+    write('After first tick'), nl,
     expect(
-        ctx_objs([Obj1], Ctx1, Ctx1)
+        ctx_objs(Objects1, Ctx1, Ctx1),
+        'Objects should be updated'
     ),
-    obj_acns(Obj1, Actions1),
-    % ------------------------------------------------------
-    % Assert
-    % ------------------------------------------------------
+    expect(length(Objects1, 1), 'Should have one object'),
+    expect(
+        ctx_actionstore(ActionStore1, Ctx1, Ctx1),
+        'Actionstore should be updated'
+    ),
+    expect(
+        gen_assoc(0, ActionStore1, [Actions1]),
+        'Object 0 should have actions in actionstore'
+    ),
     % define_action should be gone
     expect(\+ member(define_action(_, _), Actions1)),
     expect(member(shoot_burst(2), Actions1)),
     
+    % ------------------------------------------------------
+    % Act
+    % ------------------------------------------------------
     % Second tick: shoot_burst expands
+    write('Second tick: shoot_burst expands'), nl,
     tick(Ctx1, Ctx2),
+    write('After second tick'), nl,
     ctx_objs(Objects2, Ctx2, Ctx2),
     % Should have spawned a projectile
     length(Objects2, NumObjects),
     % Original object + at least one projectile
     expect(NumObjects >= 2),
-    % Find the original object
-    expect(member(Obj2, Objects2)),
-    expect(obj_id(Obj2, 0)),
-    obj_acns(Obj2, Actions2),
+    % Find the original object (ID 0)
+    member(Obj2, Objects2),
+    obj_id(Obj2, 0),
+    expect(
+        ctx_actionstore(ActionStore2, Ctx2, Ctx2),
+        'Actionstore should be updated'
+    ),
+    expect(
+        gen_assoc(0, ActionStore2, [Actions2]),
+        'Object 0 should have actions in actionstore'
+    ),
     % shoot_burst should be expanded
     expect(\+ member(shoot_burst(_), Actions2))
 )).
@@ -272,42 +300,43 @@ test("custom_action: multiple definitions work", (
     % Clear any existing definitions
     retractall(prologinator:user_action(_, _)),
     
-    ObjIn = object(
-        id(0),
-        actions([
-            % frame 1
-            define_action(
-                move_up(Dist),
-                move_delta(0, -Dist, 10)
-            ),
-            wait(1),
-            % frame 2
-            define_action(
-                move_down(Dist),
-                move_delta(0, Dist, 10)
-            ),
-            wait(1),
-            % frame 3
-            move_up(5),
-            move_down(3)
-        ])
-    ),
+    ObjIn = object(id(0)),
+    ActionsIn = [
+        % frame 1
+        define_action(
+            move_up(Dist),
+            move_delta(0, -Dist, 10)
+        ),
+        wait(1),
+        % frame 2
+        define_action(
+            move_down(Dist),
+            move_delta(0, Dist, 10)
+        ),
+        wait(1),
+        % frame 3
+        move_up(5),
+        move_down(3)
+    ],
     empty_attr_store(EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, CtxTemp),
     ctx_set_objs([ObjIn], CtxTemp, CtxTemp2),
     ctx_set_nextid(1, CtxTemp2, Ctx0),
+    % Add actions to actionstore
+    empty_assoc(EmptyActionStore),
+    put_assoc(0, EmptyActionStore, [ActionsIn],
+              ActionStore0),
+    ctx_set_actionstore(ActionStore0, Ctx0,
+                        Ctx0WithActions),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
     % First tick: first define_action
-    tick(Ctx0, Ctx1),
-    expect(
-        ctx_objs([Obj1], Ctx1, Ctx1)
-    ),
-    obj_acns(Obj1, Actions1),
-    % ------------------------------------------------------
-    % Assert
-    % ------------------------------------------------------
+    tick(Ctx0WithActions, Ctx1),
+    ctx_objs(Objects1, Ctx1, Ctx1),
+    expect(length(Objects1, 1), 'Should have one object'),
+    ctx_actionstore(ActionStore1, Ctx1, Ctx1),
+    gen_assoc(0, ActionStore1, [Actions1]),
     expect(member(define_action(move_down(_), _),
         Actions1)),
     expect(\+ member(define_action(move_up(_), _),
@@ -318,10 +347,10 @@ test("custom_action: multiple definitions work", (
     % ------------------------------------------------------
     % Second tick: second define_action
     tick(Ctx1, Ctx2),
-    expect(
-        ctx_objs([Obj2], Ctx2, Ctx2)
-    ),
-    obj_acns(Obj2, Actions2),
+    ctx_objs(Objects2, Ctx2, Ctx2),
+    expect(length(Objects2, 1), 'Should have one object'),
+    ctx_actionstore(ActionStore2, Ctx2, Ctx2),
+    gen_assoc(0, ActionStore2, [Actions2]),
 
     % ------------------------------------------------------
     % Assert
@@ -330,13 +359,28 @@ test("custom_action: multiple definitions work", (
     expect(member(move_up(5), Actions2)),
     expect(member(move_down(3), Actions2)),
     
-    % Third tick: move_up expands
+    % Third tick: move_up expands and executes (completes
+    % instantly since Frames=0), then move_down expands and
+    % executes (also completes instantly)
     tick(Ctx2, Ctx3),
-    expect(
-        ctx_objs([Obj3], Ctx3, Ctx3)
-    ),
-    obj_acns(Obj3, Actions3),
-    expect([] = Actions3)
+    ctx_objs(Objects3, Ctx3, Ctx3),
+    expect(length(Objects3, 1), 'Should have one object'),
+    ctx_actionstore(ActionStore3, Ctx3, Ctx3),
+    ( gen_assoc(0, ActionStore3, Streams3) ->
+        ( Streams3 = [] ->
+            % All streams completed and were removed
+            expect(true)
+        ; Streams3 = [Actions3] ->
+            % Both move_up and move_down complete instantly
+            % (Frames=0), so actions should be empty
+            expect([] = Actions3)
+        ;
+            throw(error('Unexpected streams', Streams3))
+        )
+    ;
+        % No actionstore entry means all actions completed
+        expect(true)
+    )
 )).
 
 % --------------------------------------------------------
@@ -360,10 +404,7 @@ substituted", (
         ])
     )),
     
-    ObjIn = object(
-        id(0),
-        actions([move_pattern(10, 10, 20, 20, 5)])
-    ),
+    ActionsIn = [move_pattern(10, 10, 20, 20, 5)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0,
               [attr(type, static), attr(x, 0), attr(y, 0)],
@@ -374,31 +415,27 @@ substituted", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(move_pattern(10, 10, 20, 20, 5)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(0),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
     % Should expand to list([move_to(...), move_to(...)])
     % The list action now executes immediately, so move_to
     % will have started (yielded after 1 frame)
-    obj_acns(ObjOut, Actions),
     expect(
         Status = yielded
     ),
     expect(
         member(list([move_to(10, 10, _),
-            move_to(20, 20, 5)]), Actions)
+            move_to(20, 20, 5)]), ActionsOut)
     ),
-    expect(ctx_cmds([], CtxNew, CtxNew))
+    expect(ctx_spawnCmds([], CtxNew, CtxNew))
 )).
 

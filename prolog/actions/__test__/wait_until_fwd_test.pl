@@ -16,10 +16,7 @@ test("wait_until: completes when path exists", (
     % --------------------------------------------------
     % Arrange
     % --------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([wait_until(collision_id), noop        ])
-    ),
+    ActionsIn = [wait_until(collision_id), noop],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, 
               [attr(type, static), attr(x, 0), attr(y, 0), 
@@ -29,34 +26,29 @@ test("wait_until: completes when path exists", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(wait_until(collision_id)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
     expect(Status = completed, 'Status != completed'),
-    expect(obj_acns(ObjOut, [noop]),
+    expect(ActionsOut = [noop],
         'Actions != [noop]'),
-    expect(ctx_cmds([], CtxNew, CtxNew), 'Commands != []')
+    expect(ctx_spawnCmds([], CtxNew, CtxNew),
+           'SpawnCmds != []')
 )).
 
 test("wait_until: yields when path does not exist", (
     % --------------------------------------------------
     % Arrange
     % --------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([wait_until(collision_id), noop        ])
-    ),
+    ActionsIn = [wait_until(collision_id), noop],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, 
               [attr(type, static), attr(x, 0), attr(y, 0)], 
@@ -65,23 +57,19 @@ test("wait_until: yields when path does not exist", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(wait_until(collision_id)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
     expect(Status = yielded, 'Status != yielded'),
-    expect(obj_acns(ObjOut, 
-                    [wait_until(collision_id), noop]),
+    expect(ActionsOut = [wait_until(collision_id), noop],
         'Action not preserved')
 )).
 
@@ -89,11 +77,8 @@ test("wait_until: works with nested paths", (
     % --------------------------------------------------
     % Arrange
     % --------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([wait_until(collision_id/collisionType), 
-                 noop        ])
-    ),
+    ActionsIn = [wait_until(collision_id/collisionType),
+                 noop],
     empty_attr_store(EmptyAttrs0),
     % Object 1 has collision_id pointing to object 5
     put_assoc(1, EmptyAttrs0, 
@@ -109,22 +94,19 @@ test("wait_until: works with nested paths", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(wait_until(collision_id/collisionType)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
     expect(Status = completed, 'Status != completed'),
-    expect(obj_acns(ObjOut, [noop]),
+    expect(ActionsOut = [noop],
         'Actions != [noop]')
 )).
 
@@ -132,11 +114,8 @@ test("wait_until: yields when nested path does not exist", (
     % --------------------------------------------------
     % Arrange
     % --------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([wait_until(collision_id/collisionType), 
-                 noop        ])
-    ),
+    ActionsIn = [wait_until(collision_id/collisionType),
+                 noop],
     empty_attr_store(EmptyAttrs0),
     % Object 1 has collision_id pointing to object 5
     put_assoc(1, EmptyAttrs0, 
@@ -151,26 +130,22 @@ test("wait_until: yields when nested path does not exist", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(wait_until(collision_id/collisionType)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
     expect(Status = yielded, 'Status != yielded'),
-    expect(obj_acns(ObjOut, 
-                    [wait_until(collision_id/
-                                collisionType), 
-                     noop]),
-        'Action not preserved')
+    expect(ActionsOut = [wait_until(
+                             collision_id/collisionType),
+                         noop],
+           'Action not preserved')
 )).
 
 test("wait_until: yields when intermediate path does not \
@@ -178,11 +153,8 @@ exist", (
     % --------------------------------------------------
     % Arrange
     % --------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([wait_until(collision_id/collisionType), 
-                 noop        ])
-    ),
+    ActionsIn = [wait_until(collision_id/collisionType),
+                 noop],
     empty_attr_store(EmptyAttrs0),
     % Object 1 has no collision_id at all
     put_assoc(1, EmptyAttrs0, 
@@ -192,25 +164,21 @@ exist", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(wait_until(collision_id/collisionType)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------
     expect(Status = yielded, 'Status != yielded'),
-    expect(obj_acns(ObjOut, 
-                    [wait_until(collision_id/
-                                collisionType), 
-                     noop]),
-        'Action not preserved')
+    expect(ActionsOut = [wait_until(
+                             collision_id/collisionType),
+                         noop],
+           'Action not preserved')
 )).
 

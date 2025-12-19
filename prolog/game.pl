@@ -40,13 +40,17 @@ main :-
                      attr(x, 0), attr(y, 0)],
                     AttrStore1),
           ctx_with_objs_input([
-              object(
-                  id(0),
-                  actions([load(GameFile)])
-              )
+              object(id(0))
           ], [], [], InitialContext0),
           ctx_set_attrs(AttrStore1, InitialContext0,
-                        InitialContext),
+                        InitialContext1),
+          % Add actions to actionstore
+          ctx_actionstore(ActionStore0, InitialContext1,
+                          InitialContext1),
+          put_assoc(0, ActionStore0, [[load(GameFile)]],
+                    ActionStore1),
+          ctx_set_actionstore(ActionStore1, InitialContext1,
+                              InitialContext),
           
           game_loop(
             ctx_in(InitialContext), 

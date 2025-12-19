@@ -24,18 +24,13 @@ test("value_resolution: move_to with attr() references", (
                attr(target_y, 200)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    ObjIn = object(
-        id(1),
-        actions([move_to(attr(target_x),
-                         attr(target_y), 5)])
-    ),
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
+    ActionsIn = [move_to(attr(target_x),
+                         attr(target_y), 5)],
     execute_action(
         action(move_to(attr(target_x),
                        attr(target_y), 5)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -55,16 +50,11 @@ test("value_resolution: set_attr with attr() source", (
                attr(source_x, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    ObjIn = object(
-        id(1),
-        actions([set_attr(source_x, attr(x))])
-    ),
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
+    ActionsIn = [set_attr(source_x, attr(x))],
     execute_action(
         action(set_attr(source_x, attr(x))),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -86,18 +76,13 @@ test("value_resolution: path syntax parent_id/target_y", (
                attr(target_y, 250)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    ObjIn = object(
-        id(1),
-        actions([set_attr(my_target_y,
-                          attr(parent_id/target_y))])
-    ),
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
+    ActionsIn = [set_attr(my_target_y,
+                          attr(parent_id/target_y))],
     execute_action(
         action(set_attr(my_target_y,
                         attr(parent_id/target_y))),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -123,20 +108,15 @@ test("value_resolution: multi-hop path a/b/c", (
                attr(final_value, 999)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    ObjIn = object(
-        id(1),
-        actions([set_attr(result,
+    ActionsIn = [set_attr(result,
                           attr(first_id/second_id/
-                                final_value))        ])
-    ),
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
+                                final_value))],
     execute_action(
         action(set_attr(result,
                         attr(first_id/second_id/
                               final_value))),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -156,29 +136,25 @@ test("value_resolution: spawn at attr() position", (
                attr(spawn_y, 300)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    ObjIn = object(
-        id(1),
-        actions([spawn(enemy, attr(spawn_x),
-                       attr(spawn_y), [])        ])
-    ),
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
+    ActionsIn = [spawn(enemy, attr(spawn_x),
+                       attr(spawn_y), [])],
     execute_action(
         action(spawn(enemy, attr(spawn_x),
                      attr(spawn_y), [])),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
-    % Should spawn enemy at (200, 300) - spawn immediately
-    % creates object, so check it exists in context
-    ctx_objs(Objects, CtxNew, CtxNew),
-    member(object(id(_ID), _), Objects),
-    ctx_attr_val(_ID/type, enemy, CtxNew, CtxNew),
-    ctx_attr_val(_ID/x, 200, CtxNew, CtxNew),
-    ctx_attr_val(_ID/y, 300, CtxNew, CtxNew)
+    % Check that spawn command was created with resolved
+    % values (attr() references should be resolved to 200,
+    % 300)
+    ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
+    % Should have one spawn command with resolved values
+    SpawnCmds = [spawn_cmd(actions([set_attr(type, enemy),
+                                     set_attr(x, 200),
+                                     set_attr(y, 300)]))]
 )).
 
 test("value_resolution: mixed plain and attr() values", (
@@ -190,18 +166,13 @@ test("value_resolution: mixed plain and attr() values", (
                attr(speed, 5)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    ObjIn = object(
-        id(1),
-        actions([move_to(attr(target_x), 200,
-                         attr(speed))        ])
-    ),
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
+    ActionsIn = [move_to(attr(target_x), 200,
+                         attr(speed))],
     execute_action(
         action(move_to(attr(target_x), 200,
                        attr(speed))),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -226,21 +197,15 @@ test("value_resolution: backward compatible plain values", (
               [attr(type, static), attr(x, 0), attr(y, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    ObjIn = object(
-        id(1),
-        actions([move_to(100, 200, 5)        ])
-    ),
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
+    ActionsIn = [move_to(100, 200, 5)],
     execute_action(
         action(move_to(100, 200, 5)),
         actions_old(ActionsIn),
-        obj_id(ID),
-        result(_, actions_new(ActionsOut)),
+        obj_id(1),
+        result(_, actions_new(_ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, _ObjOut),
     % Should work exactly as before
     ctx_attr_val(1/x, NewX, CtxNew, CtxNew),
     ctx_attr_val(1/y, NewY, CtxNew, CtxNew),

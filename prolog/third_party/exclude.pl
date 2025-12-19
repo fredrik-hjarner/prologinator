@@ -7,7 +7,8 @@
 
 %% exclude(+Goal, +List, -Filtered).
 %
-% Filter elements from List where Goal succeeds, returning Filtered.
+% Filter elements from List where Goal succeeds,
+% returning Filtered.
 % Goal is called as call(Goal, Element).
 %
 % Example:

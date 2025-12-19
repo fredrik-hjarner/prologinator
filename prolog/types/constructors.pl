@@ -21,7 +21,7 @@ empty_ctx(ctx(state(
     attrs(EmptyAttrs),
     status(playing),
     next_id(1),
-    commands([]),
+    commands(spawn_cmds([]), fork_cmds([])),
     actionstore(EmptyActionStore)
 ), input(events([]), held([])))) :-
     empty_assoc(EmptyAttrs),
@@ -35,7 +35,7 @@ ctx_with_attrs(Attrs, ctx(state(
     attrs(Attrs),
     status(playing),
     next_id(1),
-    commands([]),
+    commands(spawn_cmds([]), fork_cmds([])),
     actionstore(EmptyActionStore)
 ), input(events([]), held([])))) :-
     empty_assoc(EmptyActionStore).
@@ -48,7 +48,7 @@ ctx_with_frame_attrs(Frame, Attrs, ctx(state(
     attrs(Attrs),
     status(playing),
     next_id(1),
-    commands([]),
+    commands(spawn_cmds([]), fork_cmds([])),
     actionstore(EmptyActionStore)
 ), input(events([]), held([])))) :-
     empty_assoc(EmptyActionStore).
@@ -65,7 +65,7 @@ ctx_with_inputevents_inputheld(Events, Held, ctx(state(
     attrs(EmptyAttrs),
     status(playing),
     next_id(1),
-    commands([]),
+    commands(spawn_cmds([]), fork_cmds([])),
     actionstore(EmptyActionStore)
 ), input(events(Events), held(Held)))) :-
     empty_assoc(EmptyAttrs),
@@ -79,7 +79,7 @@ ctx_with_objs(Objects, ctx(state(
     attrs(EmptyAttrs),
     status(playing),
     next_id(1),
-    commands([]),
+    commands(spawn_cmds([]), fork_cmds([])),
     actionstore(EmptyActionStore)
 ), input(events([]), held([])))) :-
     empty_assoc(EmptyAttrs),
@@ -93,7 +93,7 @@ ctx_with_objs_input(Objects, Events, Held, ctx(state(
     attrs(EmptyAttrs),
     status(playing),
     next_id(1),
-    commands([]),
+    commands(spawn_cmds([]), fork_cmds([])),
     actionstore(EmptyActionStore)
 ), input(events(Events), held(Held)))) :-
     empty_assoc(EmptyAttrs),
@@ -108,7 +108,7 @@ ctx_with_frame_objs_input(Frame, Objects, Events, Held,
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
+        commands(spawn_cmds([]), fork_cmds([])),
         actionstore(EmptyActionStore)
     ), input(events(Events), held(Held)))) :-
     empty_assoc(EmptyAttrs),

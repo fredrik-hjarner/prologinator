@@ -12,22 +12,19 @@ execute_action_impl(
 % execute_spawn/8
 % ==========================================================
 execute_spawn(Type, X, Y, Actions) -->
-    % 1. Generate ID
-    ctx_nextid(NewID),
-    {NextID #= NewID + 1},
-    ctx_set_nextid(NextID),
-    % 2. Create Object (no attributes - stored separately)
-    {NewObj = object(
-        id(NewID),
-        actions(Actions)
-    )},
-    % 3. Initialize attributes in store
-    ctx_set_attr_val(NewID/type, Type),
-    ctx_set_attr_val(NewID/x, X),
-    ctx_set_attr_val(NewID/y, Y),
-    % 4. Append to Context
-    ctx_objs(CurrentSpawns),
-    {append(CurrentSpawns, [NewObj], NewSpawns)},
-    ctx_set_objs(NewSpawns).
+    % Build actions list with set_attr for type, x, y
+    {SpawnActions = [
+        set_attr(type, Type),
+        set_attr(x, X),
+        set_attr(y, Y)
+        | Actions
+    ]},
+    % Add spawn command instead of directly modifying
+    % actionstore
+    ctx_spawnCmds(SpawnCmdsOld),
+    {append(SpawnCmdsOld,
+            [spawn_cmd(actions(SpawnActions))],
+            SpawnCmdsNew)},
+    ctx_set_spawnCmds(SpawnCmdsNew).
 
 

@@ -28,9 +28,12 @@ increment_frame -->
 % Tick Logic (The ID Cursor)
 % ==========================================================
 
+% The responsibilities for tick_all_objects is to iterate
+% over all objects and execute tick_action_streams for each.
+% It is also responsible for cleaning up objects in the
+% objects list and cleaning up actions in actionstore.
 tick_all_objects -->
     % Start the loop with ID -1 (assuming IDs start at 0
-    % or 1)
     tick_objects_loop(-1).
 
 % The loop finds the next object with ID > LastID
@@ -38,27 +41,23 @@ tick_objects_loop(LastID) -->
     ( find_next_object(LastID, TargetObj) ->
         % Found an object to tick
         {obj_id(TargetObj, TargetID)},
-        {obj_acns(TargetObj, ActionsIn)},
-        tick_object(
-            actions_old(ActionsIn),
-            obj_id(TargetID),
-            result(Status, actions_new(ActionsOut))
-        ),
+        % Process actions from actionstore
+        tick_action_streams(TargetID, Status),
         % Update the context with the result of this
         % specific object based on status
         ( {Status = despawned} ->
-            % Remove object from context
+            % Remove object from context and actionstore
+            % (cleaned by tick_action_streams)
             update_object_in_context(TargetID, [])
         ;
             % Keep object (yielded or completed)
-            % Reconstruct object with new actions
-            {obj_acns_obj(
-                TargetObj,
-                ActionsOut,
-                ObjResult
-            )},
-            update_object_in_context(TargetID, [ObjResult])
+            % No need to reconstruct - actions are in
+            % actionstore
+            []
         ),
+        % Process spawn commands ASAP so spawned objects
+        % can execute in the same frame
+        process_spawn_commands,
         % Recurse using the current TargetID as the new
         % floor
         tick_objects_loop(TargetID)
@@ -94,4 +93,53 @@ replace_by_id([Obj|Rest], TargetID, Replacement, Result) :-
         Result = [Obj|NewRest],
         replace_by_id(Rest, TargetID, Replacement, NewRest)
     ).
+
+% ==========================================================
+% Spawn Command Processing
+% ==========================================================
+
+% Process all spawn commands, creating objects and adding
+% them to actionstore. Processes commands ASAP so spawned
+% objects can execute in the same frame.
+process_spawn_commands -->
+    ctx_spawnCmds(SpawnCmds),
+    ( {SpawnCmds = []} ->
+        % No spawn commands, nothing to do
+        []
+    ;
+        % Process all spawn commands
+        process_spawn_commands_loop(SpawnCmds),
+        % Clear spawn commands after processing
+        ctx_set_spawnCmds([])
+    ).
+
+% Process each spawn command
+process_spawn_commands_loop([]) --> [].
+process_spawn_commands_loop(
+    [spawn_cmd(actions(Actions))|Rest]
+) -->
+    % Generate new ID
+    ctx_nextid(NewID),
+    {NextID #= NewID + 1},
+    ctx_set_nextid(NextID),
+    % Create object
+    {NewObj = object(id(NewID))},
+    % Add object to context
+    ctx_objs(ObjsOld),
+    {append(ObjsOld, [NewObj], ObjsNew)},
+    ctx_set_objs(ObjsNew),
+    % Add actions to actionstore (wrap in list for single
+    % stream)
+    % tick_objects_loop will automatically pick up and
+    % execute these actions
+    ctx_actionstore(ActionStore),
+    {put_assoc(
+        NewID,
+        ActionStore,
+        [Actions],
+        NewActionStore
+    )},
+    ctx_set_actionstore(NewActionStore),
+    % Process remaining commands
+    process_spawn_commands_loop(Rest).
 

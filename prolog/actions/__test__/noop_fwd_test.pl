@@ -21,27 +21,21 @@ test("noop: removes self from action queue", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ObjIn = object(
-        id(0),
-        actions([noop, wait(1)])
-    ),
+    ActionsIn = [noop, wait(1)],
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(noop),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(0),
         result(ActionStatus, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
-    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
     ctx_frame(Frame, CtxNew, CtxNew),
     ctx_status(Status, CtxNew, CtxNew),
     % ------------------------------------------------------
@@ -49,11 +43,8 @@ test("noop: removes self from action queue", (
     % ------------------------------------------------------
     (ActionStatus = completed
     ; err_write("ActionStatus != completed")),
-    ObjOut = object(
-        id(0),
-        actions([wait(1)])
-    ),
-    (Commands = [] ; err_write("Commands != []")),
+    ActionsOut = [wait(1)],
+    (SpawnCmds = [] ; err_write("SpawnCmds != []")),
     (Frame = 0 ; err_write("Frame != 0")),
     (Status = playing ; err_write("Status != playing"))
 )).

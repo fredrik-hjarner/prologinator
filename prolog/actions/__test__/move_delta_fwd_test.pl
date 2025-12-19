@@ -21,10 +21,7 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([move_delta(1, 5, -3)])
-    ),
+    ActionsIn = [move_delta(1, 5, -3)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
               [attr(type, static),
@@ -34,40 +31,30 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(1, 5, -3)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
-    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    expect(ObjOut = object(
-        id(1),
-        actions([])
-    ), 'ObjOut != object(id(1), actions(...'),
     expect(X = 15, 'X != 15'),
     expect(Y = 17, 'Y != 17'),
-    expect(Commands = [], 'Commands != []')
+    expect(SpawnCmds = [], 'SpawnCmds != []')
 )).
 
 test("move_delta: multiple frames continues", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([move_delta(3, 10, 5)])
-    ),
+    ActionsIn = [move_delta(3, 10, 5)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
               [attr(type, static), attr(x, 0), attr(y, 0)],
@@ -76,40 +63,33 @@ test("move_delta: multiple frames continues", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(3, 10, 5)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
-    obj_acns(ObjOut, Actions),
-    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
     (X = 10 ; err_write("X != 10")),
     (Y = 5 ; err_write("Y != 5")),
-    (Actions = [move_delta(2, 10, 5)]
+    (ActionsOut = [move_delta(2, 10, 5)]
      ;
      err_write("Actions wrong")),
-    (Commands = [] ; err_write("Commands != []"))
+    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
 )).
 
 test("move_delta: negative deltas work", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([move_delta(2, -10, -5)])
-    ),
+    ActionsIn = [move_delta(2, -10, -5)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 50), attr(y, 50)],
               EmptyAttrs),
@@ -117,40 +97,33 @@ test("move_delta: negative deltas work", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(2, -10, -5)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
-    obj_acns(ObjOut, Actions),
-    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
     (X = 40 ; err_write("X != 40")),
     (Y = 45 ; err_write("Y != 45")),
-    (Actions = [move_delta(1, -10, -5)]
+    (ActionsOut = [move_delta(1, -10, -5)]
      ;
      err_write("Actions wrong")),
-    (Commands = [] ; err_write("Commands != []"))
+    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
 )).
 
 test("move_delta: preserves other attributes", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([move_delta(1, 5, -3)])
-    ),
+    ActionsIn = [move_delta(1, 5, -3)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
               [attr(x, 10), attr(y, 20),
@@ -160,33 +133,26 @@ test("move_delta: preserves other attributes", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(move_delta(1, 5, -3)),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     ctx_attr_val(1/x, X, CtxNew, CtxNew),
     ctx_attr_val(1/y, Y, CtxNew, CtxNew),
     ctx_attr_val(1/hp, HP, CtxNew, CtxNew),
     ctx_attr_val(1/speed, Speed, CtxNew, CtxNew),
-    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    ObjOut = object(
-        id(1),
-        actions([])
-    ),
     (X = 15 ; err_write("X != 15")),
     (Y = 17 ; err_write("Y != 17")),
     (HP = 100 ; err_write("HP != 100")),
     (Speed = 5 ; err_write("Speed != 5")),
-    (Commands = [] ; err_write("Commands != []"))
+    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
 )).
 

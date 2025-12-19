@@ -95,3 +95,21 @@ Predicates that only read from context are *not* allowed to
 simply take in *one* ctx, it still must take in *two* ctxs
 so that it'll be easy to use with DCG -->.
 Context args *always* comes last.
+
+## Regarding action implementation
+
+This the the convention. Note that we *never* do the
+implementation in the body of execute_action_impl but we
+have the implementation is a separate predicate whose name
+is `execute_${actionName}`.
+
+```
+execute_action_impl(
+    action(noop),
+    actions_old([_|Rest]),
+    obj_id(_ID),
+    result(completed, actions_new(Rest))
+) --> execute_noop.
+
+execute_noop --> [].
+```

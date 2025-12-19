@@ -18,95 +18,76 @@
 % ==========================================================
 
 test("repeat: expands actions once and decrements", (
-    ObjIn = object(
-        id(1),
-        actions([
-            repeat(3, [noop, set_attr(count, 1)]),
-            despawn
-        ])
-    ),
+    ActionsIn = [
+        repeat(3, [noop, set_attr(count, 1)]),
+        despawn
+    ],
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(repeat(3, [noop, set_attr(count, 1)])),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
     % Should expand to: [noop, set_attr(count, 1),
     %   repeat(2, [noop, set_attr(count, 1)]), despawn]
-    obj_acns(ObjOut, Actions),
-    Actions = [
+    ActionsOut = [
         noop,
         set_attr(count, 1),
         repeat(2, [noop, set_attr(count, 1)]),
         despawn
     ],
-    ctx_cmds([], CtxNew, CtxNew)
+    ctx_spawnCmds([], CtxNew, CtxNew)
 )).
 
 test("repeat: last repetition doesn't add repeat", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([repeat(1, [noop]), despawn])
-    ),
+    ActionsIn = [repeat(1, [noop]), despawn],
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(repeat(1, [noop])),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
-    obj_acns(ObjOut, Actions),
-    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Actions = [noop, despawn]
+    (ActionsOut = [noop, despawn]
      ;
      err_write("Actions wrong")),
-    (Commands = [] ; err_write("Commands != []"))
+    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
 )).
 
 test("repeat: multiple actions in repeat list", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ObjIn = object(
-        id(1),
-        actions([
-            repeat(2, [
-                noop,
-                set_attr(a, 1),
-                set_attr(b, 2)
-            ]),
-            despawn
-        ])
-    ),
+    ActionsIn = [
+        repeat(2, [
+            noop,
+            set_attr(a, 1),
+            set_attr(b, 2)
+        ]),
+        despawn
+    ],
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    obj_acns(ObjIn, ActionsIn),
-    obj_id(ObjIn, ID),
     execute_action(
         action(repeat(2, [
             noop,
@@ -114,24 +95,22 @@ test("repeat: multiple actions in repeat list", (
             set_attr(b, 2)
         ])),
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj_id(1),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
-    obj_acns_obj(ObjIn, ActionsOut, ObjOut),
-    obj_acns(ObjOut, Actions),
-    ctx_cmds(Commands, CtxNew, CtxNew),
+    ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (Actions = [
+    (ActionsOut = [
         noop,
         set_attr(a, 1),
         set_attr(b, 2),
         repeat(1, [noop, set_attr(a, 1), set_attr(b, 2)]),
         despawn
     ] ; err_write("Actions wrong")),
-    (Commands = [] ; err_write("Commands != []"))
+    (SpawnCmds = [] ; err_write("SpawnCmds != []"))
 )).
 

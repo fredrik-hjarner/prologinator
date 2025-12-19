@@ -23,17 +23,15 @@ test("game_state_validation: valid state passes", (
     empty_assoc(EmptyAttrs0),
     put_assoc(0, EmptyAttrs0, [attr(type, static)],
               EmptyAttrs),
-    empty_assoc(EmptyActionStore),
+    empty_assoc(EmptyActionStore0),
+    put_assoc(0, EmptyActionStore0, [[]], EmptyActionStore),
     State = state(
         frame(0),
-        objects([object(
-            id(0),
-            actions([])
-        )]),
+        objects([object(id(0))]),
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
+        commands(spawn_cmds([]), fork_cmds([])),
         actionstore(EmptyActionStore)
     ),
     state_validation(State)
@@ -51,30 +49,24 @@ multiple objects and commands", (
     put_assoc(2, Attrs2,
               [attr(type, proj), attr(x, 15), attr(y, 15)],
               EmptyAttrs),
-    empty_assoc(EmptyActionStore),
+    empty_assoc(EmptyActionStore0),
+    put_assoc(0, EmptyActionStore0, [[]], ActionStore1),
+    put_assoc(1, ActionStore1, [[]], ActionStore2),
+    put_assoc(2, ActionStore2, [[]], EmptyActionStore),
     State = state(
         frame(5),
         objects([
-            object(
-                id(0),
-                actions([wait(3)])
-            ),
-            object(
-                id(1),
-                actions([move_to(10, 10, 5)])
-            ),
-            object(
-                id(2),
-                actions([])
-            )
+            object(id(0)),
+            object(id(1)),
+            object(id(2))
         ]),
         attrs(EmptyAttrs),
         status(playing),
         next_id(3),
-        commands([
-            spawn_request(enemy, 0, 0, []),
-            spawn_request(enemy, 0, 0, [])
-        ]),
+        commands(spawn_cmds([
+            spawn_cmd(actions([])),
+            spawn_cmd(actions([]))
+        ]), fork_cmds([])),
         actionstore(EmptyActionStore)
     ),
     state_validation(State)
@@ -95,44 +87,24 @@ objects and commands", (
     put_assoc(3, Attrs3, [attr(type, static)], EmptyAttrs),
     ctx_with_frame_attrs(42, EmptyAttrs, Ctx0),
     ctx_set_objs([
-        object(
-            id(0),
-            actions([
-                loop([
-                    wait(3),
-                    spawn(proj, 5, 19, [
-                        move_to(5, 0, 20)
-                    ])
-                ])
-            ])
-        ),
-        object(
-            id(1),
-            actions([
-                move_to(19, 5, 15),
-                wait(1)
-            ])
-        ),
-        object(
-            id(2),
-            actions([move_to(15, 0, 10)])
-        ),
-        object(
-            id(3),
-            actions([
-                parallel_all([
-                    wait(5),
-                    spawn(enemy, 0, 10, [])
-                ])
-            ])
-        )
+        object(id(0)),
+        object(id(1)),
+        object(id(2)),
+        object(id(3))
     ], Ctx0, Ctx1),
-    ctx_set_nextid_cmds(4, [
-        spawn_request(enemy, 0, 0, []),
-        spawn_request(proj, 10, 10, [
-            move_to(10, 0, 10)
-        ])
-    ], Ctx1, Ctx),
+    ctx_set_nextid(4, Ctx1, Ctx2),
+    % Set up actionstore entries for all objects
+    ctx_actionstore(ActionStore0, Ctx2, Ctx2),
+    empty_assoc(EmptyActionStore0),
+    put_assoc(0, EmptyActionStore0, [[]], ActionStore1),
+    put_assoc(1, ActionStore1, [[]], ActionStore2),
+    put_assoc(2, ActionStore2, [[]], ActionStore3),
+    put_assoc(3, ActionStore3, [[]], ActionStore4),
+    ctx_set_actionstore(ActionStore4, Ctx2, Ctx3),
+    ctx_set_spawnCmds([
+        spawn_cmd(actions([])),
+        spawn_cmd(actions([move_to(10, 0, 10)]))
+    ], Ctx3, Ctx),
     context_validation(Ctx, Ctx)
 )).
 
@@ -179,7 +151,7 @@ test("game_state_validation: invalid status fails", (
         attrs(EmptyAttrs),
         status(invalid_status),
         next_id(1),
-        commands([]),
+        commands(spawn_cmds([]), fork_cmds([])),
         actionstore(EmptyActionStore)
     ),
     expect_exception(state_validation(State))
@@ -194,17 +166,14 @@ test("game_state_validation: non-integer frame fails", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
+        commands(spawn_cmds([]), fork_cmds([])),
         actionstore(EmptyActionStore)
     ),
     expect_exception(state_validation(State))
 )).
 
 test("game_state_validation: NextID <= max ID fails", (
-    Obj = object(
-        id(5),
-        actions([])
-    ),
+    Obj = object(id(5)),
     empty_assoc(EmptyAttrs0),
     put_assoc(5, EmptyAttrs0, [attr(type, static)],
               EmptyAttrs),
@@ -215,7 +184,7 @@ test("game_state_validation: NextID <= max ID fails", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(5),
-        commands([]),
+        commands(spawn_cmds([]), fork_cmds([])),
         actionstore(EmptyActionStore)
     ),
     expect_exception(state_validation(State))
@@ -223,10 +192,7 @@ test("game_state_validation: NextID <= max ID fails", (
 
 test("object_validation: wrong structure (ID not \
 wrapped) throws", (
-    Obj = object(
-        5,
-        actions([])
-    ),
+    Obj = object(5),
     expect_exception(object_validation(Obj))
 )).
 
@@ -314,7 +280,7 @@ test("game_state_validation: wrong functor throws", (
         attrs(EmptyAttrs),
         status(playing),
         next_id(1),
-        commands([]),
+        commands(spawn_cmds([]), fork_cmds([])),
         actionstore(EmptyActionStore)
     ),
     expect_exception(state_validation(State))
@@ -322,16 +288,14 @@ test("game_state_validation: wrong functor throws", (
 
 test("object_validation: wrong arity throws", (
     Obj = object(
-        id(0)
+        id(0),
+        extra_arg
     ),
     expect_exception(object_validation(Obj))
 )).
 
 test("object_validation: wrong functor throws", (
-    Obj = not_object(
-        id(0),
-        actions([])
-    ),
+    Obj = not_object(id(0)),
     expect_exception(object_validation(Obj))
 )).
 
