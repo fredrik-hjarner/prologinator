@@ -90,3 +90,38 @@
 **/*.el
 
 scryer-prolog/tests/scryer/
+
+# block all scryer-prolog might be good sometimes.
+scryer-prolog
+
+# schmupinator
+schmupinator/.github
+schmupinator/.vscode
+schmupinator/githubAssets
+schmupinator/public
+schmupinator/scripts
+schmupinator/.gitignore
+schmupinator/.nvmrc
+schmupinator/deno.jsonc
+schmupinator/eslint.config.mjs
+schmupinator/favicon.svg
+schmupinator/index.html
+schmupinator/package-lock.json
+schmupinator/package.json
+schmupinator/reset.css
+schmupinator/styles.css
+schmupinator/Taskfile.yml
+schmupinator/tsconfig.json
+schmupinator/vite.config.ts
+schmupinator/src/vite-env.d.ts
+schmupinator/src/assets
+schmupinator/src/drivers
+schmupinator/src/App/services/CursorShowGamePos
+schmupinator/src/App/services/Fps
+schmupinator/src/App/services/Fullscreen
+schmupinator/src/App/services/OutsideHider
+schmupinator/src/App/services/UI
+schmupinator/**/__tests__
+schmupinator/src/App/services/E2eTest/e2ehistory.ts
+schmupinator/src/App/services/Input/mocks/replay.ts
+schmupinator/**/*.png

@@ -1,0 +1,47 @@
+[
+    % Test log action
+    log("Game loaded successfully!"),
+    
+    % Spawn player at center - responds to input
+    spawn(player, 10, 10, [
+        log("Player spawned!"),
+        set_attr(displayChar, 64),  % '@'
+        fork([
+            loop([
+                wait(2),
+                spawn(proj, 10, 10, [
+                    copy_attr(parent_id/x, x),
+                    copy_attr(parent_id/y, y),
+                    set_attr(displayChar, 42),  % '*'
+                    repeat(10, [
+                        move_delta(1, 0, -1)
+                    ]),
+                    despawn
+                ])
+            ])
+        ]),
+        parallel_all([
+            % Right arrow (39) - move right
+            loop([
+                wait_key_held(39),
+                move_delta(1, 1, 0)
+            ]),
+            % Left arrow (37) - move left
+            loop([
+                wait_key_held(37),
+                move_delta(1, -1, 0)
+            ]),
+            % Up arrow (38) - move up
+            loop([
+                wait_key_held(38),
+                move_delta(1, 0, -1)
+            ]),
+            % Down arrow (40) - move down
+            loop([
+                wait_key_held(40),
+                move_delta(1, 0, 1)
+            ])
+        ]),
+        log("parallel_all completed!")
+    ])
+].

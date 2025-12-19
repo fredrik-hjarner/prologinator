@@ -9,11 +9,9 @@ builtin_action(move_delta(_, _, _)).
 builtin_action(despawn).
 builtin_action(spawn(_, _, _, _)).
 builtin_action(set_attr(_, _)).
-builtin_action(set_attr(_, _, _)).
+builtin_action(copy_attr(_, _)).
 builtin_action(incr(_, _)).
-builtin_action(incr(_, _, _)).
 builtin_action(decr(_, _)).
-builtin_action(decr(_, _, _)).
 builtin_action(loop(_)).
 builtin_action(list(_)).
 builtin_action(repeat(_, _)).

@@ -1,2 +1,10 @@
 logs
 build/prologinator.pl
+
+diff.txt
+graph.dot
+concat.xml
+node_modules
+
+.aider.chat.history.md
+.aider.input.history

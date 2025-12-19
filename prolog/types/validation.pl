@@ -444,26 +444,21 @@ action_validation_helper(Term) :-
             atom(Type),
             % X and Y: no validation needed
             length(Acts, _)
-        ; Term = set_attr(_Name, _Value) ->
-            % Structure matches, no validation (2-arg)
+        ; Term = set_attr(_Path, _Value) ->
+            % Structure matches, no validation
+            % (uses path syntax)
             true
-        ; Term = set_attr(_TargetID, _Name,
-                         _Value) ->
-            % Structure matches, no validation (3-arg)
+        ; Term = incr(_Path, _Amount) ->
+            % Structure matches, no validation
+            % (uses path syntax)
             true
-        ; Term = incr(_Key, _Amount) ->
-            % Structure matches, no validation (2-arg)
+        ; Term = decr(_Path, _Amount) ->
+            % Structure matches, no validation
+            % (uses path syntax)
             true
-        ; Term = incr(_TargetID, _Key,
-                      _Amount) ->
-            % Structure matches, no validation (3-arg)
-            true
-        ; Term = decr(_Key, _Amount) ->
-            % Structure matches, no validation (2-arg)
-            true
-        ; Term = decr(_TargetID, _Key,
-                      _Amount) ->
-            % Structure matches, no validation (3-arg)
+        ; Term = copy_attr(_SourcePath, _DestPath) ->
+            % Structure matches, no validation
+            % (uses path syntax)
             true
         ; Term = loop(Acts) ->
             % Structure matches, validate content

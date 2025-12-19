@@ -45,6 +45,7 @@
 #include "../prolog/actions/noop.pl"
 #include "../prolog/actions/define_action.pl"
 #include "../prolog/actions/set_attr.pl"
+#include "../prolog/actions/copy_attr.pl"
 #include "../prolog/actions/incr.pl"
 #include "../prolog/actions/decr.pl"
 #include "../prolog/actions/log.pl"

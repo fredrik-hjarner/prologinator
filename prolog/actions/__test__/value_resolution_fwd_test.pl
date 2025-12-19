@@ -152,9 +152,13 @@ test("value_resolution: spawn at attr() position", (
     % 300)
     ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
     % Should have one spawn command with resolved values
-    SpawnCmds = [spawn_cmd(actions([set_attr(type, enemy),
+    % (parent_id automatically set to spawning object's ID)
+    SpawnCmds = [spawn_cmd(actions([
+                                     set_attr(type, enemy),
                                      set_attr(x, 200),
-                                     set_attr(y, 300)]))]
+                                     set_attr(y, 300),
+                                     set_attr(parent_id, 1)
+                                     ]))]
 )).
 
 test("value_resolution: mixed plain and attr() values", (

@@ -1,3 +1,6 @@
 [submodule "submodules/scryer-prolog"]
 	path = submodules/scryer-prolog
 	url = https://github.com/mthom/scryer-prolog.git
+[submodule "submodules/schmupinator"]
+	path = submodules/schmupinator
+	url = git@github.com:fredrik-hjarner/schmupinator.git

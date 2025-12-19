@@ -1,25 +1,18 @@
 % decr action implementation
 
 execute_action_impl(
-    action(decr(Key, Amount)),
+    action(decr(Path, Amount)),
     actions_old([_|Rest]),
-    obj_id(ID),
+    obj_id(MyID),
     result(completed, actions_new(Rest))
 ) -->
-    execute_decr(ID, Key, Amount).
-
-execute_action_impl(
-    action(decr(TargetID, Key, Amount)),
-    actions_old([_|Rest]),
-    obj_id(_ID),
-    result(completed, actions_new(Rest))
-) -->
-    execute_decr(TargetID, Key, Amount).
+    execute_decr(MyID, Path, Amount).
 
 % ==========================================================
 % execute_decr/6
 % ==========================================================
-execute_decr(TargetID, Key, Amount) -->
+execute_decr(MyID, Path, Amount) -->
+    resolve_path_to_attr(MyID, Path, TargetID/Key),
     ( ctx_attr_val(TargetID/Key, CurrentValue) ->
         {NewValue #= CurrentValue - Amount}
     ;

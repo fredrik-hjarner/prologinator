@@ -1,25 +1,18 @@
 % incr action implementation
 
 execute_action_impl(
-    action(incr(Key, Amount)),
+    action(incr(Path, Amount)),
     actions_old([_|Rest]),
-    obj_id(ID),
+    obj_id(MyID),
     result(completed, actions_new(Rest))
 ) -->
-    execute_incr(ID, Key, Amount).
-
-execute_action_impl(
-    action(incr(TargetID, Key, Amount)),
-    actions_old([_|Rest]),
-    obj_id(_ID),
-    result(completed, actions_new(Rest))
-) -->
-    execute_incr(TargetID, Key, Amount).
+    execute_incr(MyID, Path, Amount).
 
 % ==========================================================
 % execute_incr/6
 % ==========================================================
-execute_incr(TargetID, Key, Amount) -->
+execute_incr(MyID, Path, Amount) -->
+    resolve_path_to_attr(MyID, Path, TargetID/Key),
     ( ctx_attr_val(TargetID/Key, CurrentValue) ->
         {NewValue #= CurrentValue + Amount}
     ;
