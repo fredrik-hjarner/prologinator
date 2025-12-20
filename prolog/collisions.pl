@@ -41,29 +41,57 @@ clear_one_collision(Obj, StoreIn, StoreOut) :-
     ).
 
 % ----------------------------------------------------------
-% Step 2: Find all collision pairs
+% Step 2: Find all collision pairs (optimized with
+% spatial bucketing)
 % ----------------------------------------------------------
+% O(N) approach: Build position buckets, then extract pairs
+% from buckets with multiple objects
 find_collision_pairs(Objects, AttrStore, Pairs) :-
+    % Build buckets: pos(X,Y) -> [ID1, ID2, ...]
+    empty_assoc(EmptyBuckets),
+    foldl(add_obj_to_bucket(AttrStore), Objects,
+          EmptyBuckets, Buckets),
+    % Extract collision pairs from buckets with 2+ objects
+    collision_pairs_from_buckets(Buckets, Pairs).
+
+% Add an object to the position bucket map
+% Buckets: pos(X,Y) -> [ID1, ID2, ...] (reverse insertion
+% order)
+add_obj_to_bucket(AttrStore, Obj, BucketsIn, BucketsOut) :-
+    obj_id(Obj, ID),
+    ( gen_assoc(ID, AttrStore, Attrs),
+      member(attr(x, X), Attrs),
+      member(attr(y, Y), Attrs) ->
+        Pos = pos(X, Y),
+        ( get_assoc(Pos, BucketsIn, IDs) ->
+            % Position exists: prepend ID to bucket
+            put_assoc(Pos, BucketsIn, [ID|IDs], BucketsOut)
+        ;
+            % New position: create bucket with single ID
+            put_assoc(Pos, BucketsIn, [ID], BucketsOut)
+        )
+    ;
+        % Object has no position attributes, skip
+        BucketsOut = BucketsIn
+    ).
+
+% Extract collision pairs from buckets
+% Only buckets with 2+ objects have collisions
+collision_pairs_from_buckets(Buckets, Pairs) :-
     findall(
         (ID1, ID2),
         (
-            member(Obj1, Objects),
-            obj_id(Obj1, ID1),
-            member(Obj2, Objects),
-            obj_id(Obj2, ID2),
-            ID1 @< ID2,  % Avoid duplicates
-            same_position(AttrStore, ID1, ID2)
+            gen_assoc(_Pos, Buckets, IDs),
+            % Bucket must have at least 2 objects
+            IDs = [_,_|_],
+            % Generate all pairs from this bucket
+            select(ID1, IDs, Rest),
+            member(ID2, Rest),
+            % Ensure ID1 < ID2 to avoid duplicates
+            ID1 @< ID2
         ),
         Pairs
     ).
-
-same_position(AttrStore, ID1, ID2) :-
-    gen_assoc(ID1, AttrStore, Attrs1),
-    gen_assoc(ID2, AttrStore, Attrs2),
-    member(attr(x, X), Attrs1),
-    member(attr(y, Y), Attrs1),
-    member(attr(x, X), Attrs2),
-    member(attr(y, Y), Attrs2).
 
 % ----------------------------------------------------------
 % Step 3: Write collision_id (last wins)

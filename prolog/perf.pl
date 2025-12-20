@@ -2,8 +2,8 @@
 % Usage: `just perf`
 
 % Performance stats:
-% 2025-12-20 01:01:
-%     32.26user 0.75system 0:33.01elapsed 99%CPU
+% 2025-12-20 01:01:    300 frames in 33s
+% 2025-12-20 05:39:    300 frames in 15.5s
 
 :- use_module('../build/prologinator.pl').
 :- use_module(library(assoc)).
