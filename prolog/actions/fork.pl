@@ -1,5 +1,3 @@
-% fork action implementation
-
 execute_action_impl(
     action(fork(Actions)),
     actions_old([_|Rest]),
@@ -8,9 +6,6 @@ execute_action_impl(
 ) -->
     execute_fork(ID, Actions).
 
-% ==========================================================
-% execute_fork/4
-% ==========================================================
 execute_fork(ObjID, Actions) -->
     % Add fork command instead of directly modifying
     % actionstore

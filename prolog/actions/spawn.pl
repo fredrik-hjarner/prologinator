@@ -1,5 +1,3 @@
-% spawn action implementation
-
 execute_action_impl(
     action(spawn(Actions)),
     actions_old([_|Rest]),
@@ -8,9 +6,6 @@ execute_action_impl(
 ) -->
     execute_spawn(MyID, Actions).
 
-% ==========================================================
-% execute_spawn/4
-% ==========================================================
 execute_spawn(ParentID, Actions) -->
     % Build actions list with parent_id automatically added
     {SpawnActions = [

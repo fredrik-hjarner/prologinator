@@ -1,5 +1,3 @@
-% decr action implementation
-
 execute_action_impl(
     action(decr(Path, Amount)),
     actions_old([_|Rest]),
@@ -8,9 +6,6 @@ execute_action_impl(
 ) -->
     execute_decr(MyID, Path, Amount).
 
-% ==========================================================
-% execute_decr/6
-% ==========================================================
 execute_decr(MyID, Path, Amount) -->
     resolve_path_to_attr(MyID, Path, TargetID/Key),
     ( ctx_attr_val(TargetID/Key, CurrentValue) ->

@@ -1,5 +1,3 @@
-% repeat action implementation
-
 % repeat(+Times, +Actions)
 % Mode: repeat(+Times, +Actions)
 % Description: Execute action list N times, then
@@ -14,9 +12,6 @@ execute_action_impl(
 ) -->
     execute_repeat(Times, Acts, Rest, NewActions).
 
-% ==========================================================
-% execute_repeat/4
-% ==========================================================
 execute_repeat(Times, Acts, Rest, NewActions) -->
     {
         Times #> 0,

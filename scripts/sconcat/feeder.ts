@@ -19,7 +19,7 @@ export const excludePatterns: string[] = [
     "**/.vscode/**",
     "**/internal_docs/**",
     "**/node_modules/**",
-    // "**/scripts/**",
+    "**/scripts/**",
     "**/submodules/**",
     "**/*_test.pl",
 ];

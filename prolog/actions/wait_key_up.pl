@@ -1,5 +1,3 @@
-% wait_key_up action implementation
-
 % wait_key_up(+KeyCode)
 % Mode: wait_key_up(+KeyCode)
 % Description: Waits until specified key is released
@@ -14,9 +12,6 @@ execute_action_impl(
 ) -->
     execute_wait_key_up(KeyCode, Rest, Status, ActionsOut).
 
-% ==========================================================
-% execute_wait_key_up/6
-% ==========================================================
 execute_wait_key_up(KeyCode, Rest, Status, ActionsOut) -->
     % Check if key released THIS frame
     ( key_up(KeyCode) ->

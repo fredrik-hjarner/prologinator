@@ -1,5 +1,3 @@
-% trigger_state_change action implementation
-
 execute_action_impl(
     action(trigger_state_change(Change)),
     actions_old([_|Rest]),
@@ -8,9 +6,6 @@ execute_action_impl(
 ) -->
     execute_trigger_state_change(Change).
 
-% ==========================================================
-% execute_trigger_state_change/5
-% ==========================================================
 execute_trigger_state_change(Change) -->
     ctx_status(CurrentStatus),
     {update_status(Change, CurrentStatus, NewStatus)},

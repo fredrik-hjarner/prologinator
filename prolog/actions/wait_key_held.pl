@@ -1,5 +1,3 @@
-% wait_key_held action implementation
-
 % wait_key_held(+KeyCode)
 % Mode: wait_key_held(+KeyCode)
 % Description: Yields every frame while key is held
@@ -19,9 +17,6 @@ execute_action_impl(
         ActionsOut
     ).
 
-% ==========================================================
-% execute_wait_key_held/6
-% ==========================================================
 execute_wait_key_held(KeyCode, Rest, Status, ActionsOut) -->
     ( key_held(KeyCode) ->
         % Key held: yield (action complete)

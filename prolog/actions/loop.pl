@@ -1,5 +1,3 @@
-% loop action implementation
-
 execute_action_impl(
     action(loop(Actions)),
     actions_old([_|Rest]),
@@ -8,9 +6,6 @@ execute_action_impl(
 ) -->
     execute_loop(Actions, Rest, NewActions).
 
-% ==========================================================
-% execute_loop/3
-% ==========================================================
 execute_loop(Actions, Rest, NewActions) -->
     {
         append(Actions, [loop(Actions)], Expanded),

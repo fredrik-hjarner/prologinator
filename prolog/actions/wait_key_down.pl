@@ -1,5 +1,3 @@
-% wait_key_down action implementation
-
 % wait_key_down(+KeyCode)
 % Mode: wait_key_down(+KeyCode)
 % Description: Waits until specified key is pressed
@@ -19,9 +17,6 @@ execute_action_impl(
         ActionsOut
     ).
 
-% ==========================================================
-% execute_wait_key_down/6
-% ==========================================================
 execute_wait_key_down(KeyCode, Rest, Status, ActionsOut) -->
     % Check if key was pressed THIS frame
     ( key_down(KeyCode) ->

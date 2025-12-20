@@ -1,5 +1,3 @@
-% wait action implementation
-
 execute_action_impl(
     action(wait(N)),
     actions_old([_|Rest]),
@@ -8,9 +6,6 @@ execute_action_impl(
 ) -->
     execute_wait(N, Rest, Status, ActionsOut).
 
-% ==========================================================
-% execute_wait/4
-% ==========================================================
 execute_wait(N, Rest, Status, ActionsOut) -->
     {
         ( N = 0 ->

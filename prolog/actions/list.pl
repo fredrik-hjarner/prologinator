@@ -1,5 +1,3 @@
-% list action implementation
-
 execute_action_impl(
     action(list(ListActions)),
     actions_old([_ListAction|RestActions]),
@@ -14,9 +12,6 @@ execute_action_impl(
         ActionsOut
     ).
 
-% ==========================================================
-% execute_list/6
-% ==========================================================
 execute_list(
     ListActions,
     RestActions,

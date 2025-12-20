@@ -1,5 +1,3 @@
-% log action implementation
-
 execute_action_impl(
     action(log(Msg)),
     actions_old([_|Rest]),
@@ -8,9 +6,6 @@ execute_action_impl(
 ) -->
     execute_log(Msg).
 
-% ==========================================================
-% execute_log/3
-% ==========================================================
 execute_log(Msg) -->
     {format("~s~n", [Msg])}.
 

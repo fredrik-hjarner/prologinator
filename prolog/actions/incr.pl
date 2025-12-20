@@ -1,5 +1,3 @@
-% incr action implementation
-
 execute_action_impl(
     action(incr(Path, Amount)),
     actions_old([_|Rest]),
@@ -8,9 +6,6 @@ execute_action_impl(
 ) -->
     execute_incr(MyID, Path, Amount).
 
-% ==========================================================
-% execute_incr/6
-% ==========================================================
 execute_incr(MyID, Path, Amount) -->
     resolve_path_to_attr(MyID, Path, TargetID/Key),
     ( ctx_attr_val(TargetID/Key, CurrentValue) ->

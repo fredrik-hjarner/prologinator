@@ -1,5 +1,3 @@
-% noop action implementation
-
 execute_action_impl(
     action(noop),
     actions_old([_|Rest]),
@@ -8,8 +6,5 @@ execute_action_impl(
 ) -->
     execute_noop.
 
-% ==========================================================
-% execute_noop/3
-% ==========================================================
 execute_noop --> [].
 

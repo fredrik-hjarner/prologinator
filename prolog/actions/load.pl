@@ -1,5 +1,3 @@
-% load action implementation
-
 % load(+Path)
 % Mode: load(+Path)
 % Description: Loads a file containing a list of actions
@@ -14,9 +12,6 @@ execute_action_impl(
 ) -->
     execute_load(Path, Rest, NewActions).
 
-% ==========================================================
-% execute_load/3
-% ==========================================================
 execute_load(Path, Rest, NewActions) -->
     {
         % Convert Path (list of chars) to atom for open/3

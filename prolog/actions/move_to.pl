@@ -1,5 +1,3 @@
-% move_to action implementation
-
 execute_action_impl(
     action(move_to(TargetX, TargetY, Frames)),
     actions_old([_|Rest]),
@@ -16,9 +14,6 @@ execute_action_impl(
         NewActions
     ).
 
-% ==========================================================
-% execute_move_to/9
-% ==========================================================
 % 0 frames: teleport instantly to target
 execute_move_to(
     TargetX,

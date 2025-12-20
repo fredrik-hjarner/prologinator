@@ -1,5 +1,3 @@
-% despawn action implementation
-
 execute_action_impl(
     action(despawn),
     actions_old(_Actions),
@@ -8,9 +6,6 @@ execute_action_impl(
 ) -->
     execute_despawn(ID).
 
-% ==========================================================
-% execute_despawn/3
-% ==========================================================
 execute_despawn(ID) -->
     % Remove object's attributes from store
     ctx_attrs(AttrStore),

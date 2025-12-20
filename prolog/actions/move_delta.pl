@@ -1,6 +1,3 @@
-% move_delta action implementation
-
-
 % move_delta(+Frames, +DX, +DY)
 % Mode: move_delta(+Frames, +DX, +DY)
 % Description: Relative movement: move by (DX, DY)
@@ -23,9 +20,6 @@ execute_action_impl(
         NewActions
     ).
 
-% ==========================================================
-% execute_move_delta/9
-% ==========================================================
 % 0 frames: teleport instantly by delta
 execute_move_delta(
     0,

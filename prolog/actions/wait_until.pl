@@ -1,5 +1,3 @@
-% wait_until action implementation
-
 % wait_until(+Path)
 % Description: Waits until the specified path exists and
 %   resolves. Uses resolve_path to check if the path can be
@@ -16,9 +14,6 @@ execute_action_impl(
 ) -->
     execute_wait_until(ID, Path, Rest, Status, ActionsOut).
 
-% ==========================================================
-% execute_wait_until/6
-% ==========================================================
 execute_wait_until(ID, Path, Rest, Status, ActionsOut) -->
     % Try to resolve path (fails if path doesn't exist)
     ( resolve_path(ID, Path, _Val) ->
