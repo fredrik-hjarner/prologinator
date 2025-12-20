@@ -55,13 +55,17 @@ tick_action_streams(ObjID, Status) -->
     ).
 
 % base case: no streams left to process
+% AccumRev is in reverse order, reverse it here to get it
+% into non-reverse order.
 tick_action_streams_loop(
     obj_id(_),
     left([]),
-    accum_old(Accum),
+    accum_old(AccumRev),
     accum_new(Accum),
     result(not_despawned)
-) --> !.
+) -->
+    { reverse(AccumRev, Accum) },
+    !.
 
 tick_action_streams_loop(
     obj_id(ObjId),
@@ -99,11 +103,9 @@ tick_action_streams_loop(
         ; % yielded
             (
                 % add what was left after yield.
-                {append(
-                    AccumOld,
-                    [StreamsAfterTick],
-                    Accum
-                )},
+                % AccumOld is in reverse order, prepend to
+                % build backwards (O(1))
+                {Accum = [StreamsAfterTick | AccumOld]},
                 % recurse
                 tick_action_streams_loop(
                     obj_id(ObjId),
