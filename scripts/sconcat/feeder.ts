@@ -22,6 +22,10 @@ export const excludePatterns: string[] = [
     "**/scripts/**",
     "**/submodules/**",
     "**/*_test.pl",
+    "**/xod.pl",
+    "**/validation2.pl",
+    "**/test_util.pl",
+    "**/prologinator.pl",
 ];
 
 // ==========================================================
