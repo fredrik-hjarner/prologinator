@@ -221,6 +221,12 @@ render(Ctx, Ctx) :-
     % char_code(Esc, 27),  % ESC character
     % write(Esc), write('[2J'), write(Esc), write('[H'),
     
+    ctx_actionstore(ActionStore, Ctx, _),
+    write('--- Action Store ---'), nl,
+    pretty_print(ActionStore),
+    % nl,
+    % write('--------------------'), nl,
+
     ctx_frame(Frame, Ctx, Ctx),
     ctx_status(Status, Ctx, Ctx),
     ctx_objs(Objects, Ctx, Ctx),

@@ -17,6 +17,13 @@ game GAME='games/default' INPUTS='games/input_demo.pl': build
 		GAME={{GAME}} INPUTS={{INPUTS}} scryer-prolog build/prologinator.pl -g "main, halt"; \
 	fi
 
+game2 GAME='games/fork' INPUTS='games/fork_input.pl': build
+	@if [ -z "{{INPUTS}}" ]; then \
+		GAME={{GAME}} scryer-prolog build/prologinator.pl -g "main, halt"; \
+	else \
+		GAME={{GAME}} INPUTS={{INPUTS}} scryer-prolog build/prologinator.pl -g "main, halt"; \
+	fi
+
 test MODULE: build
     @ VALIDATION_ERR_MSG=false ./scripts/test.ts {{MODULE}}
 

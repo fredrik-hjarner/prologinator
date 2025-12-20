@@ -5,6 +5,9 @@
 % tick_object threads the context via DCG.
 % Returns result(Status, actions_new(ActionsOut)) where
 % Status is completed, yielded, or despawned.
+% TODO: Change name because it kinda does not tick an object
+%       any more but rather executes streams until a "stop"
+%       state.
 tick_object(
     actions_old([]),
     obj_id(_ID),

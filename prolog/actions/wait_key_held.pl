@@ -19,9 +19,11 @@ execute_action_impl(
 
 execute_wait_key_held(KeyCode, Rest, Status, ActionsOut) -->
     ( key_held(KeyCode) ->
+        {format("Key held: ~w~n", [KeyCode])},
         % Key held: yield (action complete)
         {ActionsOut = Rest, Status = completed}
     ;
+        {format("Key not held: ~w~n", [KeyCode])},
         % Key not held: keep waiting
         {ActionsOut = [wait_key_held(KeyCode)|Rest],
          Status = yielded}
