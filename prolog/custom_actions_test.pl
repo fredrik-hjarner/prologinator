@@ -219,9 +219,10 @@ test("custom_action: shoot_burst defines and executes", (
         define_action(
             shoot_burst(Count),
             repeat(Count, [
-                spawn(proj, 100, 100, [
-                    move_delta(0, -5, 20)
-                ]),
+                spawn([set_attr(type, proj),
+                       set_attr(x, 100),
+                       set_attr(y, 100),
+                       move_delta(0, -5, 20)]),
                 wait(3)
             ])
         ),

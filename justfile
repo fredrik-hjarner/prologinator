@@ -1,12 +1,16 @@
 default:
 	@just --list
 
+# Simple performance test
+perf: build
+    time scryer-prolog prolog/perf.pl -g "main_perf, halt"; \
+
 # Run the monolithic build with Scryer Prolog
 # Usage: just game (uses games/default, games/input_demo.pl)
 # Usage: just game ./games/my_game
 # Usage: just game ./games/my_game ./games/my_input
 # Usage: just game ./games/my_game '' (no input timeline)
-game GAME='games/fork' INPUTS='games/input_demo.pl': build
+game GAME='games/default' INPUTS='games/input_demo.pl': build
 	@if [ -z "{{INPUTS}}" ]; then \
 		GAME={{GAME}} scryer-prolog build/prologinator.pl -g "main, halt"; \
 	else \

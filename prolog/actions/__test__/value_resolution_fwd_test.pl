@@ -136,28 +136,30 @@ test("value_resolution: spawn at attr() position", (
                attr(spawn_y, 300)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    ActionsIn = [spawn(enemy, attr(spawn_x),
-                       attr(spawn_y), [])],
+    ActionsIn = [spawn([set_attr(type, enemy),
+                        copy_attr(spawn_x, x),
+                        copy_attr(spawn_y, y)])],
     execute_action(
-        action(spawn(enemy, attr(spawn_x),
-                     attr(spawn_y), [])),
+        action(spawn([set_attr(type, enemy),
+                      copy_attr(spawn_x, x),
+                      copy_attr(spawn_y, y)])),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
     ),
-    % Check that spawn command was created with resolved
-    % values (attr() references should be resolved to 200,
-    % 300)
+    % Check that spawn command was created with copy_attr
+    % actions (copy_attr doesn't get resolved, it's executed
+    % at spawn time on the new object)
     ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
-    % Should have one spawn command with resolved values
-    % (parent_id automatically set to spawning object's ID)
+    % Should have one spawn command with parent_id
+    % automatically added, then the actions as provided
     SpawnCmds = [spawn_cmd(actions([
+                                     set_attr(parent_id, 1),
                                      set_attr(type, enemy),
-                                     set_attr(x, 200),
-                                     set_attr(y, 300),
-                                     set_attr(parent_id, 1)
+                                     copy_attr(spawn_x, x),
+                                     copy_attr(spawn_y, y)
                                      ]))]
 )).
 

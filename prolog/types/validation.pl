@@ -439,10 +439,8 @@ action_validation_helper(Term) :-
         ; Term = noop ->
             % Structure matches, no content to validate
             true
-        ; Term = spawn(Type, _X, _Y, Acts) ->
+        ; Term = spawn(Acts) ->
             % Structure matches, validate content
-            atom(Type),
-            % X and Y: no validation needed
             length(Acts, _)
         ; Term = set_attr(_Path, _Value) ->
             % Structure matches, no validation

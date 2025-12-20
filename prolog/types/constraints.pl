@@ -148,11 +148,10 @@ action_constraint(move_to(X, Y, Frames), _) :-
 
 action_constraint(despawn, _).
 
-action_constraint(spawn(Type, _X, _Y, Acts), DepthLeft) :-
+action_constraint(spawn(Acts), DepthLeft) :-
     DepthLeft #> 0,
     DepthLeft1 #= DepthLeft - 1,
-    object_type_constraint(Type),
-    % X and Y: no constraints, just ground terms
+    % Actions list constraints
     bounded_list_of_depth(
         action_constraint, Acts, 100, DepthLeft1
     ).

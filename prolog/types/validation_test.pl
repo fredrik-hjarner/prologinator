@@ -221,13 +221,11 @@ test("command_validation: invalid pos in spawn fails", (
     expect_exception(command_validation(Cmd))
 )).
 
-test("action_validation: spawn with non-integer coords \
-passes (no validation)", (
-    % X and Y are not validated, so these should pass
-    Action1 = spawn(static, not_int, 10, []),
-    action_validation(Action1),
-    Action2 = spawn(static, 10, not_int, []),
-    action_validation(Action2)
+test("action_validation: spawn with list of actions \
+passes", (
+    % Actions list is validated as a list
+    Action = spawn([set_attr(type, enemy)]),
+    action_validation(Action)
 )).
 
 test("action_validation: invalid wait fails", (
@@ -246,10 +244,9 @@ test("action_validation: invalid move_to fails", (
 )).
 
 test("action_validation: invalid spawn action fails", (
-    Action1 = spawn(123, 0, 0, []),
-    expect_exception(action_validation(Action1)),
-    Action2 = spawn(static, not_a_pos, []),
-    expect_exception(action_validation(Action2))
+    % spawn expects a list, non-list should fail
+    Action1 = spawn(not_a_list),
+    expect_exception(action_validation(Action1))
 )).
 
 % ----------------------------------------------------------
@@ -339,6 +336,7 @@ test("action_validation: move_to wrong arity throws", (
 )).
 
 test("action_validation: spawn wrong arity throws", (
+    % Old 3-arg form should fail
     Action = spawn(enemy, 0, 0),
     expect_exception(action_validation(Action))
 )).

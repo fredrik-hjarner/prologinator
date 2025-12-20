@@ -3,13 +3,17 @@
     log("Game loaded successfully!"),
     
     % Spawn player at center - responds to input
-    spawn(player, 10, 10, [
+    spawn([
+        set_attr(type, player),
+        set_attr(x, 10),
+        set_attr(y, 10),
         log("Player spawned!"),
         set_attr(displayChar, 64),  % '@'
         fork([
             loop([
                 wait(2),
-                spawn(proj, 10, 10, [
+                spawn([
+                    set_attr(type, proj),
                     copy_attr(parent_id/x, x),
                     copy_attr(parent_id/y, y),
                     set_attr(displayChar, 42),  % '*'

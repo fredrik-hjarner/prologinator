@@ -7,7 +7,7 @@ builtin_action(wait(_)).
 builtin_action(move_to(_, _, _)).
 builtin_action(move_delta(_, _, _)).
 builtin_action(despawn).
-builtin_action(spawn(_, _, _, _)).
+builtin_action(spawn(_)).
 builtin_action(set_attr(_, _)).
 builtin_action(copy_attr(_, _)).
 builtin_action(incr(_, _)).
