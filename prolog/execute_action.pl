@@ -69,9 +69,12 @@ execute_action_resolved(
         % Body now has the correct bindings, use it directly
         % Note: Body may contain attr() specs, so recurse
         % through top-level execute_action for resolution
+        % Replace the user action with its Body in the queue
+        {ActionsIn = [Action|Rest]},
+        {ExpandedActions = [Body|Rest]},
         execute_action(
             action(Body),
-            actions_old(ActionsIn),
+            actions_old(ExpandedActions),
             obj_id(ID),
             result(Status, actions_new(ActionsOut))
         )

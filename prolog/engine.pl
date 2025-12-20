@@ -32,48 +32,40 @@ increment_frame -->
 % over all objects and execute tick_action_streams for each.
 % It is also responsible for cleaning up objects in the
 % objects list and cleaning up actions in actionstore.
+% It is also responsible for reading spawn commands and
+% spawning new objects.
 tick_all_objects -->
-    % Start the loop with ID -1 (assuming IDs start at 0
-    tick_objects_loop(-1).
+    ctx_objs(ObjsQueue),
+    % At first we have all objects left to process.
+    tick_objects_loop(ObjsQueue).
+
+% base case: no objects left to process
+tick_objects_loop([]) --> !.
 
 % The loop finds the next object with ID > LastID
-tick_objects_loop(LastID) -->
-    ( find_next_object(LastID, TargetObj) ->
-        % Found an object to tick
-        {obj_id(TargetObj, TargetID)},
-        % Process actions from actionstore
-        tick_action_streams(TargetID, Status),
-        % Update the context with the result of this
-        % specific object based on status
-        ( {Status = despawned} ->
-            % Remove object from context and actionstore
-            % (cleaned by tick_action_streams)
-            update_object_in_context(TargetID, [])
-        ;
-            % Keep object (yielded or completed)
-            % No need to reconstruct - actions are in
-            % actionstore
-            []
-        ),
-        % Process spawn commands ASAP so spawned objects
-        % can execute in the same frame
-        process_spawn_commands,
-        % Recurse using the current TargetID as the new
-        % floor
-        tick_objects_loop(TargetID)
+tick_objects_loop([TargetObj|ObjsQueue]) -->
+    % Found an object to tick
+    {obj_id(TargetObj, TargetID)},
+    % Process actions from actionstore
+    tick_action_streams(TargetID, Status),
+    % Update the context with the result of this
+    % specific object based on status
+    ( {Status = despawned} ->
+        % Remove object from context and actionstore
+        % (cleaned by tick_action_streams)
+        update_object_in_context(TargetID, [])
     ;
+        % Keep object (yielded or completed)
+        % No need to reconstruct - actions are in
+        % actionstore
         []
-    ).
-
-% Helper: Finds the first object in context with ID > MinID
-% Since the list is sorted, this is effectively finding
-% the next one.
-find_next_object(MinID, Obj) -->
-    ctx_objs(Objects),
-    {member(Obj, Objects),
-     obj_id(Obj, ID),
-     ID > MinID,
-     !}. % Take the first one we find (lowest ID > MinID)
+    ),
+    % Process spawn commands ASAP so spawned objects
+    % can execute in the same frame
+    process_spawn_commands(ObjsQueue, ObjsQueueNew),
+    % Recurse using the current TargetID as the new
+    % floor
+    tick_objects_loop(ObjsQueueNew).
 
 % Helper: Replaces the object with TargetID with the
 % NewList (which is [Obj] or [])
@@ -101,22 +93,37 @@ replace_by_id([Obj|Rest], TargetID, Replacement, Result) :-
 % Process all spawn commands, creating objects and adding
 % them to actionstore. Processes commands ASAP so spawned
 % objects can execute in the same frame.
-process_spawn_commands -->
+process_spawn_commands(ObjsQueue, ObjsQueueNew) -->
     ctx_spawnCmds(SpawnCmds),
-    ( {SpawnCmds = []} ->
-        % No spawn commands, nothing to do
-        []
-    ;
-        % Process all spawn commands
-        process_spawn_commands_loop(SpawnCmds),
-        % Clear spawn commands after processing
-        ctx_set_spawnCmds([])
-    ).
+    % Process all spawn commands
+    process_spawn_commands_loop(
+        SpawnCmds,
+        ObjsQueue,
+        ObjsQueueNew,
+        [],             % SpawnedObjsRev starts empty
+        SpawnedObjsRev  % collected spawns in reverse order
+    ),
+    % reverse the spawned objects to get them in the
+    % correct order
+    {reverse(SpawnedObjsRev, SpawnedObjs)},
+    % add the spawned objects to the context
+    ctx_objs(ObjsOld),
+    {append(ObjsOld, SpawnedObjs, ObjsNew)},
+    ctx_set_objs(ObjsNew),
+    % Clear spawn commands after processing
+    ctx_set_spawnCmds([]).
 
 % Process each spawn command
-process_spawn_commands_loop([]) --> [].
+% base case: no spawn commands left to process
 process_spawn_commands_loop(
-    [spawn_cmd(actions(Actions))|Rest]
+    [], ObjsQueue, ObjsQueue, SpawnedObjsRev, SpawnedObjsRev
+) --> !.
+process_spawn_commands_loop(
+    [spawn_cmd(actions(Actions))|CmdsRest],
+    ObjsQueue,
+    ObjsQueueNew,
+    SpawnedObjsRevOld,
+    SpawnedObjsRevNew
 ) -->
     % Generate new ID
     ctx_nextid(NewID),
@@ -124,10 +131,21 @@ process_spawn_commands_loop(
     ctx_set_nextid(NextID),
     % Create object
     {NewObj = object(id(NewID))},
-    % Add object to context
-    ctx_objs(ObjsOld),
-    {append(ObjsOld, [NewObj], ObjsNew)},
-    ctx_set_objs(ObjsNew),
+
+    % Add object to the left to precess queue
+    % so yea we both add it to the the left to process queue
+    % and to the context.
+    % NOTE: prepend because it's faster but this causes
+    % newly spawned objects to be processed first, but I
+    % don't think that's an issue, but it's worth knowing.
+    {ObjsQueueAfterAppend = [NewObj | ObjsQueue]},
+
+    % "collect" the object. we will add it to context but
+    % we don't do it one per one becuase that's slow, we
+    % collect them and then add them in bulk.
+    % prepend because faster, reverse later.
+    {SpawnedObjAfterPrepend = [NewObj | SpawnedObjsRevOld]},
+
     % Add actions to actionstore (wrap in list for single
     % stream)
     % tick_objects_loop will automatically pick up and
@@ -141,5 +159,11 @@ process_spawn_commands_loop(
     )},
     ctx_set_actionstore(NewActionStore),
     % Process remaining commands
-    process_spawn_commands_loop(Rest).
+    process_spawn_commands_loop(
+        CmdsRest,
+        ObjsQueueAfterAppend,
+        ObjsQueueNew,
+        SpawnedObjAfterPrepend,
+        SpawnedObjsRevNew
+    ).
 

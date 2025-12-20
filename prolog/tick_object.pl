@@ -12,14 +12,14 @@ tick_object(
 ) --> [].
 
 tick_object(
-    actions_old([Act|_Rest]),
+    actions_old([Act|Rest]),
     obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->
     % Call execute_action with actions passed separately
     execute_action(
         action(Act),
-        actions_old([Act|_Rest]),
+        actions_old([Act|Rest]),
         obj_id(ID),
         result(ActStatus, actions_new(ActionsTemp))
     ),
