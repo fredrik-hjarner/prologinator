@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(log(Msg)),
-    actions_old([_|Rest]),
+    actions_old([log(Msg)|Rest]),
     obj_id(_ID),
     result(completed, actions_new(Rest))
 ) -->

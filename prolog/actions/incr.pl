@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(incr(Path, Amount)),
-    actions_old([_|Rest]),
+    actions_old([incr(Path, Amount)|Rest]),
     obj_id(MyID),
     result(completed, actions_new(Rest))
 ) -->
@@ -14,5 +13,3 @@ execute_incr(MyID, Path, Amount) -->
         {NewValue = Amount}
     ),
     ctx_set_attr_val(TargetID/Key, NewValue).
-
-

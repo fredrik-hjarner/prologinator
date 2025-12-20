@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(fork(Actions)),
-    actions_old([_|Rest]),
+    actions_old([fork(Actions)|Rest]),
     obj_id(ID),
     result(completed, actions_new(Rest))
 ) -->

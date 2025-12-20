@@ -5,8 +5,7 @@
 % Yields: false (expands immediately)
 
 execute_action_impl(
-    action(repeat(Times, Acts)),
-    actions_old([_|Rest]),
+    actions_old([repeat(Times, Acts)|Rest]),
     obj_id(_ID),
     result(completed, actions_new(NewActions))
 ) -->

@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(trigger_state_change(Change)),
-    actions_old([_|Rest]),
+    actions_old([trigger_state_change(Change)|Rest]),
     obj_id(_ID),
     result(completed, actions_new(Rest))
 ) -->

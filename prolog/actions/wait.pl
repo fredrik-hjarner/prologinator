@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(wait(N)),
-    actions_old([_|Rest]),
+    actions_old([wait(N)|Rest]),
     obj_id(_ID),
     result(Status, actions_new(ActionsOut))
 ) -->

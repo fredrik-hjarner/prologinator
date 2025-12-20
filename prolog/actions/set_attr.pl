@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(set_attr(Path, Value)),
-    actions_old([_|Rest]),
+    actions_old([set_attr(Path, Value)|Rest]),
     obj_id(MyID),
     result(completed, actions_new(Rest))
 ) -->

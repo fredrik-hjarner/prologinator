@@ -3,8 +3,7 @@
 % ==========================================================
 
 execute_action_impl(
-    action(parallel_all(Children)),
-    actions_old([_ParentAction|RestActions]),
+    actions_old([parallel_all(Children)|RestActions]),
     obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->

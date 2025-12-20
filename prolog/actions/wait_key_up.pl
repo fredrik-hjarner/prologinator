@@ -5,8 +5,7 @@
 % Yields: false (checks each frame)
 
 execute_action_impl(
-    action(wait_key_up(KeyCode)),
-    actions_old([_|Rest]),
+    actions_old([wait_key_up(KeyCode)|Rest]),
     obj_id(_ID),
     result(Status, actions_new(ActionsOut))
 ) -->

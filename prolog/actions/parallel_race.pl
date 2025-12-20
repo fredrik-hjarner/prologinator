@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(parallel_race(Children)),
-    actions_old([_ParentAction|RestActions]),
+    actions_old([parallel_race(Children)|RestActions]),
     obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->

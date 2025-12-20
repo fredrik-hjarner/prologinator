@@ -51,7 +51,7 @@
     empty_attr_store/1,
     empty_ctx/1,
     execute_action/6,
-    execute_action_impl/6,
+    execute_action_impl/5,
     execute_action_resolved/6,
     execute_despawn/3,
     execute_move_delta/9,

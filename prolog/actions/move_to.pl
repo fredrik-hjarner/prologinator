@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(move_to(TargetX, TargetY, Frames)),
-    actions_old([_|Rest]),
+    actions_old([move_to(TargetX, TargetY, Frames)|Rest]),
     obj_id(ID),
     result(Status, actions_new(NewActions))
 ) -->

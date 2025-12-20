@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(list(ListActions)),
-    actions_old([_ListAction|RestActions]),
+    actions_old([list(ListActions)|RestActions]),
     obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->

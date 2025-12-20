@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(copy_attr(SourcePath, DestPath)),
-    actions_old([_|Rest]),
+    actions_old([copy_attr(SourcePath, DestPath)|Rest]),
     obj_id(MyID),
     result(completed, actions_new(Rest))
 ) -->

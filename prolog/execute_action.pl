@@ -30,9 +30,12 @@ execute_action(
     % 1. Resolve value specs in action
     resolve_action(ID, Action, ResolvedAction),
     % 2. Delegate to existing logic (renamed)
+    % We need to put the ResolvedAction as new head on
+    % actions_old
+    {ActionsIn = [_|Rest]},
     execute_action_resolved(
         action(ResolvedAction),
-        actions_old(ActionsIn),
+        actions_old([ResolvedAction|Rest]),
         obj_id(ID),
         result(Status, actions_new(ActionsOut))
     ).
@@ -52,12 +55,11 @@ execute_action_resolved(
     % TODO: action_validation nowadays it almost useless
     %       since custom actions allow anything.
     %       so maybe I should validate builtins separately?
-    {action_validation(Action)},
+    % {action_validation(Action)},
     % validate(Action, action_schema),
     ( {builtin_action(Action)} ->
         % It's a built-in action - execute normally
         execute_action_impl(
-            action(Action),
             actions_old(ActionsIn),
             obj_id(ID),
             result(Status, actions_new(ActionsOut))
@@ -84,7 +86,7 @@ execute_action_resolved(
     ).
 
 % ==========================================================
-% execute_action_impl/6
+% execute_action_impl/5
 % ==========================================================
 % Internal implementation (no validation)
 % Implementation clauses are provided by individual action

@@ -3,8 +3,7 @@
 % is called later, execute_action/5 will expand it with
 % parameter substitution and execute the Body.
 execute_action_impl(
-    action(define_action(Signature, Body)),
-    actions_old([_|Rest]),
+    actions_old([define_action(Signature, Body)|Rest]),
     obj_id(_ID),
     result(completed, actions_new(Rest))
 ) -->

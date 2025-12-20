@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(despawn),
-    actions_old(_Actions),
+    actions_old([despawn|_]),
     obj_id(ID),
     result(despawned, actions_new([]))
 ) -->

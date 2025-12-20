@@ -5,8 +5,7 @@
 % Yields: true when Frames > 0
 
 execute_action_impl(
-    action(move_delta(Frames, DX, DY)),
-    actions_old([_|Rest]),
+    actions_old([move_delta(Frames, DX, DY)|Rest]),
     obj_id(ID),
     result(Status, actions_new(NewActions))
 ) -->

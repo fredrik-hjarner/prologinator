@@ -1,6 +1,5 @@
 execute_action_impl(
-    action(spawn(Actions)),
-    actions_old([_|Rest]),
+    actions_old([spawn(Actions)|Rest]),
     obj_id(MyID),
     result(completed, actions_new(Rest))
 ) -->

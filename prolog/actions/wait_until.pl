@@ -7,8 +7,7 @@
 %   collision_id
 
 execute_action_impl(
-    action(wait_until(Path)),
-    actions_old([_|Rest]),
+    actions_old([wait_until(Path)|Rest]),
     obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->

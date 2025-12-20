@@ -5,8 +5,7 @@
 % Yields: false (expands immediately)
 
 execute_action_impl(
-    action(load(Path)),
-    actions_old([_|Rest]),
+    actions_old([load(Path)|Rest]),
     obj_id(_ID),
     result(completed, actions_new(NewActions))
 ) -->
