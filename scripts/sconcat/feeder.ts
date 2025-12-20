@@ -26,6 +26,7 @@ export const excludePatterns: string[] = [
     "**/validation2.pl",
     "**/test_util.pl",
     "**/prologinator.pl",
+    "**/types/constraints.pl",
 ];
 
 // ==========================================================
