@@ -27,8 +27,6 @@ test("value_resolution: move_to with attr() references", (
     ActionsIn = [move_to(attr(target_x),
                          attr(target_y), 5)],
     execute_action(
-        action(move_to(attr(target_x),
-                       attr(target_y), 5)),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -52,7 +50,6 @@ test("value_resolution: set_attr with attr() source", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ActionsIn = [set_attr(source_x, attr(x))],
     execute_action(
-        action(set_attr(source_x, attr(x))),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -79,8 +76,6 @@ test("value_resolution: path syntax parent_id/target_y", (
     ActionsIn = [set_attr(my_target_y,
                           attr(parent_id/target_y))],
     execute_action(
-        action(set_attr(my_target_y,
-                        attr(parent_id/target_y))),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -112,9 +107,6 @@ test("value_resolution: multi-hop path a/b/c", (
                           attr(first_id/second_id/
                                 final_value))],
     execute_action(
-        action(set_attr(result,
-                        attr(first_id/second_id/
-                              final_value))),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -140,9 +132,6 @@ test("value_resolution: spawn at attr() position", (
                         copy_attr(spawn_x, x),
                         copy_attr(spawn_y, y)])],
     execute_action(
-        action(spawn([set_attr(type, enemy),
-                      copy_attr(spawn_x, x),
-                      copy_attr(spawn_y, y)])),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -175,8 +164,6 @@ test("value_resolution: mixed plain and attr() values", (
     ActionsIn = [move_to(attr(target_x), 200,
                          attr(speed))],
     execute_action(
-        action(move_to(attr(target_x), 200,
-                       attr(speed))),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -205,7 +192,6 @@ test("value_resolution: backward compatible plain values", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ActionsIn = [move_to(100, 200, 5)],
     execute_action(
-        action(move_to(100, 200, 5)),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_ActionsOut)),

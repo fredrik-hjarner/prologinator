@@ -26,7 +26,6 @@ yields", (
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
-        action(list([wait(1), move_to(5, 5, 2)])),
         actions_old(ActionsIn),
         obj_id(0),
         result(Status, actions_new(ActionsOut)),
@@ -52,7 +51,6 @@ test("list: empty list removes itself", (
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
-        action(list([])),
         actions_old(ActionsIn),
         obj_id(0),
         result(completed, actions_new(ActionsOut)),

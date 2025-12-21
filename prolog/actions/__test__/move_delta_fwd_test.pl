@@ -32,7 +32,6 @@ test("move_delta: single frame moves and completes", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(move_delta(1, 5, -3)),
         actions_old(ActionsIn),
         obj_id(1),
         result(yielded, actions_new(ActionsOut)),
@@ -64,7 +63,6 @@ test("move_delta: multiple frames continues", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(move_delta(3, 10, 5)),
         actions_old(ActionsIn),
         obj_id(1),
         result(yielded, actions_new(ActionsOut)),
@@ -98,7 +96,6 @@ test("move_delta: negative deltas work", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(move_delta(2, -10, -5)),
         actions_old(ActionsIn),
         obj_id(1),
         result(yielded, actions_new(ActionsOut)),
@@ -134,7 +131,6 @@ test("move_delta: preserves other attributes", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(move_delta(1, 5, -3)),
         actions_old(ActionsIn),
         obj_id(1),
         result(yielded, actions_new(ActionsOut)),

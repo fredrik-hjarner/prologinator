@@ -28,7 +28,6 @@ test("noop: removes self from action queue", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(noop),
         actions_old(ActionsIn),
         obj_id(0),
         result(ActionStatus, actions_new(ActionsOut)),

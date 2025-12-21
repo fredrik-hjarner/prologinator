@@ -25,7 +25,6 @@ test("wait_key_down: completes when key pressed", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_down(39)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -54,7 +53,6 @@ test("wait_key_down: yields when key not pressed", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_down(39)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -84,7 +82,6 @@ test("wait_key_down: waits for different key", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_down(37)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -116,7 +113,6 @@ test("wait_key_down: multiple key events", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_down(37)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -145,7 +141,6 @@ test("wait_key_down: ignores key up events", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_down(39)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),

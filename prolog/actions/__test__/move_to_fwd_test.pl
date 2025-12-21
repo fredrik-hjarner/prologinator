@@ -22,7 +22,6 @@ remaining", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = move_to(10, 20, 3),
     ActionsIn = [move_to(10, 20, 3)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
@@ -33,7 +32,6 @@ remaining", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -59,7 +57,6 @@ remaining", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = move_to(0, 0, 3),
     ActionsIn = [move_to(0, 0, 3)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
@@ -71,7 +68,6 @@ remaining", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -95,7 +91,6 @@ test("move_to: single frame, arrives at target", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = move_to(5, 5, 1),
     ActionsIn = [move_to(5, 5, 1)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
@@ -106,7 +101,6 @@ test("move_to: single frame, arrives at target", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -130,7 +124,6 @@ continues with remaining frames", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = move_to(10, 20, 3),
     ActionsIn = [move_to(10, 20, 3)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
@@ -142,7 +135,6 @@ continues with remaining frames", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -163,7 +155,6 @@ continues with remaining frames", (
 )).
 
 test("move_to: negative target coordinates", (
-    Action = move_to(-5, -10, 2),
     ActionsIn = [move_to(-5, -10, 2)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
@@ -171,7 +162,6 @@ test("move_to: negative target coordinates", (
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),

@@ -47,13 +47,6 @@ test("define_action: stores action definition", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(define_action(
-            zigzag(Amplitude, Times),
-            repeat(Times, [
-                move_delta(Amplitude, 0, 10),
-                move_delta(-Amplitude, 0, 10)
-            ])
-        )),
         actions_old(ActionsIn),
         obj_id(0),
         result(completed, actions_new(ActionsOut)),
@@ -103,7 +96,6 @@ test("custom_action: zigzag expands and executes", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(zigzag(30, 2)),
         actions_old(ActionsIn),
         obj_id(0),
         result(completed, actions_new(ActionsOut)),
@@ -417,7 +409,6 @@ substituted", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(move_pattern(10, 10, 20, 20, 5)),
         actions_old(ActionsIn),
         obj_id(0),
         result(Status, actions_new(ActionsOut)),

@@ -41,7 +41,6 @@ actions from executing", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(despawn),
         actions_old(Actions),
         obj_id(1),
         result(Status, actions_new(_ActionsOut)),
@@ -72,7 +71,6 @@ executing after despawn", (
     put_assoc(1, ActionStore0, [Actions], ActionStore),
     ctx_set_actionstore(ActionStore, Ctx1, Ctx),
     execute_action(
-        action(despawn),
         actions_old(Actions),
         obj_id(1),
         result(Status, actions_new(_ActionsOut)),

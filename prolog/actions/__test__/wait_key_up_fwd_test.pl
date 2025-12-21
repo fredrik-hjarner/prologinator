@@ -25,7 +25,6 @@ test("wait_key_up: completes when key released", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_up(39)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -54,7 +53,6 @@ test("wait_key_up: yields when key not released", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_up(39)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -84,7 +82,6 @@ test("wait_key_up: waits for different key", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_up(37)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -116,7 +113,6 @@ test("wait_key_up: multiple key events", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_up(37)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -145,7 +141,6 @@ test("wait_key_up: ignores key down events", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_up(39)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -176,8 +171,7 @@ test("wait_key_up: ignores held keys", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_up(39)),
-        actions_old(ActionsIn),
+        actions_old([wait_key_up(39)]),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
         Ctx,

@@ -82,11 +82,6 @@ attributes.", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(parallel_all([
-            set_attr(x, 10),
-            set_attr(y, 20),
-            set_attr(z, 30)
-        ])),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -129,12 +124,6 @@ test("parallel_all: yields when child yields", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(parallel_all([
-            set_attr(x, 10),
-            wait(2),  % Yields after 1 frame
-            % (becomes wait(1))
-            set_attr(y, 20)
-        ])),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -186,11 +175,6 @@ test("parallel_all: despawns when child despawns", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(parallel_all([
-            set_attr(x, 10),
-            despawn,  % Despawns immediately
-            set_attr(y, 20)
-        ])),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(_)),

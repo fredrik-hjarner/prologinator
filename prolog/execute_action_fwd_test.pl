@@ -22,7 +22,6 @@ remaining", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = move_to(10, 20, 3),
     ActionsIn = [move_to(10, 20, 3)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
@@ -33,7 +32,6 @@ remaining", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(ActionsOut)),
@@ -58,7 +56,6 @@ remaining", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = move_to(0, 0, 3),
     ActionsIn = [move_to(0, 0, 3)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 10), attr(y, 20)],
@@ -68,7 +65,6 @@ remaining", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(ActionsOut)),
@@ -91,7 +87,6 @@ test("move_to: single frame, arrives at target", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = move_to(5, 5, 1),
     ActionsIn = [move_to(5, 5, 1)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
@@ -102,7 +97,6 @@ test("move_to: single frame, arrives at target", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(ActionsOut)),
@@ -125,7 +119,6 @@ continues with remaining frames", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = move_to(10, 20, 3),
     ActionsIn = [move_to(10, 20, 3)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, [attr(x, 10), attr(y, 20)],
@@ -135,7 +128,6 @@ continues with remaining frames", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(ActionsOut)),
@@ -155,7 +147,6 @@ continues with remaining frames", (
 )).
 
 test("move_to: negative target coordinates", (
-    Action = move_to(-5, -10, 2),
     ActionsIn = [move_to(-5, -10, 2)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
@@ -163,7 +154,6 @@ test("move_to: negative target coordinates", (
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(ActionsOut)),
@@ -191,14 +181,12 @@ to won", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = trigger_state_change(game_over(won)),
     ActionsIn = [trigger_state_change(game_over(won))],
     empty_ctx(CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(ActionsOut)),
@@ -219,14 +207,12 @@ to lost", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = trigger_state_change(game_over(lost)),
     ActionsIn = [trigger_state_change(game_over(lost))],
     empty_ctx(CtxIn),
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(ActionsOut)),
@@ -247,7 +233,6 @@ override lost", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = trigger_state_change(game_over(won)),
     ActionsIn = [trigger_state_change(game_over(won))],
     empty_ctx(CtxTemp),
     ctx_set_status(lost, CtxTemp, CtxIn),
@@ -255,7 +240,6 @@ override lost", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(ActionsOut)),
@@ -286,7 +270,6 @@ test("noop: removes self from action queue", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(noop),
         actions_old(ActionsIn),
         obj_id(0),
         result(completed, actions_new(ActionsOut)),
@@ -319,7 +302,6 @@ test("list: executes actions immediately", (
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     obj_id(ObjIn, ID),
     execute_action(
-        action(list([wait(1), move_to(5, 5, 2)])),
         actions_old(ActionsIn),
         obj_id(ID),
         result(Status, actions_new(ActionsOut)),
@@ -339,7 +321,6 @@ test("list: empty list removes itself", (
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
-        action(list([])),
         actions_old(ActionsIn),
         obj_id(0),
         result(completed, actions_new(ActionsOut)),
@@ -373,7 +354,6 @@ actions from executing", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(despawn),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(ActionsOut)),
@@ -401,7 +381,6 @@ executing after despawn", (
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
-        action(despawn),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(ActionsOut)),
@@ -440,9 +419,6 @@ test("parallel_race: stops on child completion", (
         wait(3)
     ],
     execute_action(
-        action(parallel_race(
-            [wait(5), noop, wait(10)]
-        )),
         actions_old(ActionsIn),
         obj_id(ID),
         result(completed, actions_new(ActionsOut)),
@@ -475,9 +451,6 @@ done", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(parallel_race(
-            [wait(5), wait(10)]
-        )),
         actions_old(ActionsIn),
         obj_id(0),
         result(Status, actions_new(ActionsOut)),
@@ -510,7 +483,6 @@ despawns", (
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(
-        action(parallel_race([despawn, wait(10)])),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status_Despawn, actions_new(ActionsOut)),
@@ -540,7 +512,6 @@ test("repeat: expands actions once and decrements", (
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
-        action(repeat(3, [noop, set_attr(count, 1)])),
         actions_old(ActionsIn),
         obj_id(1),
         result(completed, actions_new(ActionsOut)),
@@ -569,7 +540,6 @@ test("repeat: last repetition doesn't add repeat", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(repeat(1, [noop])),
         actions_old(ActionsIn),
         obj_id(1),
         result(completed, actions_new(ActionsOut)),
@@ -604,11 +574,6 @@ test("repeat: multiple actions in repeat list", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(repeat(2, [
-            noop,
-            set_attr(a, 1),
-            set_attr(b, 2)
-        ])),
         actions_old(ActionsIn),
         obj_id(1),
         result(completed, actions_new(ActionsOut)),
@@ -646,7 +611,6 @@ test("move_delta: single frame moves and completes", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(move_delta(1, 5, -3)),
         actions_old(ActionsIn),
         obj_id(1),
         result(yielded, actions_new(ActionsOut)),
@@ -679,7 +643,6 @@ test("move_delta: multiple frames continues", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(move_delta(3, 10, 5)),
         actions_old(ActionsIn),
         obj_id(1),
         result(yielded, actions_new(ActionsOut)),
@@ -713,7 +676,6 @@ test("move_delta: negative deltas work", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(move_delta(2, -10, -5)),
         actions_old(ActionsIn),
         obj_id(1),
         result(yielded, actions_new(ActionsOut)),
@@ -746,7 +708,6 @@ test("move_delta: preserves other attributes", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(move_delta(1, 5, -3)),
         actions_old(ActionsIn),
         obj_id(1),
         result(yielded, actions_new(ActionsOut)),
@@ -785,8 +746,6 @@ test("value_resolution: move_to with attr() references", (
     ActionsIn = [move_to(attr(target_x),
                          attr(target_y), 5)],
     execute_action(
-        action(move_to(attr(target_x),
-                       attr(target_y), 5)),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -810,7 +769,6 @@ test("value_resolution: set_attr with attr() source", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ActionsIn = [set_attr(source_x, attr(x))],
     execute_action(
-        action(set_attr(source_x, attr(x))),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -837,8 +795,6 @@ test("value_resolution: path syntax parent_id/target_y", (
     ActionsIn = [set_attr(my_target_y,
                           attr(parent_id/target_y))],
     execute_action(
-        action(set_attr(my_target_y,
-                        attr(parent_id/target_y))),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -870,9 +826,6 @@ test("value_resolution: multi-hop path a/b/c", (
                           attr(first_id/second_id/
                                 final_value))],
     execute_action(
-        action(set_attr(result,
-                        attr(first_id/second_id/
-                              final_value))),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -897,9 +850,6 @@ test("value_resolution: spawn at attr() position", (
                         copy_attr(spawn_x, x),
                         copy_attr(spawn_y, y)])],
     execute_action(
-        action(spawn([set_attr(type, enemy),
-                      copy_attr(spawn_x, x),
-                      copy_attr(spawn_y, y)])),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -932,8 +882,6 @@ test("value_resolution: mixed plain and attr() values", (
     ActionsIn = [move_to(attr(target_x), 200,
                          attr(speed))],
     execute_action(
-        action(move_to(attr(target_x), 200,
-                       attr(speed))),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(_)),
@@ -962,7 +910,6 @@ test("value_resolution: backward compatible plain values", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ActionsIn = [move_to(100, 200, 5)],
     execute_action(
-        action(move_to(100, 200, 5)),
         actions_old(ActionsIn),
         obj_id(1),
         result(_, actions_new(ActionsOut)),

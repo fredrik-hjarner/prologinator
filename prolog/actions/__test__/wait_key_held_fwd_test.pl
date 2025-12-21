@@ -24,7 +24,6 @@ test("wait_key_held: completes when key is held", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_held(39)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -53,7 +52,6 @@ test("wait_key_held: yields when key not held", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_held(39)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -82,7 +80,6 @@ test("wait_key_held: waits for different key", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_held(37)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),
@@ -110,7 +107,6 @@ test("wait_key_held: multiple keys held", (
     % Act
     % --------------------------------------------------
     execute_action(
-        action(wait_key_held(37)),
         actions_old(ActionsIn),
         obj_id(1),
         result(Status, actions_new(ActionsOut)),

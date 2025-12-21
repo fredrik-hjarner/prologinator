@@ -22,8 +22,7 @@
 % Top-level execute_action (with resolution)
 % ==========================================================
 execute_action(
-    action(Action),
-    actions_old(ActionsIn),
+    actions_old([Action|Rest]),
     obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->
@@ -32,9 +31,7 @@ execute_action(
     % 2. Delegate to existing logic (renamed)
     % We need to put the ResolvedAction as new head on
     % actions_old
-    {ActionsIn = [_|Rest]},
     execute_action_resolved(
-        action(ResolvedAction),
         actions_old([ResolvedAction|Rest]),
         obj_id(ID),
         result(Status, actions_new(ActionsOut))
@@ -47,20 +44,19 @@ execute_action(
 % Now threads Context directly to accumulate side effects.
 % Also handles user-defined actions via runtime expansion.
 execute_action_resolved(
-    action(Action),
-    actions_old(ActionsIn),
+    actions_old([Action|Rest]),
     obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->
     % TODO: action_validation nowadays it almost useless
     %       since custom actions allow anything.
     %       so maybe I should validate builtins separately?
-    % {action_validation(Action)},
+    {action_validation(Action)},
     % validate(Action, action_schema),
     ( {builtin_action(Action)} ->
         % It's a built-in action - execute normally
         execute_action_impl(
-            actions_old(ActionsIn),
+            actions_old([Action|Rest]),
             obj_id(ID),
             result(Status, actions_new(ActionsOut))
         )
@@ -72,11 +68,8 @@ execute_action_resolved(
         % Note: Body may contain attr() specs, so recurse
         % through top-level execute_action for resolution
         % Replace the user action with its Body in the queue
-        {ActionsIn = [Action|Rest]},
-        {ExpandedActions = [Body|Rest]},
         execute_action(
-            action(Body),
-            actions_old(ExpandedActions),
+            actions_old([Body|Rest]),
             obj_id(ID),
             result(Status, actions_new(ActionsOut))
         )

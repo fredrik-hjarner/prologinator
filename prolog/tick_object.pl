@@ -21,7 +21,6 @@ tick_object(
 ) -->
     % Call execute_action with actions passed separately
     execute_action(
-        action(Act),
         actions_old([Act|Rest]),
         obj_id(ID),
         result(ActStatus, actions_new(ActionsTemp))

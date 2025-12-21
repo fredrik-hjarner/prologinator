@@ -21,7 +21,6 @@ to won", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = trigger_state_change(game_over(won)),
     ActionsIn = [trigger_state_change(game_over(won))],
     empty_ctx(CtxTemp),
     ctx_set_attr_val(1/type, static, CtxTemp, CtxIn),
@@ -29,7 +28,6 @@ to won", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(completed, actions_new(ActionsOut)),
@@ -50,7 +48,6 @@ to lost", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = trigger_state_change(game_over(lost)),
     ActionsIn = [trigger_state_change(game_over(lost))],
     empty_ctx(CtxTemp),
     ctx_set_attr_val(1/type, static, CtxTemp, CtxIn),
@@ -58,7 +55,6 @@ to lost", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(completed, actions_new(ActionsOut)),
@@ -79,7 +75,6 @@ override lost", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    Action = trigger_state_change(game_over(won)),
     ActionsIn = [trigger_state_change(game_over(won))],
     empty_ctx(CtxTemp0),
     ctx_set_attr_val(1/type, static, CtxTemp0, CtxTemp),
@@ -88,7 +83,6 @@ override lost", (
     % Act
     % ------------------------------------------------------
     execute_action(
-        action(Action),
         actions_old(ActionsIn),
         obj_id(1),
         result(completed, actions_new(ActionsOut)),
