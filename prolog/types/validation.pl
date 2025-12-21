@@ -465,6 +465,19 @@ action_validation_helper(Term) :-
             ;
                 true
             )
+        % loop continuation
+        ; Term = loop(Running, Original) ->
+            % Structure matches, validate content
+            ( ground(Running) ->
+                length(Running, _)
+            ;
+                true
+            ),
+            ( ground(Original) ->
+                length(Original, _)
+            ;
+                true
+            )
         ; Term = list(Acts) ->
             % Structure matches, validate content
             ( ground(Acts) ->
@@ -510,6 +523,24 @@ action_validation_helper(Term) :-
             ),
             ( ground(Acts) ->
                 length(Acts, _)
+            ;
+                true
+            )
+        % repeat continuation
+        ; Term = repeat(Times, Running, Original) ->
+            % Structure matches, validate content
+            ( ground(Times) ->
+                integer(Times)
+            ;
+                true
+            ),
+            ( ground(Running) ->
+                length(Running, _)
+            ;
+                true
+            ),
+            ( ground(Original) ->
+                length(Original, _)
             ;
                 true
             )

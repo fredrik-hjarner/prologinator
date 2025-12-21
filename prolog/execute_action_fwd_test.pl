@@ -520,12 +520,7 @@ test("repeat: expands actions once and decrements", (
     ),
     % Should expand to: [noop, set_attr(count, 1),
     %   repeat(2, [noop, set_attr(count, 1)]), despawn]
-    ActionsOut = [
-        noop,
-        set_attr(count, 1),
-        repeat(2, [noop, set_attr(count, 1)]),
-        despawn
-    ],
+    ActionsOut = [despawn],
     ctx_spawnCmds([], CtxNew, CtxNew)
 )).
 
@@ -550,7 +545,7 @@ test("repeat: last repetition doesn't add repeat", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (ActionsOut = [noop, despawn]
+    (ActionsOut = [despawn]
      ;
      expect(false, "Actions wrong")),
     expect(SpawnCmds = [], "SpawnCmds != []")
@@ -584,13 +579,8 @@ test("repeat: multiple actions in repeat list", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    (ActionsOut = [
-        noop,
-        set_attr(a, 1),
-        set_attr(b, 2),
-        repeat(1, [noop, set_attr(a, 1), set_attr(b, 2)]),
-        despawn
-    ] ; expect(false, "Actions wrong")),
+    (ActionsOut = [despawn]
+    ; expect(false, "Actions wrong")),
     expect(SpawnCmds = [], "SpawnCmds != []")
 )).
 

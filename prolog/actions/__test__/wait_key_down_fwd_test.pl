@@ -188,11 +188,15 @@ test("wait_key_down: in loop pattern", (
     expect(ctx_attr_val(1/x, 0, Ctx1, Ctx1),
         'x should still be 0'),
     % Loop expands body and adds itself back
-    expect(ActionsOut = [
-        wait_key_down(39),
-        set_attr(x, 10),
-        loop([wait_key_down(39), set_attr(x, 10)])
-    ], 'Loop should expand and remain')
+    expect(
+      ActionsOut = [
+        loop(
+          [wait_key_down(39), set_attr(x, 10)],
+          [wait_key_down(39), set_attr(x, 10)]
+        )
+      ],
+      'Loop should preserve internal state'
+    )
 )).
 
 

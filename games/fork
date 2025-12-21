@@ -6,7 +6,7 @@
     spawn([
         set_attr(type, player),
         set_attr(x, 10),
-        set_attr(y, 10),
+        set_attr(y, 19),
         log("Player spawned!"),
         set_attr(displayChar, 64),  % '@'
         fork([
@@ -17,7 +17,7 @@
                     copy_attr(parent_id/x, x),
                     copy_attr(parent_id/y, y),
                     set_attr(displayChar, 42),  % '*'
-                    repeat(10, [
+                    repeat(19, [
                         move_delta(1, 0, -1)
                     ]),
                     despawn

@@ -75,11 +75,14 @@ test("custom_action: zigzag expands and executes", (
     retractall(prologinator:user_action(_, _)),
     
     % Define the action
+    % zigzag(Delta, Times) -> repeat Times: 
+    %   move(10 frames, Delta, 0), 
+    %   move(10 frames, -Delta, 0)
     assertz(prologinator:user_action(
-        zigzag(Amplitude, Times),
+        zigzag(Delta, Times),
         repeat(Times, [
-            move_delta(Amplitude, 0, 10),
-            move_delta(-Amplitude, 0, 10)
+            move_delta(10, Delta, 0),
+            move_delta(10, -Delta, 0)
         ])
     )),
     
@@ -98,23 +101,44 @@ test("custom_action: zigzag expands and executes", (
     execute_action(
         actions_old(ActionsIn),
         obj_id(0),
-        result(completed, actions_new(ActionsOut)),
+        result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
     ),
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    % Should expand to repeat(2, [...])
-    % After one execution, should have repeat(1, [...])
-    % remaining
-    % The expanded action should be in the queue
-    expect((
-        member(repeat(1, [move_delta(30, 0, 10),
-            move_delta(-30, 0, 10)]), ActionsOut)
-        ; member(move_delta(30, 0, 10), ActionsOut)
-            % Or already expanded further
-    )),
+    % 1. zigzag expands to repeat(2, ...)
+    % 2. repeat executes body. move_delta(10,...) executes
+    %    one frame
+    %    and yields move_delta(9,...).
+    % 3. repeat yields itself with updated running state.
+    
+    expect(Status = yielded, 'Status should be yielded'),
+    
+    % Verify the self-managed repeat structure
+    expect(ActionsOut = [repeat(2, Running, Original)], 
+           'ActionsOut should be a self-managed repeat'),
+           
+    % Check Running state: first action should have ticked
+    % once (10 -> 9)
+    write_term(Running, [quoted(true)]), nl,
+    expect(
+        Running = [
+            move_delta(9,30,0),move_delta(10,- (30),0)
+        ], 
+        'Running actions should show progress'
+    ),
+           
+    % Check Original state: should be preserved for next
+    % iteration
+    expect(
+        Original = [
+            move_delta(10, 30, 0), move_delta(10, - (30), 0)
+        ],
+        'Original actions should be preserved'
+    ),
+           
     expect(ctx_spawnCmds([], CtxNew, CtxNew))
 )).
 
@@ -135,8 +159,14 @@ test("custom_action: define and use in same action list", (
         define_action(
             zigzag(Amp, N),
             repeat(N, [
-                move_delta(Amp, 0, 5),
-                move_delta(-Amp, 0, 5)
+                move_delta(5, Amp, 0), % Swapped args to
+                % match standard (Frames, DX, DY) or keep as
+                % used?
+                % NOTE: Test used move_delta(Amp, 0, 5). 
+                % Standard is move_delta(Frames, DX, DY).
+                % Assuming test meant 5 frames of movement.
+                move_delta(5, Amp, 0), 
+                move_delta(5, -Amp, 0)
             ])
         ),
         wait(1),
@@ -157,19 +187,23 @@ test("custom_action: define and use in same action list", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    % First tick: define_action executes
+    % First tick: define_action executes, wait(1) yields
     tick(Ctx0WithActions, Ctx1),
     ctx_objs(Objects1, Ctx1, Ctx1),
     expect(length(Objects1, 1), 'Should have one object'),
     ctx_actionstore(ActionStore1, Ctx1, Ctx1),
     ( gen_assoc(0, ActionStore1, Streams1) ->
         ( Streams1 = [Actions1] ->
-            % define_action should be gone, zigzag should
-            % be there
-            expect(\+ member(define_action(_, _),
-                             Actions1)),
-            expect(member(zigzag(20, 1),
-                          Actions1))
+            % define_action should be gone
+            expect(
+                \+ member(define_action(_, _), Actions1),
+                'define_action should be gone'
+            ),
+            % zigzag should still be waiting behind wait(1)
+            expect(
+                member(zigzag(20, 1), Actions1),
+                'zigzag should be pending'
+            )
         ;
             throw(error('Expected single stream, got',
                         Streams1))
@@ -180,7 +214,7 @@ test("custom_action: define and use in same action list", (
     % ------------------------------------------------------
     % Act
     % ------------------------------------------------------
-    % Second tick: zigzag expands and executes
+    % Second tick: wait completes, zigzag expands to repeat
     tick(Ctx1, Ctx2),
     ctx_objs(Objects2, Ctx2, Ctx2),
     expect(length(Objects2, 1), 'Should have one object'),
@@ -189,10 +223,31 @@ test("custom_action: define and use in same action list", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
-    % zigzag should be expanded to move_delta
-    %   (repeat(1, ...) expands immediately)
-    expect(\+ member(zigzag(_, _), Actions2)),
-    expect(member(move_delta(_, _, _), Actions2))
+    % zigzag should be replaced by the self-managed repeat
+    % structure
+    expect(
+        \+ member(zigzag(_, _), Actions2),
+        'zigzag should be expanded'
+    ),
+    
+    % With self-managed repeat, we expect the repeat
+    % structure to wrap the actions.
+    % It won't flatten into move_delta directly.
+    % We look for repeat(RemainingTimes, RunningActions,
+    % OriginalActions)
+    expect(member(repeat(1, _, _), Actions2), 
+           'Should contain self-managed repeat structure'),
+           
+    % We can verify that move_delta is inside the running
+    % actions of the repeat
+    ( member(repeat(1, RunningActions, _), Actions2) ->
+        expect(
+            member(move_delta(_, _, _), RunningActions), 
+            'Running acns in repeat must contain move_delta'
+        )
+    ;
+        fail('Could not find expected repeat structure')
+    )
 )).
 
 % --------------------------------------------------------

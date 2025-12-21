@@ -13,8 +13,10 @@ builtin_action(copy_attr(_, _)).
 builtin_action(incr(_, _)).
 builtin_action(decr(_, _)).
 builtin_action(loop(_)).
+builtin_action(loop(_, _)). % loop continuation
 builtin_action(list(_)).
 builtin_action(repeat(_, _)).
+builtin_action(repeat(_, _, _)). % repeat continuation
 builtin_action(noop).
 builtin_action(parallel_all(_)).
 builtin_action(parallel_race(_)).
