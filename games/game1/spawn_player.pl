@@ -1,0 +1,51 @@
+[
+    log("spawn_player.pl loaded successfully!"),
+
+    define_action(spawn_player,
+        spawn([
+            set_attr(type, player),
+            set_attr(x, 10),
+            set_attr(y, 19),
+            log("Player spawned!"),
+            set_attr(displayChar, 64),  % '@'
+            fork([
+                loop([
+                    wait(2),
+                    spawn([
+                        set_attr(type, proj),
+                        copy_attr(parent_id/x, x),
+                        copy_attr(parent_id/y, y),
+                        set_attr(displayChar, 42),  % '*'
+                        repeat(19, [
+                            move_delta(1, 0, -1)
+                        ]),
+                        despawn
+                    ])
+                ])
+            ]),
+            parallel_all([
+                % Right arrow (39) - move right
+                loop([
+                    wait_key_held(39),
+                    move_delta(1, 1, 0)
+                ]),
+                % Left arrow (37) - move left
+                loop([
+                    wait_key_held(37),
+                    move_delta(1, -1, 0)
+                ]),
+                % Up arrow (38) - move up
+                loop([
+                    wait_key_held(38),
+                    move_delta(1, 0, -1)
+                ]),
+                % Down arrow (40) - move down
+                loop([
+                    wait_key_held(40),
+                    move_delta(1, 0, 1)
+                ])
+            ]),
+            log("parallel_all completed!")
+        ])
+    )
+].

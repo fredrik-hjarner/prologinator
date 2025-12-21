@@ -17,12 +17,8 @@ game GAME='games/default' INPUTS='games/input_demo.pl': build
 		GAME={{GAME}} INPUTS={{INPUTS}} scryer-prolog build/prologinator.pl -g "main, halt"; \
 	fi
 
-game2 GAME='games/fork' INPUTS='games/fork_input.pl': build
-	@if [ -z "{{INPUTS}}" ]; then \
-		GAME={{GAME}} scryer-prolog build/prologinator.pl -g "main, halt"; \
-	else \
-		GAME={{GAME}} INPUTS={{INPUTS}} scryer-prolog build/prologinator.pl -g "main, halt"; \
-	fi
+game1: build
+    GAME='games/game1/game.pl' INPUTS='games/game1/input.pl' scryer-prolog build/prologinator.pl -g "main, halt"; \
 
 test MODULE: build
     @ VALIDATION_ERR_MSG=false ./scripts/test.ts {{MODULE}}
@@ -130,7 +126,12 @@ ci: build
     just test-all
 
 aider:
-    aider --no-gitignore
+    # aider --no-gitignore
+    # aider --no-gitignore --model gemini/gemini-2.5-flash-lite
+    # aider --no-gitignore --model gemini/gemini-flash-lite-latest
+    aider --no-gitignore --model gemini/gemini-3-flash-preview
+    # aider --no-gitignore --model gemini/gemini-2.5-pro
+    # aider --no-gitignore --model gemini/gemini-flash-latest
 
 # Generate call graph for all Prolog files
 # Usage: just callgraph

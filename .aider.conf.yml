@@ -2,6 +2,18 @@
 
 # Files to always add as "read-only" context (e.g., docs, patterns)
 read:
+  - aider/00_START_HERE.md
+  - aider/actions_attr_if.pl
+  - aider/actions_wait_until_new.pl
+  - aider/COMPLETE_FILE_STRUCTURE.md
+  - aider/conditions_condition_checker.pl
+  - aider/conditions_operator_normalization.pl
+  - aider/conditions_path_resolution.pl
+  - aider/DELIVERABLES.md
+  - aider/IMPLEMENTATION_SUMMARY.md
+  - aider/INTEGRATION_GUIDE.md
+  - aider/QUICK_REFERENCE.md
+  - aider/TEST_CASES.pl
   # - prolog/engine.pl
   # - prolog/execute_action.pl
   # - prolog/custom_actions_test.pl
@@ -9,10 +21,45 @@ read:
 
 # Files to always add as "editable" (use carefully, consumes tokens)
 file:
+  - prolog/actions/copy_attr.pl
+  - prolog/actions/decr.pl
+  - prolog/actions/define_action.pl
+  - prolog/actions/despawn.pl
+  - prolog/actions/fork.pl
+  - prolog/actions/incr.pl
+  - prolog/actions/list.pl
+  - prolog/actions/load.pl
+  - prolog/actions/log.pl
+  - prolog/actions/loop.pl
+  - prolog/actions/move_delta.pl
+  - prolog/actions/move_to.pl
+  # - prolog/actions/noop.pl
+  - prolog/actions/parallel_all.pl
+  - prolog/actions/parallel_race.pl
+  - prolog/actions/repeat.pl
+  - prolog/actions/set_attr.pl
+  - prolog/actions/spawn.pl
+  - prolog/actions/trigger_state_change.pl
+  - prolog/actions/wait_key_down.pl
+  - prolog/actions/wait_key_held.pl
+  - prolog/actions/wait_key_up.pl
+  - prolog/actions/wait_until.pl
+  - prolog/actions/wait.pl
+  - prolog/builtin_actions.pl
+  - prolog/collisions.pl
   - prolog/engine.pl
   - prolog/execute_action.pl
-  - prolog/custom_actions_test.pl
-  - prolog/types/accessors.pl
+  - prolog/input_helpers.pl
+  - prolog/resolve_action.pl
+  - prolog/tick_action_streams.pl
+  - prolog/tick_object.pl
+  - prolog/types/accessors/ctx.pl
+  - prolog/types/accessors/obj.pl
+  - prolog/types/adv_accessors.pl
+  - prolog/types/constructors.pl
+  - prolog/types/validation.pl
+  - prolog/util/util.pl
+
 
 ##########################################################
 # Sample .aider.conf.yml

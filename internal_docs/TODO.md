@@ -1,20 +1,6 @@
-# Preparatory refactor code so I can utilize DCGs
+# Allow define_action to take list as input
 
-- Instead of having ctx_in(CtxIn) and ctx_out(CtxOut)
-  as the first 2 arguments, have them as the last 2
-  arguments.
-- instead of ctx_attrs_ctx have set_attrs.
-  if no specific thing is specified in functor name then
-  context is assumed. OR should I keep the old setters
-  and just create aliases for DCG use?
-- Getters may have extra argument to store the out even
-  though they don't modify the "thing" to suit DCGS,
-  or I may simply have dcg alias with one extra arg or arg
-  in different order.
-
-- [x] normal ctx accessors in accessors/ctx.pl
-- [ ] normal obj accessors in accessors/obj.pl
-- [ ] accessors in adv_accessors.pl
+Actually only a list of actions should be allowed.
 
 # Callback när attr ändras på sig själv eller annan.
 
