@@ -58,6 +58,10 @@ execute_action_resolved(
     % validate(Action, action_schema),
     ( {builtin_action(Action)} ->
         % It's a built-in action - execute normally
+#ifdef ENABLE_LOG_ACTIONS
+        {functor(Action, Functor, _)},
+        {format("executing `~w`~n", [Functor])},
+#endif
         execute_action_impl(
             actions_old([Action|Rest]),
             obj_id(ID),

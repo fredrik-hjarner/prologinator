@@ -64,4 +64,4 @@ ciaopp/ciaopp
 .aider.input.history
 
 diff.txt
-build/prologinator.pl
+# build/prologinator.pl

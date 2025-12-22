@@ -2,6 +2,8 @@
 % THE PROLOGINATOR MONOLITH BUILD
 % ==========================================================
 
+#include "settings.pp"
+
 :- module(prologinator, [
 #include "../prolog/exports.pl"
 ]).
