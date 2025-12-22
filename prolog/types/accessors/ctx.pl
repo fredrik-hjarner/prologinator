@@ -39,6 +39,9 @@
 % Single Field Getters
 % ----------------------------------------------------------
 
+% getter ctx_get/3 for dcg use to get the whole context
+ctx_get(Ctx, Ctx, Ctx).
+
 % getter ctx_frame/3 for dcg use
 ctx_frame(F, Ctx, Ctx) :-
     Ctx = ctx(state(frame(F), _, _, _, _, _, _), _).

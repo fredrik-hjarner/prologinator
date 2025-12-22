@@ -113,3 +113,7 @@ execute_action_impl(
 
 execute_noop --> [].
 ```
+
+## Different predicates are disallowed to have the same name
+
+Otherwise they will collide and create a mess and confusion.

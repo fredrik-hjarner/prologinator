@@ -30,4 +30,4 @@ builtin_action(wait_key_up(_)).
 builtin_action(wait_key_held(_)).
 builtin_action(wait_until(_)).
 builtin_action(fork(_)).
-
+builtin_action(attr_if(_, _, _)).

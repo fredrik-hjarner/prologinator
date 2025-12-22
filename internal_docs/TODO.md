@@ -1,3 +1,14 @@
+# set_attr and copy_attr consistentcy problems
+
+First of all maybe I just need `set_attr` since maybe
+it could be used like set_attr(@hp, @parent_id@hp)?
+
+So yea about the inconsistency... I think it looks a bit
+strange that set_attr is used like this currently
+`set_attr(x, 1)` because x is an attribute but it does not
+use @ syntax... I mean it kinda makes sense but I am not
+sure if we can't do something that looks better.
+
 # Allow define_action to take list as input
 
 Actually only a list of actions should be allowed.

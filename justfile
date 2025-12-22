@@ -63,16 +63,6 @@ lint-all: build
     @just lint prolog/collisions_fwd_test.pl || exit 1
     @echo "Linting execute_action_fwd_test.pl..."
     @just lint prolog/execute_action_fwd_test.pl || exit 1
-    @echo "Linting input_helpers.pl..."
-    @just lint prolog/input_helpers.pl || exit 1
-    @echo "Linting resolve_action.pl..."
-    @just lint prolog/resolve_action.pl || exit 1
-    @echo "Linting builtin_actions.pl..."
-    @just lint prolog/builtin_actions.pl || exit 1
-    @echo "Linting execute_action.pl..."
-    @just lint prolog/execute_action.pl || exit 1
-    @echo "Linting actions/wait_until.pl..."
-    @just lint prolog/actions/wait_until.pl || exit 1
     @echo "Linting actions/__test__/move_to_fwd_test.pl..."
     @just lint prolog/actions/__test__/move_to_fwd_test.pl || exit 1
     @echo "Linting actions/__test__/trigger_state_change_fwd_test.pl..."
@@ -126,12 +116,13 @@ ci: build
     just test-all
 
 aider:
-    # aider --no-gitignore
-    # aider --no-gitignore --model gemini/gemini-2.5-flash-lite
-    # aider --no-gitignore --model gemini/gemini-flash-lite-latest
-    aider --no-gitignore --model gemini/gemini-3-flash-preview
-    # aider --no-gitignore --model gemini/gemini-2.5-pro
-    # aider --no-gitignore --model gemini/gemini-flash-latest
+    # aider --no-git --no-gitignore
+    aider --no-git --no-gitignore --model gemini/gemini-flash-lite-latest
+    # aider --no-git --no-gitignore --model gemini/gemini-2.5-flash-lite
+    # aider --no-git --no-gitignore --model gemini/gemini-3-flash-preview
+    # aider --no-git --no-gitignore --model gemini/gemini-2.5-pro
+    # aider --no-git --no-gitignore --model gemini/gemini-flash-latest
+    # aider --no-git --no-gitignore --model gemini/gemini-3-pro-preview
 
 # Generate call graph for all Prolog files
 # Usage: just callgraph

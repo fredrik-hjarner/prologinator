@@ -15,6 +15,9 @@
 % 1.6. Dynamic Declarations (must be before any clauses)
 #include "../prolog/dynamic.pl"
 
+% 1.7. Operators (must be before any clauses)
+#include "../prolog/operators.pl"
+
 % 2. Types (foundational - no dependencies on game logic)
 #include "../prolog/types/accessors/ctx.pl"
 #include "../prolog/types/accessors/obj.pl"
@@ -68,6 +71,9 @@
 #include "../prolog/tick_object.pl"
 #include "../prolog/collisions.pl"
 #include "../prolog/input_helpers.pl"
+#include "../prolog/conditions/path_resolution.pl"
+#include "../prolog/conditions/operator_normalization.pl"
+#include "../prolog/conditions/condition_checker.pl"
 
 % 8. Main Engine
 #include "../prolog/engine.pl"

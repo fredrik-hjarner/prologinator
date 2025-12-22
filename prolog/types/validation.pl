@@ -277,7 +277,7 @@ game_status_validation(Term) :-
 
 command_validation(Term) :-
     ( ground(Term) ->
-        ( ( spawn_request_validation(Term)
+        ( (spawn_request_validation(Term)
           ; state_change_validation(Term)
           ) ->
               true
@@ -353,6 +353,24 @@ state_change_validation_helper(game_over(lost)).
 % ==========================================================
 % Helper validation predicates
 % ==========================================================
+
+% Helper: Check if term is a valid value specification
+% ==========================================================
+% A value specification is a term that resolve_action/5
+% attempts to resolve before execution.
+is_valid_value_spec(Term) :-
+    (   number(Term)
+    % ;   atom(Term)
+    ;   Term = @(_)
+    ;   Term = -(_)
+    ;   Term = default(_, _)
+    ).
+
+% Helper: Check if term is a valid path (no prefix @)
+is_valid_path(Term) :-
+    ( atom(Term)
+    ; (compound(Term), functor(Term, '@', 2))
+    ).
 
 % Helper: Check if term is an integer or evaluates to an
 % integer
@@ -430,9 +448,9 @@ action_validation_helper(Term) :-
             integer(N)
         ; Term = move_to(X, Y, Frames) ->
             % Structure matches, validate content
-            integer(X),
-            integer(Y),
-            integer(Frames)
+            is_valid_value_spec(X),
+            is_valid_value_spec(Y),
+            is_valid_value_spec(Frames)
         ; Term = despawn ->
             % Structure matches, no content to validate
             true
@@ -442,22 +460,23 @@ action_validation_helper(Term) :-
         ; Term = spawn(Acts) ->
             % Structure matches, validate content
             length(Acts, _)
-        ; Term = set_attr(_Path, _Value) ->
-            % Structure matches, no validation
-            % (uses path syntax)
-            true
-        ; Term = incr(_Path, _Amount) ->
-            % Structure matches, no validation
-            % (uses path syntax)
-            true
-        ; Term = decr(_Path, _Amount) ->
-            % Structure matches, no validation
-            % (uses path syntax)
-            true
-        ; Term = copy_attr(_SourcePath, _DestPath) ->
-            % Structure matches, no validation
-            % (uses path syntax)
-            true
+        ; Term = set_attr(Path, _Value) ->
+            % Structure matches, validate Path is not a
+            % value spec
+            is_valid_path(Path)
+        ; Term = incr(Path, Amount) ->
+            % Structure matches, validate Path and Amount
+            is_valid_path(Path),
+            is_valid_value_spec(Amount)
+        ; Term = decr(Path, Amount) ->
+            % Structure matches, validate Path and Amount
+            is_valid_path(Path),
+            is_valid_value_spec(Amount)
+        ; Term = copy_attr(SourcePath, DestPath) ->
+            % Structure matches, validate Paths are not
+            % value specs
+            is_valid_path(SourcePath),
+            is_valid_path(DestPath)
         ; Term = loop(Acts) ->
             % Structure matches, validate content
             ( ground(Acts) ->
@@ -544,13 +563,11 @@ action_validation_helper(Term) :-
             ;
                 true
             )
-        ; Term = move_delta(Frames, _DX, _DY) ->
+        ; Term = move_delta(Frames, DX, DY) ->
             % Structure matches, validate content
-            ( ground(Frames) ->
-                integer_or_evaluable(Frames)
-            ;
-                true
-            )
+            is_valid_value_spec(Frames),
+            is_valid_value_spec(DX),
+            is_valid_value_spec(DY)
         ; Term = define_action(Signature, Body) ->
             % Structure matches, validate content
             % Signature should be callable (a term)
@@ -581,6 +598,21 @@ action_validation_helper(Term) :-
             % Structure matches, validate content
             ( ground(Acts) ->
                 length(Acts, _)
+            ;
+                true
+            )
+        ; Term = wait_until(_Cond) ->
+            % Structure matches, no validation
+            true
+        ; Term = attr_if(_Cond, Then, Else) ->
+            % Structure matches, validate action lists
+            ( ground(Then) ->
+                length(Then, _)
+            ;
+                true
+            ),
+            ( ground(Else) ->
+                length(Else, _)
             ;
                 true
             )
