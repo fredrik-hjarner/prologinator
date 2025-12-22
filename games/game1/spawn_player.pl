@@ -15,8 +15,6 @@
                     wait(2),
                     spawn([
                         set_attr(.type, proj),
-                        % TODO: copy_attr cause:
-                        % stalling or something??
                         copy_attr(.parent_id.x, .x),
                         copy_attr(.parent_id.y, .y),
                         set_attr(.displayChar, 42),  % '*'

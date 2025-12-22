@@ -18,7 +18,10 @@ game GAME='games/default' INPUTS='games/input_demo.pl': build
 	fi
 
 game1: build
-    GAME='games/game1/game.pl' INPUTS='games/game1/input.pl' scryer-prolog build/prologinator.pl -g "main, halt"; \
+    GAME='games/game1/game.pl' INPUTS='games/game1/input.pl' scryer-prolog build/prologinator.pl -g "main, halt";
+
+swipl1: build-swipl
+    GAME='games/game1/game.pl' INPUTS='games/game1/input.pl' swipl -t "main" build/prologinator.pl;
 
 test MODULE: build
     @ VALIDATION_ERR_MSG=false ./scripts/test.ts {{MODULE}}
@@ -135,4 +138,9 @@ callgraph:
 build:
 	@mkdir -p build
 	@gpp -P --warninglevel 0 scripts/prologinator.pp -o build/prologinator.pl
+	@echo "Built: build/prologinator.pl"
+
+build-swipl:
+	@mkdir -p build
+	@gpp -DSWI -P --warninglevel 0 scripts/prologinator.pp -o build/prologinator.pl
 	@echo "Built: build/prologinator.pl"

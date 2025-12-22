@@ -19,11 +19,19 @@ main :-
           % Load input timeline (optional)
           ( catch(getenv("INPUTS", InputFile), _, fail) ->
               % Convert InputFile (list of chars) to atom
+#ifdef SWI
+              InputFileAtom = InputFile,
+#else
               atom_chars(InputFileAtom, InputFile),
+#endif
               % Consult loads into user module
               consult(InputFileAtom),
               % Call from user module
+#ifdef SWI
+              ( catch(input_timeline(TimelineList), _, 
+#else
               ( catch(user:input_timeline(TimelineList), _, 
+#endif
                       fail) ->
                   list_to_assoc(TimelineList, Timeline)
               ;
@@ -79,7 +87,19 @@ game_loop(
               write('Press: f=forward, r=reverse, q=quit'),
               nl,
               flush_output,
+#ifdef SWI
+              % SWI returns an Integer (Code). Convert it t
+              % an Atom (Char).
+              get_single_char(Code),
+              ( Code = -1 -> 
+                  Char = end_of_file 
+              ; 
+                  char_code(Char, Code) 
+              ),
+#else
+              % Scryer/Others return an Atom directly.
               get_single_char(Char),
+#endif
               ( Char = end_of_file ->
                   % EOF, quit
                   ctx_set_status(lost, Ctx, NewCtx),

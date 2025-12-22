@@ -7,8 +7,7 @@
             set_attr(.displayChar, 35),  % '#'
             fork([
                 wait_until(
-                    % default(.parent_id.hp, -1) < 1
-                    .parent_id.hp < 1
+                    default(.parent_id.hp, -1) < 1
                 ),
                 despawn
             ]),
@@ -20,10 +19,6 @@
                 ])
             ]),
             loop([
-                % TODO: copy_attr cause:
-                % execute_action: copy_attr
-                % % Warning: initialization failed for: main,halt
-                % ?- 
                 copy_attr(.parent_id.x, .x),
                 copy_attr(.parent_id.y, .y),
                 move_delta(0, X, Y),
