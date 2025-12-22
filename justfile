@@ -6,22 +6,12 @@ perf: build
     time scryer-prolog prolog/perf.pl -g "main_perf, halt"; \
 
 # Run the monolithic build with Scryer Prolog
-# Usage: just game (uses games/default, games/input_demo.pl)
-# Usage: just game ./games/my_game
-# Usage: just game ./games/my_game ./games/my_input
-# Usage: just game ./games/my_game '' (no input timeline)
-game GAME='games/default' INPUTS='games/input_demo.pl': build
-	@if [ -z "{{INPUTS}}" ]; then \
-		GAME={{GAME}} scryer-prolog build/prologinator.pl -g "main, halt"; \
-	else \
-		GAME={{GAME}} INPUTS={{INPUTS}} scryer-prolog build/prologinator.pl -g "main, halt"; \
-	fi
+# Usage: just game <game_name> (e.g., just game default)
+game GAME='game0': build
+    GAME={{GAME}} scryer-prolog build/prologinator.pl -g "main, halt";
 
-game1: build
-    GAME='games/game1/game.pl' INPUTS='games/game1/input.pl' scryer-prolog build/prologinator.pl -g "main, halt";
-
-swipl1: build-swipl
-    GAME='games/game1/game.pl' INPUTS='games/game1/input.pl' swipl -t "main" build/prologinator.pl;
+swipl GAME='game0': build-swipl
+    GAME={{GAME}} swipl -t "main" build/prologinator.pl;
 
 test MODULE: build
     @ VALIDATION_ERR_MSG=false ./scripts/test.ts {{MODULE}}

@@ -4,6 +4,8 @@
 
 % #define ENABLE_LOG_ACTIONS
 
+
+
 :- module(prologinator, [
 % Export list for prologinator module
 % This file contains the list of exported predicates
@@ -3634,122 +3636,167 @@ process_spawn_commands_loop(
 
 
 % 9. Game Entry Point
-% Simple ASCII Tower Defense Game
-% Usage: just run game (or: ciaosh -l game.pl -e "main" -t
-% halt)
-
 % ==========================================================
 % Main Game Loop
 % ==========================================================
+
 main :-
     catch(
-        ( % Get game file from environment (required)
-          ( catch(getenv("GAME", GameFile), _, fail) ->
-              % GameFile is already a list of chars
-              % (Scryer string)
-              true
-          ;
-              throw('GAME environment variable missing')
-          ),
-          
-          % Load input timeline (optional)
-          ( catch(getenv("INPUTS", InputFile), _, fail) ->
-              % Convert InputFile (list of chars) to atom
+        (
+            % ----------------------------------------------
+            % Resolve GAME directory
+            % ----------------------------------------------
+            ( catch(getenv("GAME", RawGame), _, fail) ->
 
-              atom_chars(InputFileAtom, InputFile),
+                % RawGame is char list
+                atom_chars(GameName, RawGame) 
 
-              % Consult loads into user module
-              consult(InputFileAtom),
-              % Call from user module
+            ;
+                throw('GAME environment variable missing')
+            ),
+            
 
-              ( catch(user:input_timeline(TimelineList), _, 
+            atom_concat('games/', GameName, GameDir),
+            atom_concat(GameDir, '/game.pl', GameFileAtom),
+            atom_concat(GameDir, '/input.pl',InputFileAtom),
 
-                      fail) ->
-                  list_to_assoc(TimelineList, Timeline)
-              ;
-                  throw('input_timeline not found in file')
-              )
-          ;
-              empty_assoc(Timeline)
-          ),
-          
-          % Create root object that loads the game
-          empty_assoc(AttrStore0),
-          put_assoc(0, AttrStore0,
-                    [attr(type, static),
-                     attr(x, 0), attr(y, 0)],
-                    AttrStore1),
-          ctx_with_objs_input([
-              object(id(0))
-          ], [], [], InitialContext0),
-          ctx_set_attrs(AttrStore1, InitialContext0,
-                        InitialContext1),
-          % Add actions to actionstore
-          ctx_actionstore(ActionStore0, InitialContext1,
-                          InitialContext1),
-          put_assoc(0, ActionStore0, [[load(GameFile)]],
-                    ActionStore1),
-          ctx_set_actionstore(ActionStore1, InitialContext1,
-                              InitialContext),
-          
-          game_loop(
-            ctx_in(InitialContext), 
-            [],
-            input_timeline(Timeline),
-            keys_held([])  % Initial key state
-          )
+
+            atom_chars(GameFileAtom, GameFile),
+
+
+            (   catch(consult(InputFileAtom), _, fail),
+
+                catch(
+                    user:input_timeline(TimelineList),
+                     _,
+                     fail
+                )
+
+            ->
+                list_to_assoc(TimelineList, Timeline)
+            ;
+                throw('input_timeline not found in file')
+            ),
+
+            % ----------------------------------------------
+            % Create root object & context
+            % ----------------------------------------------
+            empty_assoc(AttrStore0),
+            put_assoc(
+                0,
+                AttrStore0,
+                [ attr(type, static),
+                  attr(x, 0),
+                  attr(y, 0)
+                ],
+                AttrStore1
+            ),
+
+            ctx_with_objs_input(
+                [object(id(0))],
+                [],
+                [],
+                InitialContext0
+            ),
+            ctx_set_attrs(
+                AttrStore1, InitialContext0, InitialContext1
+            ),
+
+            % ----------------------------------------------
+            % Actionstore: load game via ENGINE (CRITICAL)
+            % ----------------------------------------------
+            ctx_actionstore(
+                ActionStore0,
+                InitialContext1,
+                InitialContext1
+            ),
+
+            GameFileChars = GameFile,
+
+            put_assoc(
+                0,
+                ActionStore0,
+                [[load(GameFileChars)]],
+                ActionStore1
+            ),
+        
+            ctx_set_actionstore(
+                ActionStore1,
+                InitialContext1,
+                InitialContext
+            ),
+
+            % ----------------------------------------------
+            % Start game loop
+            % ----------------------------------------------
+            game_loop(
+                ctx_in(InitialContext),
+                [],
+                input_timeline(Timeline),
+                keys_held([])
+            )
         ),
         Error,
-        ( write('Fatal error in main: '),
-          write(Error), nl,
-          halt(1)
+        (
+            write('Fatal error in main: '),
+            write(Error), nl,
+            halt(1)
         )
     ).
 
+
+% ==========================================================
+% Game Loop
+% ==========================================================
+
 game_loop(
-    ctx_in(Ctx), 
+    ctx_in(Ctx),
     History,
     input_timeline(Timeline),
-    keys_held(KeysHeld)  % Current key state
+    keys_held(KeysHeld)
 ) :-
     catch(
-        ( ctx_status(Status, Ctx, Ctx),
-          ( Status = playing ->
-              render(Ctx, Ctx),
-              write('Press: f=forward, r=reverse, q=quit'),
-              nl,
-              flush_output,
+        (
+            ctx_status(Status, Ctx, Ctx),
+            ( Status = playing ->
+                render(Ctx, Ctx),
+                write(
+                    'Press: f=forward, r=reverse, q=quit'
+                ), nl,
+                flush_output,
 
-              % Scryer/Others return an Atom directly.
-              get_single_char(Char),
 
-              ( Char = end_of_file ->
-                  % EOF, quit
-                  ctx_set_status(lost, Ctx, NewCtx),
-                  NewHistory = History,
-                  NewKeysHeld = KeysHeld
-              ;
-                  handle_input(
-                      Char,
-                      ctx_in(Ctx),
-                      History,
-                      input_timeline(Timeline),
-                      keys_held(KeysHeld),
-                      ctx_out(NewCtx),
-                      NewHistory,
-                      keys_held(NewKeysHeld)
-                  )
-              ),
-              game_loop(
-                ctx_in(NewCtx), 
-                NewHistory,
-                input_timeline(Timeline),
-                keys_held(NewKeysHeld)
-              )
-          ;
-              render(Ctx, Ctx),
-              write('Game Over!'), nl
-          )
+                % Scryer/Others return an Atom directly.
+                get_single_char(Char),
+
+
+                ( Char = end_of_file ->
+                    ctx_set_status(lost, Ctx, NewCtx),
+                    NewHistory = History,
+                    NewKeysHeld = KeysHeld
+                ;
+                    handle_input(
+                        Char,
+                        ctx_in(Ctx),
+                        History,
+                        input_timeline(Timeline),
+                        keys_held(KeysHeld),
+                        ctx_out(NewCtx),
+                        NewHistory,
+                        keys_held(NewKeysHeld)
+                    )
+                ),
+
+                game_loop(
+                    ctx_in(NewCtx),
+                    NewHistory,
+                    input_timeline(Timeline),
+                    keys_held(NewKeysHeld)
+                )
+            ;
+                render(Ctx, Ctx),
+                write('Game Over!'), nl
+            )
         ),
         Error,
         ( write('Error in game_loop: '),

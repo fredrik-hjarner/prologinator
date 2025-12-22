@@ -4,6 +4,10 @@
 
 #include "settings.pp"
 
+#ifdef SWI
+#include "swi.pp"
+#endif
+
 :- module(prologinator, [
 #include "../prolog/exports.pl"
 ]).

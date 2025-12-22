@@ -18,54 +18,66 @@ read:
   # - prolog/execute_action.pl
   # - prolog/custom_actions_test.pl
   # - prolog/types/accessors.pl
+  # - games/default
+  # - games/fork
+  # - games/fork_input.pl
+  # - games/game1/game.pl
+  # - games/game1/input.pl
+  # - games/game1/spawn_enemy.pl
+  # - games/game1/spawn_player.pl
+  # - games/input_demo.pl
 
 # Files to always add as "editable" (use carefully, consumes tokens)
 file:
-  - scripts/prologinator.pp
+  - justfile
+  # - scripts/prologinator.pp
   # prolog folder
-  - prolog/actions/copy_attr.pl
-  - prolog/actions/decr.pl
-  - prolog/actions/define_action.pl
-  - prolog/actions/despawn.pl
-  - prolog/actions/fork.pl
-  - prolog/actions/incr.pl
-  - prolog/actions/list.pl
+  - prolog/game.pl
+  - prolog/perf.pl
+  # actions folder
+  # - prolog/actions/copy_attr.pl
+  # - prolog/actions/decr.pl
+  # - prolog/actions/define_action.pl
+  # - prolog/actions/despawn.pl
+  # - prolog/actions/fork.pl
+  # - prolog/actions/incr.pl
+  # - prolog/actions/list.pl
   - prolog/actions/load.pl
-  - prolog/actions/log.pl
-  - prolog/actions/loop.pl
-  - prolog/actions/move_delta.pl
-  - prolog/actions/move_to.pl
+  # - prolog/actions/log.pl
+  # - prolog/actions/loop.pl
+  # - prolog/actions/move_delta.pl
+  # - prolog/actions/move_to.pl
   # - prolog/actions/noop.pl
-  - prolog/actions/parallel_all.pl
-  - prolog/actions/parallel_race.pl
-  - prolog/actions/repeat.pl
-  - prolog/actions/set_attr.pl
-  - prolog/actions/spawn.pl
-  - prolog/actions/trigger_state_change.pl
-  - prolog/actions/wait_key_down.pl
-  - prolog/actions/wait_key_held.pl
-  - prolog/actions/wait_key_up.pl
-  - prolog/actions/wait_until.pl
-  - prolog/actions/wait.pl
-  - prolog/builtin_actions.pl
-  - prolog/collisions.pl
-  - prolog/engine.pl
-  - prolog/execute_action.pl
-  - prolog/exports.pl
-  - prolog/input_helpers.pl
-  - prolog/resolve_action.pl
-  - prolog/tick_action_streams.pl
-  - prolog/tick_object.pl
-  - prolog/types/accessors/ctx.pl
-  - prolog/types/accessors/obj.pl
-  - prolog/types/adv_accessors.pl
-  - prolog/types/constructors.pl
-  - prolog/types/validation.pl
-  - prolog/util/util.pl
+  # - prolog/actions/parallel_all.pl
+  # - prolog/actions/parallel_race.pl
+  # - prolog/actions/repeat.pl
+  # - prolog/actions/set_attr.pl
+  # - prolog/actions/spawn.pl
+  # - prolog/actions/trigger_state_change.pl
+  # - prolog/actions/wait_key_down.pl
+  # - prolog/actions/wait_key_held.pl
+  # - prolog/actions/wait_key_up.pl
+  # - prolog/actions/wait_until.pl
+  # - prolog/actions/wait.pl
+  # - prolog/builtin_actions.pl
+  # - prolog/collisions.pl
+  # - prolog/engine.pl
+  # - prolog/execute_action.pl
+  # - prolog/exports.pl
+  # - prolog/input_helpers.pl
+  # - prolog/resolve_action.pl
+  # - prolog/tick_action_streams.pl
+  # - prolog/tick_object.pl
+  # - prolog/types/accessors/ctx.pl
+  # - prolog/types/accessors/obj.pl
+  # - prolog/types/adv_accessors.pl
+  # - prolog/types/constructors.pl
+  # - prolog/types/validation.pl
+  # - prolog/util/util.pl
   # conditions folder
-  - prolog/conditions/condition_checker.pl
-  - prolog/conditions/operator_normalization.pl
-  - prolog/conditions/path_resolution.pl
+  # - prolog/conditions/condition_checker.pl
+  # - prolog/conditions/operator_normalization.pl
+  # - prolog/conditions/path_resolution.pl
 
 
 ##########################################################

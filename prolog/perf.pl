@@ -17,11 +17,11 @@
 main_perf :-
     catch(
         ( % Game file (hardcoded)
-          atom_chars('games/default', GameFile),
+          atom_chars('games/game0/game.pl', GameFile),
           
           % Load input timeline (hardcoded)
           ( % Consult loads into user module
-            consult('games/input_demo.pl'),
+            consult('games/game0/input.pl'),
             % Call from user module
             ( catch(user:input_timeline(TimelineList), _, 
                     fail) ->
