@@ -1,99 +1,44 @@
 :- module(repeat_fwd_test, []).
 
 :- use_module('../../../build/prologinator').
-:- use_module('../../../prolog/util/test_util').
+:- use_module('../../test_utils/test_action_sequence').
 
-:- use_module(library(lists), [member/2]).
-:- use_module(library(assoc), [
-    empty_assoc/1,
-    put_assoc/4
-]).
-:- use_module(library(format)).
-% ==========================================================
-% Forward Tests (all inputs ground, normal use case)
-% ==========================================================
-
-% ==========================================================
-% Tests: repeat
-% ==========================================================
-
-test("repeat: expands actions once and decrements", (
-    ActionsIn = [
-        repeat(3, [noop, set_attr(count, 1)]),
-        despawn
-    ],
-    empty_ctx(Ctx0),
-    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
-    execute_action(
-        actions_old(ActionsIn),
-        obj_id(1),
-        result(completed, actions_new(ActionsOut)),
-        Ctx,
-        CtxNew
-    ),
-    % Should expand to: [noop, set_attr(count, 1),
-    %   repeat(2, [noop, set_attr(count, 1)]), despawn]
-    ActionsOut = [despawn],
-    ctx_spawnCmds([], CtxNew, CtxNew)
-)).
-
-test("repeat: last repetition doesn't add repeat", (
-    % ------------------------------------------------------
-    % Arrange
-    % ------------------------------------------------------
-    ActionsIn = [repeat(1, [noop]), despawn],
-    empty_ctx(Ctx0),
-    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
-    % ------------------------------------------------------
-    % Act
-    % ------------------------------------------------------
-    execute_action(
-        actions_old(ActionsIn),
-        obj_id(1),
-        result(completed, actions_new(ActionsOut)),
-        Ctx,
-        CtxNew
-    ),
-    ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
-    % ------------------------------------------------------
-    % Assert
-    % ------------------------------------------------------
-    (ActionsOut = [despawn]
-     ;
-     expect(false, "Actions wrong")),
-     expect(SpawnCmds = [], "SpawnCmds != []")
-)).
-
-test("repeat: multiple actions in repeat list", (
-    % ------------------------------------------------------
-    % Arrange
-    % ------------------------------------------------------
-    ActionsIn = [
-        repeat(2, [
-            noop,
-            set_attr(a, 1),
-            set_attr(b, 2)
+test("repeat: runs N times immediately if non-blocking", (
+    test_action_sequence(
+        start_attrs([
+            count-0
         ]),
-        despawn
-    ],
-    empty_ctx(Ctx0),
-    ctx_set_attr_val(1/type, static, Ctx0, Ctx),
-    % ------------------------------------------------------
-    % Act
-    % ------------------------------------------------------
-    execute_action(
-        actions_old(ActionsIn),
-        obj_id(1),
-        result(completed, actions_new(ActionsOut)),
-        Ctx,
-        CtxNew
-    ),
-    ctx_spawnCmds(SpawnCmds, CtxNew, CtxNew),
-    % ------------------------------------------------------
-    % Assert
-    % ------------------------------------------------------
-    (ActionsOut = [despawn]
-    ; expect(false, "Actions wrong")),
-    expect(SpawnCmds = [], "SpawnCmds != []")
+        actions([
+            % incr is instant, so repeat(3) should happen
+            % entirely within a single tick.
+            repeat(3, [
+                incr(count, 1)
+            ])
+        ]),
+        ticks(1),
+        end_attrs([
+            count-3
+        ])
+    )
 )).
 
+test("repeat: respects yielding in body", (
+    test_action_sequence(
+        start_attrs([
+            count-0
+        ]),
+        actions([
+            repeat(2, [
+                incr(count, 1),
+                wait(1)
+            ])
+        ]),
+        % Tick 1: incr->1, wait(1) yields. Loop pauses.
+        % Tick 2: wait finishes. Loop restarts.
+        %         incr->2, wait(1) yields. Loop pauses.
+        ticks(2),
+        end_attrs([
+            count-2
+        ])
+    )
+)).
