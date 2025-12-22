@@ -8,3 +8,11 @@ node_modules
 
 .aider.chat.history.md
 .aider.input.history
+
+aider
+
+submodules
+
+.vscode
+.husky
+internal_docs/design_docs

@@ -26,6 +26,9 @@ execute_action(
     obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->
+    % TODO: Add toggle to enable/disable debug logging here
+    % {Action =.. [Functor|_]},
+    % {format("execute_action: ~w~n", [Functor])},
     % 1. Resolve value specs in action
     resolve_action(ID, Action, ResolvedAction),
     % 2. Delegate to existing logic (renamed)

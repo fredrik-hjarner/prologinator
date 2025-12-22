@@ -15,7 +15,7 @@
 % attributes and finds the matching key-value.
 % getter ctx_attr_val//2 for dcg use
 % Bidirectional: ObjectID and Key can be non-ground.
-% Uses attr(Key, Value) format internally for full
+% Uses ObjectID/Key format internally for full
 % bidirectionality.
 ctx_attr_val(ObjectID/Key, Value) -->
     ctx_attrs(AttrStore),
@@ -50,7 +50,7 @@ ctx_set_attr_val(ObjectID/Key, Value) -->
 % new value. Creates a new entry if the object isn't in
 % the store yet. This is the internal implementation
 % detail for ctx_attr_val_ctx/4.
-% Uses attr(Key, Value) format for full bidirectionality.
+% Uses ObjectID/Key format for full bidirectionality.
 set_attr_in_store_helper(AttrStoreIn, ObjectID, Key,
                          Value, AttrStoreOut) :-
     ( gen_assoc(ObjectID, AttrStoreIn, OldAttrs) ->
@@ -86,4 +86,3 @@ obj_type(Obj, Type) -->
 obj_id_type(Obj, ID, Type) -->
     {obj_id(Obj, ID)},
     ctx_attr_val(ID/type, Type).
-

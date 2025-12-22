@@ -61,7 +61,6 @@ execute_move_delta(
     Status,
     NewActions
 ) -->
-    {Frames #> 0},
     % Get current position from attribute store
     ( ctx_attr_val(ID/x, CurrX),
       ctx_attr_val(ID/y, CurrY) ->
@@ -95,5 +94,3 @@ execute_move_delta(
         % We must yield execution to the next frame.
         Status = yielded
     )}.
-
-

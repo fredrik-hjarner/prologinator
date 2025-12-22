@@ -177,7 +177,8 @@ test("game_state_validation: NextID <= max ID fails", (
     empty_assoc(EmptyAttrs0),
     put_assoc(5, EmptyAttrs0, [attr(type, static)],
               EmptyAttrs),
-    empty_assoc(EmptyActionStore),
+    empty_assoc(EmptyActionStore0),
+    put_assoc(5, EmptyActionStore0, [[]], EmptyActionStore),
     State = state(
         frame(0),
         objects([Obj]),
@@ -248,13 +249,6 @@ test("action_validation: invalid spawn action fails", (
     Action1 = spawn(not_a_list),
     expect_exception(action_validation(Action1))
 )).
-
-% ----------------------------------------------------------
-% Structure mismatch tests
-% ----------------------------------------------------------
-% These tests verify that validation throws exceptions when
-% the structure doesn't match (wrong functor, wrong arity,
-% wrong argument structure)
 
 test("game_state_validation: wrong arity throws", (
     empty_assoc(EmptyAttrs),
@@ -393,4 +387,3 @@ arity fails", (
         Action
     ))
 )).
-

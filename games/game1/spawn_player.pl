@@ -3,19 +3,23 @@
 
     define_action(spawn_player,
         spawn([
-            set_attr(type, player),
-            set_attr(x, 10),
-            set_attr(y, 19),
+            log("log at start of spawn_player"),
+            set_attr(.type, player),
+            set_attr(.x, 10),
+            set_attr(.y, 19),
             log("Player spawned!"),
-            set_attr(displayChar, 64),  % '@'
+            set_attr(.displayChar, 64),  % '@'
+            log("displayChar was set to 64"),
             fork([
                 loop([
                     wait(2),
                     spawn([
-                        set_attr(type, proj),
-                        copy_attr(parent_id/x, x),
-                        copy_attr(parent_id/y, y),
-                        set_attr(displayChar, 42),  % '*'
+                        set_attr(.type, proj),
+                        % TODO: copy_attr cause:
+                        % stalling or something??
+                        copy_attr(.parent_id.x, .x),
+                        copy_attr(.parent_id.y, .y),
+                        set_attr(.displayChar, 42),  % '*'
                         repeat(19, [
                             move_delta(1, 0, -1)
                         ]),
@@ -47,5 +51,7 @@
             ]),
             log("parallel_all completed!")
         ])
-    )
+    ),
+
+    log("end of spawn_player.pl")
 ].

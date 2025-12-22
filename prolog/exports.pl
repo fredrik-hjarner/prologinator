@@ -1,6 +1,8 @@
 % Export list for prologinator module
 % This file contains the list of exported predicates
 
+    op(101, fy, '.'),
+    op(100, yfx, '.'),
     action_validation/1,
     action_validation_helper/1,
     builtin_action/1,
@@ -68,7 +70,12 @@
     pos_validation/1,
     resolve_action/5,
     resolve_arg/5,
-    resolve_path/5,
+    % Exporting the DCG wrappers (expanded arity)
+    resolve_path_strict/5,
+    resolve_path_to_attr/5,
+    % Exporting the non-DCG strict resolution (used by
+    % condition checker)
+    strict_resolve_path/4,
     spawn_request_validation/1,
     state_change_validation/1,
     state_change_validation_helper/1,
@@ -77,5 +84,7 @@
     tick/2,
     tick_action_streams/4,
     tick_object/5,
-    user_action/2
-
+    user_action/2,
+    % Added for the new condition system:
+    check_condition/3,
+    resolve_path/4

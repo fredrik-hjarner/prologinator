@@ -2,18 +2,18 @@
 
 # Files to always add as "read-only" context (e.g., docs, patterns)
 read:
-  - aider/00_START_HERE.md
-  - aider/actions_attr_if.pl
-  - aider/actions_wait_until_new.pl
-  - aider/COMPLETE_FILE_STRUCTURE.md
-  - aider/conditions_condition_checker.pl
-  - aider/conditions_operator_normalization.pl
-  - aider/conditions_path_resolution.pl
-  - aider/DELIVERABLES.md
-  - aider/IMPLEMENTATION_SUMMARY.md
-  - aider/INTEGRATION_GUIDE.md
-  - aider/QUICK_REFERENCE.md
-  - aider/TEST_CASES.pl
+  # - aider/00_START_HERE.md
+  # - aider/actions_attr_if.pl
+  # - aider/actions_wait_until_new.pl
+  # - aider/COMPLETE_FILE_STRUCTURE.md
+  # - aider/conditions_condition_checker.pl
+  # - aider/conditions_operator_normalization.pl
+  # - aider/conditions_path_resolution.pl
+  # - aider/DELIVERABLES.md
+  # - aider/IMPLEMENTATION_SUMMARY.md
+  # - aider/INTEGRATION_GUIDE.md
+  # - aider/QUICK_REFERENCE.md
+  # - aider/TEST_CASES.pl
   # - prolog/engine.pl
   # - prolog/execute_action.pl
   # - prolog/custom_actions_test.pl
@@ -21,6 +21,8 @@ read:
 
 # Files to always add as "editable" (use carefully, consumes tokens)
 file:
+  - scripts/prologinator.pp
+  # prolog folder
   - prolog/actions/copy_attr.pl
   - prolog/actions/decr.pl
   - prolog/actions/define_action.pl
@@ -49,6 +51,7 @@ file:
   - prolog/collisions.pl
   - prolog/engine.pl
   - prolog/execute_action.pl
+  - prolog/exports.pl
   - prolog/input_helpers.pl
   - prolog/resolve_action.pl
   - prolog/tick_action_streams.pl
@@ -59,6 +62,10 @@ file:
   - prolog/types/constructors.pl
   - prolog/types/validation.pl
   - prolog/util/util.pl
+  # conditions folder
+  - prolog/conditions/condition_checker.pl
+  - prolog/conditions/operator_normalization.pl
+  - prolog/conditions/path_resolution.pl
 
 
 ##########################################################

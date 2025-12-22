@@ -12,5 +12,3 @@ execute_copy_attr(MyID, SourcePath, DestPath) -->
                          DestID/DestKey),
     ctx_attr_val(SourceID/SourceKey, Value),
     ctx_set_attr_val(DestID/DestKey, Value).
-
-

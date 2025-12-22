@@ -187,7 +187,7 @@ not match number of actionstore entries \
         ;
             % Structure doesn't match - throw
             val_format(
-                "ERROR: Invalid game_state structure:\n  \
+                "ERROR: Invalid game_state structure:~n  \
  ~w~n",
                 [Term]
             ),
@@ -277,7 +277,7 @@ game_status_validation(Term) :-
 
 command_validation(Term) :-
     ( ground(Term) ->
-        ( ( spawn_request_validation(Term)
+        ( (spawn_request_validation(Term)
           ; state_change_validation(Term)
           ) ->
               true
@@ -353,6 +353,24 @@ state_change_validation_helper(game_over(lost)).
 % ==========================================================
 % Helper validation predicates
 % ==========================================================
+% Helper: Check if term is a valid value specification
+% ==========================================================
+% A value specification is a term that resolve_action/5
+% attempts to resolve before execution.
+is_valid_value_spec(Term) :-
+    (   number(Term)
+    % ;   atom(Term)
+    ;   Term = .(_)
+    ;   Term = -(_)
+    ;   Term = default(_, _)
+    ).
+
+% Helper: Check if term is a valid path
+is_valid_path(Term) :-
+    ( atom(Term)
+    ; (compound(Term), functor(Term, '.', 1))
+    ; (compound(Term), functor(Term, '.', 2))
+    ).
 
 % Helper: Check if term is an integer or evaluates to an
 % integer
@@ -427,12 +445,34 @@ action_validation_helper(Term) :-
     ( ground(Term) ->
         ( Term = wait(N) ->
             % Structure matches, validate content
-            integer(N)
+            ( integer(N) ->
+                true
+            ;
+                val_format(
+                    "ERROR: wait/1: ~w not integer~n",
+                    [N]
+                ),
+                throw(error(
+                    type_error(integer, N),
+                    action_validation_helper/1
+                ))
+            )
         ; Term = move_to(X, Y, Frames) ->
             % Structure matches, validate content
-            integer(X),
-            integer(Y),
-            integer(Frames)
+            ( is_valid_value_spec(X),
+              is_valid_value_spec(Y),
+              is_valid_value_spec(Frames) ->
+                true
+            ;
+                val_format(
+                   "ERROR: Invalid arg for move_to/3: ~w~n",
+                    [Term]
+                ),
+                throw(error(
+                    type_error(value_spec, Term),
+                    action_validation_helper/1
+                ))
+            )
         ; Term = despawn ->
             % Structure matches, no content to validate
             true
@@ -442,22 +482,25 @@ action_validation_helper(Term) :-
         ; Term = spawn(Acts) ->
             % Structure matches, validate content
             length(Acts, _)
-        ; Term = set_attr(_Path, _Value) ->
-            % Structure matches, no validation
-            % (uses path syntax)
-            true
-        ; Term = incr(_Path, _Amount) ->
-            % Structure matches, no validation
-            % (uses path syntax)
-            true
-        ; Term = decr(_Path, _Amount) ->
-            % Structure matches, no validation
-            % (uses path syntax)
-            true
-        ; Term = copy_attr(_SourcePath, _DestPath) ->
-            % Structure matches, no validation
-            % (uses path syntax)
-            true
+        ; Term = set_attr(Path, _Value) ->
+            % Structure matches, validate Path is not a
+            % value spec (i.e., it must be a location path)
+            is_valid_path(Path)
+        ; Term = incr(Path, Amount) ->
+            % Structure matches, validate Path (location)
+            % and Amount (value spec)
+            is_valid_path(Path),
+            is_valid_value_spec(Amount)
+        ; Term = decr(Path, Amount) ->
+            % Structure matches, validate Path (location)
+            % and Amount (value spec)
+            is_valid_path(Path),
+            is_valid_value_spec(Amount)
+        ; Term = copy_attr(SourcePath, DestPath) ->
+            % Structure matches, validate Paths are not
+            % value specs (both locations)
+            is_valid_path(SourcePath),
+            is_valid_path(DestPath)
         ; Term = loop(Acts) ->
             % Structure matches, validate content
             ( ground(Acts) ->
@@ -528,28 +571,37 @@ action_validation_helper(Term) :-
             )
         % repeat continuation
         ; Term = repeat(Times, Running, Original) ->
+             % Structure matches, validate content
+             ( ground(Times) ->
+                 integer(Times)
+             ;
+                 true
+             ),
+             ( ground(Running) ->
+                 length(Running, _)
+             ;
+                 true
+             ),
+             ( ground(Original) ->
+                 length(Original, _)
+             ;
+                 true
+             )
+        ; Term = move_delta(Frames, DX, DY) ->
             % Structure matches, validate content
-            ( ground(Times) ->
-                integer(Times)
-            ;
+            ( is_valid_value_spec(Frames),
+              is_valid_value_spec(DX),
+              is_valid_value_spec(DY) ->
                 true
-            ),
-            ( ground(Running) ->
-                length(Running, _)
             ;
-                true
-            ),
-            ( ground(Original) ->
-                length(Original, _)
-            ;
-                true
-            )
-        ; Term = move_delta(Frames, _DX, _DY) ->
-            % Structure matches, validate content
-            ( ground(Frames) ->
-                integer_or_evaluable(Frames)
-            ;
-                true
+                val_format(
+                    "ERROR: Invalid arg move_delta/3: ~w~n",
+                    [Term]
+                ),
+                throw(error(
+                    type_error(value_spec, Term),
+                    action_validation_helper/1
+                ))
             )
         ; Term = define_action(Signature, Body) ->
             % Structure matches, validate content
@@ -584,19 +636,58 @@ action_validation_helper(Term) :-
             ;
                 true
             )
-        ; builtin_action(Term) ->
-            % Built-in action - allow it (arity already
-            % validated by builtin_action/1)
+        ; Term = wait_until(_Cond) ->
+             % Structure matches, no validation needed here
+             % (Condition validation happens elsewhere)
+             true
+        ; Term = attr_if(_Cond, Then, Else) ->
+             % Structure matches, validate action lists
+             ( ground(Then) ->
+                 length(Then, _)
+             ;
+                 true
+             ),
+             ( ground(Else) ->
+                 length(Else, _)
+             ;
+                 true
+             )
+        % --- START FIX: Add validation for wait_key_*
+        % actions ---
+        ; Term = wait_key_down(KeyCode) ->
+            integer(KeyCode)
+        ; Term = wait_key_up(KeyCode) ->
+            integer(KeyCode)
+        ; Term = wait_key_held(KeyCode) ->
+            integer(KeyCode)
+        % --- END FIX ---
+        
+        % If we reached here, the action failed to match
+        % the specific pattern (meaning wrong arity or
+        % structure).
+        
+        % If it's callable but not a built-in functor name,
+        % assume user-defined action (success).
+        ; ( callable(Term), \+ is_builtin_functor(Term) ) ->
             true
-        ; \+ is_builtin_functor(Term),
-          callable(Term) ->
-            % User-defined action - allow any callable term
-            % that is NOT a built-in action functor
-            % (validation of actual expansion happens at
-            % runtime)
-            true
+        
+        % Check if it has a built-in functor name. If so,
+        % it's an invalid built-in action structure/arity.
+        ; is_builtin_functor(Term) ->
+            val_format(
+                "ERROR: Invalid built-in action :~n  ~w~n",
+                [Term]
+            ),
+            throw(
+                error(
+                    type_error(builtin_action_arity, Term),
+                    action_validation_helper/1
+                )
+            )
+        
+        % Otherwise, it's an invalid structure (e.g., a bare
+        % variable or non-callable term).
         ;
-            % No pattern matched - throw
             val_format(
                 "ERROR: Invalid action structure:~n  \
 ~w~n",

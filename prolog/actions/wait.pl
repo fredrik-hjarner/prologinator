@@ -22,5 +22,3 @@ execute_wait(N, Rest, Status, ActionsOut) -->
             Status = yielded
         )
     }.
-
-
