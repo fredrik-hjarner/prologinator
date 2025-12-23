@@ -133,7 +133,7 @@
 
 
 
-:- use_module(library(reif)).
+% :- use_module(library(reif)).
 
 
 :- use_module(library(time)).
@@ -1273,6 +1273,13 @@ obj_id_type(Obj, ID, Type) -->
 % 3. Utilities and Macros
 % Utility functions
 
+catch_dcg(Goal, Catcher, Handler, S0, S) :-
+    catch(
+        call(Goal, S0, S),
+        Catcher,
+        Handler
+    ).
+
 % ==========================================================
 % Partition helper
 % ==========================================================
@@ -1686,10 +1693,22 @@ execute_action_resolved(
     ( {builtin_action(Action)} ->
         % It's a built-in action - execute normally
 
-        execute_action_impl(
-            actions_old([Action|Rest]),
-            obj_id(ID),
-            result(Status, actions_new(ActionsOut))
+        % execute_action_impl(
+        %     actions_old([Action|Rest]),
+        %     obj_id(ID),
+        %     result(Status, actions_new(ActionsOut))
+        % )
+        catch_dcg(
+            execute_action_impl(
+                actions_old([Action|Rest]),
+                obj_id(ID),
+                result(Status, actions_new(ActionsOut))
+            ),
+            Error,
+            ( write('Error during execute_action_impl: '),
+              write(Error), nl,
+              throw(Error)
+            )
         )
     ; {user_action(Action, Body)} -> % total prolog voodoo!
         % It's a user-defined action!

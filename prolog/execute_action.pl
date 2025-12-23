@@ -62,10 +62,22 @@ execute_action_resolved(
         {functor(Action, Functor, _)},
         {format("executing `~w`~n", [Functor])},
 #endif
-        execute_action_impl(
-            actions_old([Action|Rest]),
-            obj_id(ID),
-            result(Status, actions_new(ActionsOut))
+        % execute_action_impl(
+        %     actions_old([Action|Rest]),
+        %     obj_id(ID),
+        %     result(Status, actions_new(ActionsOut))
+        % )
+        catch_dcg(
+            execute_action_impl(
+                actions_old([Action|Rest]),
+                obj_id(ID),
+                result(Status, actions_new(ActionsOut))
+            ),
+            Error,
+            ( write('Error during execute_action_impl: '),
+              write(Error), nl,
+              throw(Error)
+            )
         )
     ; {user_action(Action, Body)} -> % total prolog voodoo!
         % It's a user-defined action!

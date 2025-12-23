@@ -32,7 +32,7 @@
 #endif
 
 #ifndef SWI
-:- use_module(library(reif)).
+% :- use_module(library(reif)).
 #endif
 
 :- use_module(library(time)).
