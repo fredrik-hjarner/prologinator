@@ -4,3 +4,6 @@
 [submodule "submodules/schmupinator"]
 	path = submodules/schmupinator
 	url = git@github.com:fredrik-hjarner/schmupinator.git
+[submodule "submodules/scryer-js"]
+	path = submodules/scryer-js
+	url = https://github.com/guregu/scryer-js.git

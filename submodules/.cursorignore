@@ -125,3 +125,25 @@ schmupinator/**/__tests__
 schmupinator/src/App/services/E2eTest/e2ehistory.ts
 schmupinator/src/App/services/Input/mocks/replay.ts
 schmupinator/**/*.png
+
+# scryer-js
+
+scryer-js/.editorconfig
+scryer-js/.git
+scryer-js/.github
+scryer-js/.gitignore
+scryer-js/.gitmodules
+scryer-js/LICENSE
+scryer-js/make.js
+scryer-js/.nvmrc
+scryer-js/package.json
+scryer-js/package-lock.json
+scryer-js/.prettierignore
+# scryer-js/README.md
+scryer-js/scryer
+scryer-js/src/pkg
+# scryer-js/src/prolog.ts
+# scryer-js/src/scryer.ts
+# scryer-js/src/term.ts
+# scryer-js/test.js
+scryer-js/tsconfig.json
