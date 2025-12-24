@@ -4,8 +4,6 @@
 
 % #define ENABLE_LOG_ACTIONS
 
-
-
 :- module(prologinator, [
 % Export list for prologinator module
 % This file contains the list of exported predicates
@@ -105,39 +103,14 @@
 % Imports all libraries used across the codebase
 
 :- use_module(library(assoc)).
-
-
-:- use_module(library(between)).
-
-
 :- use_module(library(charsio)).
-
-
 :- use_module(library(clpz)).
-
-
 :- use_module(library(dif)).
-
-
 :- use_module(library(format)).
-
-
-
 :- use_module(library(iso_ext)).
-
-
 :- use_module(library(lists)).
-
-
 :- use_module(library(os)).
-
-
-
-% :- use_module(library(reif)).
-
-
 :- use_module(library(time)).
-
 
 
 % 1.5. Discontiguous Declarations (must be before any clauses)
@@ -1533,6 +1506,17 @@ resolve_action(
     !,
     resolve_arg(MyID, AmtExpr, Amt).
 
+% TODO: These prolly don't need to be dcgs because I'm not
+%       doing anything with context... but dunno maybe it
+%       can be good "just in case"?
+% Don't resolve load/1
+resolve_action(
+    _MyID, load(Path), load(Path)
+) -->
+    !,
+    [].
+
+% TODO: This default case might be problematic
 % Default: resolve all arguments (for move_to, wait, etc.)
 resolve_action(MyID, ActionIn, ActionOut) -->
     {ActionIn =.. [Functor|Args]},
@@ -1551,10 +1535,13 @@ resolve_args(MyID, [Arg|Rest], [ResArg|ResRest]) -->
 % path reference that must resolve to a value (read
 % context).
 resolve_arg(MyID, .Path, V) -->
-    {ground(Path)},  % Only resolve if path is ground
     !,
+    (   {ground(Path)} % Only resolve if path is ground
     % Use strict path resolution to get the value
-    resolve_path_strict(MyID, Path, V).
+    ->  resolve_path_strict(MyID, Path, V)
+    ;   {V = .Path}
+    ).
+
 
 % NEW: Handle default/2 expressions
 resolve_arg(MyID, default(ValueExpr, Fallback), V) -->
@@ -1568,8 +1555,9 @@ resolve_arg(MyID, List, ResolvedList) -->
     resolve_args(MyID, List, ResolvedList).
 resolve_arg(_MyID, [], []) --> [].
 
+% Catch-all?
 % Pass through primitives and other terms
-resolve_arg(_MyID, Other, Other) --> [].
+resolve_arg(_MyID, Other, Other) --> !, [].
 
 % Helper for default/2 resolution in actions
 resolve_default(MyID, .Path, Fallback, V) -->
@@ -1583,9 +1571,12 @@ resolve_default(MyID, .Path, Fallback, V) -->
         % use the fallback. Context remains unchanged.
         {V = Fallback}
     ).
+
+% Catch-all?
 % If ValueExpr is not an .Path, resolve it normally.
 % Note: This handles cases like default(10, 0) -> 10
 resolve_default(MyID, ValueExpr, _Fallback, V) -->
+    !,
     resolve_arg(MyID, ValueExpr, V).
 
 % ==========================================================
@@ -3666,31 +3657,25 @@ main :-
             % Resolve GAME directory
             % ----------------------------------------------
             ( catch(getenv("GAME", RawGame), _, fail) ->
-
-                % RawGame is char list
                 atom_chars(GameName, RawGame) 
-
             ;
                 throw('GAME environment variable missing')
             ),
-            
 
             atom_concat('games/', GameName, GameDir),
             atom_concat(GameDir, '/game.pl', GameFileAtom),
             atom_concat(GameDir, '/input.pl',InputFileAtom),
 
-
             atom_chars(GameFileAtom, GameFile),
 
-
             (   catch(consult(InputFileAtom), _, fail),
-
                 catch(
-                    user:input_timeline(TimelineList),
-                     _,
-                     fail
-                )
 
+                    user:input_timeline(TimelineList),
+
+                    _,
+                    fail
+                )
             ->
                 list_to_assoc(TimelineList, Timeline)
             ;
@@ -3729,13 +3714,10 @@ main :-
                 InitialContext1,
                 InitialContext1
             ),
-
-            GameFileChars = GameFile,
-
             put_assoc(
                 0,
                 ActionStore0,
-                [[load(GameFileChars)]],
+                [[load(GameFile)]],
                 ActionStore1
             ),
         
@@ -3783,12 +3765,8 @@ game_loop(
                     'Press: f=forward, r=reverse, q=quit'
                 ), nl,
                 flush_output,
-
-
                 % Scryer/Others return an Atom directly.
                 get_single_char(Char),
-
-
                 ( Char = end_of_file ->
                     ctx_set_status(lost, Ctx, NewCtx),
                     NewHistory = History,

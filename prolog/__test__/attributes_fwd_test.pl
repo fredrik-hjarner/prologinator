@@ -61,3 +61,40 @@ test("set attribute then copy.",(
         ])
     )
 )).
+
+test("default should be utilized for non-existing stuff.",(
+    test_action_sequence(
+        start_attrs([
+        ]),
+        actions([
+            wait_until(default(.parent_id.hp, -1) < 1),
+            set_attr(.yup, true)
+        ]),
+        ticks(
+            1
+        ),
+        end_attrs([
+            yup-true
+        ])
+    )
+)).
+
+test("default should be utilized for non-existing stuff. \
+In this case a non-existing object is referenced.",(
+    test_action_sequence(
+        start_attrs([
+            % pointer to object with id 5 that doesn't exist
+            ptr-5
+        ]),
+        actions([
+            wait_until(default(.ptr.hp, -1) < 1),
+            set_attr(.yup, true)
+        ]),
+        ticks(
+            1
+        ),
+        end_attrs([
+            yup-true
+        ])
+    )
+)).

@@ -7,3 +7,6 @@
 [submodule "submodules/scryer-js"]
 	path = submodules/scryer-js
 	url = https://github.com/guregu/scryer-js.git
+[submodule "submodules/trealla"]
+	path = submodules/trealla
+	url = git@github.com:fredrik-hjarner/trealla.git

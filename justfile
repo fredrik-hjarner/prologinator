@@ -10,8 +10,9 @@ perf: build
 game GAME='game0': build
     GAME={{GAME}} scryer-prolog build/prologinator.pl -g "main, halt";
 
-swipl GAME='game0': build-swipl
-    GAME={{GAME}} swipl -t "main" build/prologinator.pl;
+tpl +FLAGS='': build-tpl
+       GAME=${GAME:-game0} tpl {{FLAGS}} -g \
+         "prologinator:main" -l build/prologinator.pl
 
 test MODULE: build
     @ VALIDATION_ERR_MSG=false ./scripts/test.ts {{MODULE}}
@@ -130,7 +131,7 @@ build:
 	@gpp -P --warninglevel 0 scripts/prologinator.pp -o build/prologinator.pl
 	@echo "Built: build/prologinator.pl"
 
-build-swipl:
+build-tpl:
 	@mkdir -p build
-	@gpp -DSWI -P --warninglevel 0 scripts/prologinator.pp -o build/prologinator.pl
+	@gpp -DTPL -P --warninglevel 0 scripts/prologinator.pp -o build/prologinator.pl
 	@echo "Built: build/prologinator.pl"

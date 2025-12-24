@@ -1,3 +1,38 @@
+# Don't have the stuff in `prologinator` namespace
+
+Yea, just have in in user namespace. Should be doable.
+
+Remove
+    exports.pl
+
+Remove prologinator module declaration from
+    prologinator.pp
+
+Remove all
+    prologinator:
+Maybe also remove all
+    user:
+
+Replace all
+    :- use_module('../../build/prologinator').
+    :- use_module('../test_utils/test_action_sequence').
+with
+    #include "../../build/prologinator"
+    #include "../test_utils/test_action_sequence"
+
+etc then I need to run gpp on the test file to preprocess it
+
+# Maybe change all my actions to use '' instead of ""
+
+Yea I am not sure but I ran into a problem with
+load action with "" string trying to "resolved" by
+resolve_action because strings are just syntactic sugar
+using dots underneath and that in combination with me doing
+my attributes with dots voodoo cause the issue xD.
+
+Or maybe allow both but I transform wth meta-programming to
+use '' instead of "" internally.
+
 # set_attr and copy_attr consistentcy problems
 
 First of all maybe I just need `set_attr` since maybe

@@ -51,6 +51,17 @@ resolve_action(
     !,
     resolve_arg(MyID, AmtExpr, Amt).
 
+% TODO: These prolly don't need to be dcgs because I'm not
+%       doing anything with context... but dunno maybe it
+%       can be good "just in case"?
+% Don't resolve load/1
+resolve_action(
+    _MyID, load(Path), load(Path)
+) -->
+    !,
+    [].
+
+% TODO: This default case might be problematic
 % Default: resolve all arguments (for move_to, wait, etc.)
 resolve_action(MyID, ActionIn, ActionOut) -->
     {ActionIn =.. [Functor|Args]},
@@ -69,10 +80,13 @@ resolve_args(MyID, [Arg|Rest], [ResArg|ResRest]) -->
 % path reference that must resolve to a value (read
 % context).
 resolve_arg(MyID, .Path, V) -->
-    {ground(Path)},  % Only resolve if path is ground
     !,
+    (   {ground(Path)} % Only resolve if path is ground
     % Use strict path resolution to get the value
-    resolve_path_strict(MyID, Path, V).
+    ->  resolve_path_strict(MyID, Path, V)
+    ;   {V = .Path}
+    ).
+
 
 % NEW: Handle default/2 expressions
 resolve_arg(MyID, default(ValueExpr, Fallback), V) -->
@@ -86,8 +100,9 @@ resolve_arg(MyID, List, ResolvedList) -->
     resolve_args(MyID, List, ResolvedList).
 resolve_arg(_MyID, [], []) --> [].
 
+% Catch-all?
 % Pass through primitives and other terms
-resolve_arg(_MyID, Other, Other) --> [].
+resolve_arg(_MyID, Other, Other) --> !, [].
 
 % Helper for default/2 resolution in actions
 resolve_default(MyID, .Path, Fallback, V) -->
@@ -101,9 +116,12 @@ resolve_default(MyID, .Path, Fallback, V) -->
         % use the fallback. Context remains unchanged.
         {V = Fallback}
     ).
+
+% Catch-all?
 % If ValueExpr is not an .Path, resolve it normally.
 % Note: This handles cases like default(10, 0) -> 10
 resolve_default(MyID, ValueExpr, _Fallback, V) -->
+    !,
     resolve_arg(MyID, ValueExpr, V).
 
 % ==========================================================

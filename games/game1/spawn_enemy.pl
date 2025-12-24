@@ -7,6 +7,9 @@
             set_attr(.displayChar, 35),  % '#'
             fork([
                 wait_until(
+                    % TODO: if .parent_id.hp is not set
+                    %       the code sadly still cant handle
+                    %       it :'/
                     default(.parent_id.hp, -1) < 1
                 ),
                 despawn

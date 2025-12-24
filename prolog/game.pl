@@ -9,39 +9,27 @@ main :-
             % Resolve GAME directory
             % ----------------------------------------------
             ( catch(getenv("GAME", RawGame), _, fail) ->
-#ifdef SWI
-                GameName = RawGame         % already an atom
-#else
-                % RawGame is char list
                 atom_chars(GameName, RawGame) 
-#endif
             ;
                 throw('GAME environment variable missing')
             ),
-            
 
             atom_concat('games/', GameName, GameDir),
             atom_concat(GameDir, '/game.pl', GameFileAtom),
             atom_concat(GameDir, '/input.pl',InputFileAtom),
 
-#ifdef SWI
-            GameFile = GameFileAtom,
-#else
             atom_chars(GameFileAtom, GameFile),
-#endif
 
             (   catch(consult(InputFileAtom), _, fail),
-#ifdef SWI
                 catch(
-                    input_timeline(TimelineList), _, fail
-                )
+#ifdef TPL
+                    input_timeline(TimelineList),
 #else
-                catch(
                     user:input_timeline(TimelineList),
-                     _,
-                     fail
-                )
 #endif
+                    _,
+                    fail
+                )
             ->
                 list_to_assoc(TimelineList, Timeline)
             ;
@@ -80,15 +68,10 @@ main :-
                 InitialContext1,
                 InitialContext1
             ),
-#ifdef SWI
-            atom_chars(GameFile, GameFileChars),
-#else
-            GameFileChars = GameFile,
-#endif
             put_assoc(
                 0,
                 ActionStore0,
-                [[load(GameFileChars)]],
+                [[load(GameFile)]],
                 ActionStore1
             ),
         
@@ -136,18 +119,8 @@ game_loop(
                     'Press: f=forward, r=reverse, q=quit'
                 ), nl,
                 flush_output,
-
-#ifdef SWI
-                get_single_char(Code),
-                (
-                    Code = -1 -> Char = end_of_file
-                    ; char_code(Char, Code)
-                ),
-#else
                 % Scryer/Others return an Atom directly.
                 get_single_char(Char),
-#endif
-
                 ( Char = end_of_file ->
                     ctx_set_status(lost, Ctx, NewCtx),
                     NewHistory = History,
