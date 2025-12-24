@@ -12,7 +12,7 @@ game GAME='game0': build
 
 tpl +FLAGS='': build-tpl
        GAME=${GAME:-game0} tpl {{FLAGS}} -g \
-         "prologinator:main" -l build/prologinator.pl
+         "main" -l build/prologinator.pl
 
 test MODULE: build
     @ VALIDATION_ERR_MSG=false ./scripts/test.ts {{MODULE}}

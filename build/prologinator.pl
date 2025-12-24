@@ -4,6 +4,10 @@
 
 % #define ENABLE_LOG_ACTIONS
 
+% We must not declare the module if we are building the TPL
+% because it will cause clpz errors:
+% https://github.com/trealla-prolog/trealla/pull/951
+
 :- module(prologinator, [
 % Export list for prologinator module
 % This file contains the list of exported predicates
@@ -97,6 +101,7 @@
     resolve_path/4
 
 ]).
+
 
 % 1. Global Imports (Import all libraries ONCE)
 % Centralized library imports
