@@ -48,6 +48,7 @@
 #include "../prolog/execute_action.pl"
 
 % 6. Action Implementations (all actions)
+#include "../prolog/actions/attr_if.pl"
 #include "../prolog/actions/wait.pl"
 #include "../prolog/actions/move_to.pl"
 #include "../prolog/actions/move_delta.pl"

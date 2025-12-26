@@ -55,8 +55,13 @@ lint-all: build
     @just lint prolog/custom_actions_test.pl || exit 1
     @echo "Linting collisions_fwd_test.pl..."
     @just lint prolog/collisions_fwd_test.pl || exit 1
+
+    @echo "Linting actions/__test__/attr_if_fwd_test.pl..."
+    @just lint prolog/actions/__test__/attr_if_fwd_test.pl || exit 1
+
     @echo "Linting execute_action_fwd_test.pl..."
     @just lint prolog/execute_action_fwd_test.pl || exit 1
+
     @echo "Linting actions/__test__/move_to_fwd_test.pl..."
     @just lint prolog/actions/__test__/move_to_fwd_test.pl || exit 1
     @echo "Linting actions/__test__/trigger_state_change_fwd_test.pl..."

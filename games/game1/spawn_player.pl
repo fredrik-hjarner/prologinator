@@ -29,22 +29,42 @@
                 % Right arrow (39) - move right
                 loop([
                     wait_key_held(39),
-                    move_delta(1, 1, 0)
+                    move_delta(0, 1, 0),
+                    attr_if(.x > 19,
+                        [set_attr(.x, 19)],
+                        []
+                    ),
+                    wait(1)
                 ]),
                 % Left arrow (37) - move left
                 loop([
                     wait_key_held(37),
-                    move_delta(1, -1, 0)
+                    move_delta(0, -1, 0),
+                    attr_if(.x < 0,
+                        [set_attr(.x, 0)],
+                        []
+                    ),
+                    wait(1)
                 ]),
                 % Up arrow (38) - move up
                 loop([
                     wait_key_held(38),
-                    move_delta(1, 0, -1)
+                    move_delta(0, 0, -1),
+                    attr_if(.y < 0,
+                        [set_attr(.y, 0)],
+                        []
+                    ),
+                    wait(1)
                 ]),
                 % Down arrow (40) - move down
                 loop([
                     wait_key_held(40),
-                    move_delta(1, 0, 1)
+                    move_delta(0, 0, 1),
+                    attr_if(.y > 19,
+                        [set_attr(.y, 19)],
+                        []
+                    ),
+                    wait(1)
                 ])
             ]),
             log("parallel_all completed!")

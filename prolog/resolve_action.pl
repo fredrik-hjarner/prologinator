@@ -61,12 +61,218 @@ resolve_action(
     !,
     [].
 
-% TODO: This default case might be problematic
-% Default: resolve all arguments (for move_to, wait, etc.)
-resolve_action(MyID, ActionIn, ActionOut) -->
-    {ActionIn =.. [Functor|Args]},
-    resolve_args(MyID, Args, ResolvedArgs),
-    {ActionOut =.. [Functor|ResolvedArgs]}.
+% Don't resolve wait_until/1
+resolve_action(
+    _MyID, wait_until(Condition), wait_until(Condition)
+) -->
+    !,
+    [].
+
+resolve_action(
+    _MyID,
+    attr_if(Condition, ThenActions, ElseActions),
+    attr_if(Condition, ThenActions, ElseActions)
+) -->
+    !,
+    [].
+
+resolve_action(
+    _MyID,
+    spawn(Actions),
+    spawn(Actions)
+) -->
+    !,
+    [].
+
+resolve_action(
+    _MyID,
+    despawn,
+    despawn
+) -->
+    !,
+    [].
+
+resolve_action(
+    _MyID,
+    fork(Actions),
+    fork(Actions)
+) -->
+    !,
+    [].
+
+resolve_action(
+    MyID,
+    wait(Frames),
+    wait(ResolvedFrames)
+) -->
+    !,
+    resolve_arg(MyID, Frames, ResolvedFrames).
+
+resolve_action(
+    _MyID,
+    list(Actions),
+    list(Actions)
+) -->
+    !,
+    [].
+
+resolve_action(
+    _MyID,
+    noop,
+    noop
+) -->
+    !,
+    [].
+
+resolve_action(
+    MyID,
+    move_delta(Frames, DX, DY),
+    move_delta(ResolvedFrames, ResolvedDX, ResolvedDY)
+) -->
+    !,
+    resolve_arg(MyID, Frames, ResolvedFrames),
+    resolve_arg(MyID, DX, ResolvedDX),
+    resolve_arg(MyID, DY, ResolvedDY).
+
+resolve_action(
+    MyID,
+    move_to(X, Y, Frames),
+    move_to(ResolvedX, ResolvedY, ResolvedFrames)
+) -->
+    !,
+    resolve_arg(MyID, X, ResolvedX),
+    resolve_arg(MyID, Y, ResolvedY),
+    resolve_arg(MyID, Frames, ResolvedFrames).
+
+resolve_action(
+    _MyID,
+    parallel_all(Actions),
+    parallel_all(Actions)
+) -->
+    !,
+    [].
+
+resolve_action(
+    _MyID,
+    parallel_race(Actions),
+    parallel_race(Actions)
+) -->
+    !,
+    [].
+
+resolve_action(
+    MyID,
+    repeat(Times, Actions),
+    repeat(ResolvedTimes, Actions)
+) -->
+    !,
+    resolve_arg(MyID, Times, ResolvedTimes).
+
+% This an an internal repeat (continuation) so all stuff
+% should already have been resolved
+resolve_action(
+    _MyID,
+    repeat(Times, A1, A2),
+    repeat(Times, A1, A2)
+) -->
+    !,
+    [].
+
+resolve_action(
+    _MyID,
+    trigger_state_change(Change),
+    trigger_state_change(Change)
+) -->
+    !,
+    [].
+
+resolve_action(
+    MyID,
+    wait_key_down(Key),
+    wait_key_down(ResolvedKey)
+) -->
+    !,
+    resolve_arg(MyID, Key, ResolvedKey).
+
+resolve_action(
+    MyID,
+    wait_key_held(Key),
+    wait_key_held(ResolvedKey)
+) -->
+    !,
+    resolve_arg(MyID, Key, ResolvedKey).
+
+resolve_action(
+    MyID,
+    wait_key_up(Key),
+    wait_key_up(ResolvedKey)
+) -->
+    !,
+    resolve_arg(MyID, Key, ResolvedKey).
+
+resolve_action(
+    _MyID,
+    loop(Actions),
+    loop(Actions)
+) -->
+    !,
+    [].
+
+% internal loop (continuation). should not be resolved
+% can never be called by user and stuff should already have
+% been resolved.
+resolve_action(
+    _MyID,
+    loop(Running, Original),
+    loop(Running, Original)
+) -->
+    !,
+    [].
+
+% TODO: It's retarded that `resolve_action` only takes ONE
+% actions as it's 2nd argument and not a list of actions.
+resolve_action(
+    _MyID,
+    define_action(Name, Action),
+    define_action(Name, Action)
+) -->
+    !,
+    [].
+
+resolve_action(
+    _MyID,
+    log(Message),
+    log(Message)
+) -->
+    !,
+    [].
+
+% base case for builtins. should raise exception because all
+% builtins should be resolved.
+resolve_action(
+    _MyID,
+    Action,
+    Action
+) -->
+    {builtin_action(Action)},
+    !,
+    {format(
+        "resolve_action not implemented for: ~w~n",
+        [Action]
+    )},
+    {throw(not_implemented(resolve_action/3))}.
+
+% base case for non-builtin actions, i.e. custom
+% user-defined actions. should never be resolved, I think...
+% because it's the built-in actions themselves that does the
+% resolution.
+resolve_action(
+    MyID,
+    Action,
+    Action
+) -->
+    !,
+    [].
 
 % Helper: resolve list of arguments, threading context
 resolve_args(_MyID, [], []) --> [].
@@ -94,6 +300,8 @@ resolve_arg(MyID, default(ValueExpr, Fallback), V) -->
     resolve_default(MyID, ValueExpr, Fallback, V).
 
 % Lists need recursive resolution
+% TODO: Do I even need this? I don't think I ever need this
+%       in current design.
 resolve_arg(MyID, List, ResolvedList) -->
     {List = [_|_]},
     !,

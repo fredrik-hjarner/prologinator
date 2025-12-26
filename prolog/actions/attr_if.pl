@@ -18,10 +18,11 @@
 %   - Logical: and([...]), or([...]), not(...)
 
 execute_action_impl(
-    action(attr_if(Condition, ThenActions, ElseActions)),
-    actions_old([_|Rest]),
+    actions_old([
+        attr_if(Condition, ThenActions, ElseActions)|Rest
+    ]),
     obj_id(ID),
-    result(completed, actions_new(ActionsOut))
+    result(Status, actions_new(ActionsOut))
 ) -->
     execute_attr_if(
         ID,
@@ -29,7 +30,7 @@ execute_action_impl(
         ThenActions,
         ElseActions,
         Rest,
-        ActionsOut
+        result(Status, actions_new(ActionsOut))
     ).
 
 % ==========================================================
@@ -44,14 +45,26 @@ execute_attr_if(
     ThenActions,
     ElseActions,
     Rest,
-    ActionsOut
+    result(Status, actions_new(ActionsOut))
 ) -->
     ctx_get(Ctx),
+    % TODO: Check condition should be made to work with dcgs
+    %       by taking two Ctxs as last 2 args.
     (   {check_condition(Ctx, ObjID, Condition)}
     ->
         % Condition succeeded: execute ThenActions
-        {append(ThenActions, Rest, ActionsOut)}
+        tick_object(
+            actions_old(ThenActions),
+            obj_id(ObjID),
+            result(Status, actions_new(ActionAfterTick))
+        ),
+        {append(ActionAfterTick, Rest, ActionsOut)}
     ;
         % Condition failed: execute ElseActions
-        {append(ElseActions, Rest, ActionsOut)}
+        tick_object(
+            actions_old(ElseActions),
+            obj_id(ObjID),
+            result(Status, actions_new(ActionAfterTick))
+        ),
+        {append(ActionAfterTick, Rest, ActionsOut)}
     ).

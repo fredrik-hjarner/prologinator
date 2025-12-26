@@ -1,3 +1,17 @@
+# Have an if where you don't need to specify the else path
+
+It just accumes no action for the else path.
+That's would be a nice for convenience.
+
+# Remove trigger_state_change entirely and status from ctx
+
+Because I am not using it and it's nice to remove stuff that
+is not in use.
+
+# Add a default execute_action_impl that raises exception
+
+So I can see immediately if there is some action that is not implemented or added to the prologinator.pp file.
+
 # Don't have the stuff in `prologinator` namespace
 
 Yea, just have in in user namespace. Should be doable.
