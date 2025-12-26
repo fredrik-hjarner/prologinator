@@ -2,16 +2,22 @@
 % Main Tick Function
 % ==========================================================
 tick -->
+#ifdef ENABLE_VALIDATION
     context_validation,
+#endif
     % 1. Detect collisions BEFORE ticking
     % (so objects can react)
     detect_collisions,
+#ifdef ENABLE_VALIDATION
     context_validation,
+#endif
     % 2. Tick Physics & Logic
     % Iterates by ID, allowing new spawns to be picked up
     % immediately.
     tick_all_objects,
+#ifdef ENABLE_VALIDATION
     context_validation,
+#endif
     % 3. Increment Frame
     increment_frame.
 

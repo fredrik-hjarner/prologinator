@@ -1,3 +1,11 @@
+# in sconcat: should be able to delete entry with `d` key
+
+to reduce clutter.
+
+# sconcat should display two columns if more than 20 entries
+
+because scrolling is awkward.
+
 # Simplify attribytes cuz they might be slow (?)
 
 .x would mean attr x on the object asking.

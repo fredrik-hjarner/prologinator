@@ -24,10 +24,10 @@ tick_action_streams(ObjID, Status) -->
             (
                 % TODO: Implement a dbg_write/dbg_format
                 %       togglable via env.
-                {format(
-                    "INFO: Removing obj ~w from acnstore~n",
-                    [ObjID]
-                )},
+                % {format(
+                %   "INFO: Removing obj ~w from acnstore~n",
+                %   [ObjID]
+                % )},
                 % remove object from actionstore
                 {del_assoc(
                     ObjID, AcnStoreIn, _, AcnStoreOut

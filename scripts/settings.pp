@@ -1,1 +1,2 @@
 % #define ENABLE_LOG_ACTIONS
+% #define ENABLE_VALIDATION

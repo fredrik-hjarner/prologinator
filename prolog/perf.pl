@@ -19,11 +19,11 @@
 main_perf :-
     catch(
         ( % Game file (hardcoded)
-          atom_chars('games/game0/game.pl', GameFile),
+          atom_chars('games/game1/game.pl', GameFile),
           
           % Load input timeline (hardcoded)
           ( % Consult loads into user module
-            consult('games/game0/input.pl'),
+            consult('games/game1/input.pl'),
             % Call from user module
             ( catch(user:input_timeline(TimelineList), _, 
                     fail) ->
@@ -77,7 +77,7 @@ main_perf :-
 % Run N frames (200 total), then return final context
 
 run_frames_perf(Ctx, Timeline, Frame, FinalCtx) :-
-    Frame < 300,
+    Frame < 4000,
     !,
     Frame1 is Frame + 1,
     

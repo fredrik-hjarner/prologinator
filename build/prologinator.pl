@@ -3,6 +3,7 @@
 % ==========================================================
 
 % #define ENABLE_LOG_ACTIONS
+% #define ENABLE_VALIDATION
 
 % 1. Global Imports (Import all libraries ONCE)
 % Centralized library imports
@@ -1793,7 +1794,7 @@ execute_action_resolved(
     % TODO: action_validation nowadays it almost useless
     %       since custom actions allow anything.
     %       so maybe I should validate builtins separately?
-    {action_validation(Action)},
+
     % validate(Action, action_schema),
     ( {builtin_action(Action)} ->
         % It's a built-in action - execute normally
@@ -2898,10 +2899,10 @@ tick_action_streams(ObjID, Status) -->
             (
                 % TODO: Implement a dbg_write/dbg_format
                 %       togglable via env.
-                {format(
-                    "INFO: Removing obj ~w from acnstore~n",
-                    [ObjID]
-                )},
+                % {format(
+                %   "INFO: Removing obj ~w from acnstore~n",
+                %   [ObjID]
+                % )},
                 % remove object from actionstore
                 {del_assoc(
                     ObjID, AcnStoreIn, _, AcnStoreOut
@@ -3663,16 +3664,16 @@ check_membership(Ctx, ObjID, Item, AttributePath) :-
 % Main Tick Function
 % ==========================================================
 tick -->
-    context_validation,
+
     % 1. Detect collisions BEFORE ticking
     % (so objects can react)
     detect_collisions,
-    context_validation,
+
     % 2. Tick Physics & Logic
     % Iterates by ID, allowing new spawns to be picked up
     % immediately.
     tick_all_objects,
-    context_validation,
+
     % 3. Increment Frame
     increment_frame.
 

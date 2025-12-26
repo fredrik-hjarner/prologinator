@@ -8,6 +8,14 @@
                 attr_if(.y < 0,
                     [despawn],
                     []
+                ),
+                attr_if(.x < 0,
+                    [despawn],
+                    []
+                ),
+                attr_if(.x > 61,
+                    [despawn],
+                    []
                 )
             ])
         ])

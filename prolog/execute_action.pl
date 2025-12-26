@@ -54,7 +54,9 @@ execute_action_resolved(
     % TODO: action_validation nowadays it almost useless
     %       since custom actions allow anything.
     %       so maybe I should validate builtins separately?
+#ifdef ENABLE_VALIDATION
     {action_validation(Action)},
+#endif
     % validate(Action, action_schema),
     ( {builtin_action(Action)} ->
         % It's a built-in action - execute normally
