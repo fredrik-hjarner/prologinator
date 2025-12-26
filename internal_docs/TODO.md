@@ -1,3 +1,16 @@
+# Simplify attribytes cuz they might be slow (?)
+
+.x would mean attr x on the object asking.
+.x.y would mean attr y on whatever object is in this.x.
+1.x would mean attr x on object 1.
+
+And that's all variant I would support. Maybe that's dymanic
+enough and hopefully faster and allows less complex code.
+
+# Let builtin_action be discontiguous...
+
+and have that stuff in each action's file instead!
+
 # Remove all Scryer stuff, only use Trealla
 
 - [ ] Run tests with Trealla.
@@ -61,11 +74,6 @@ lever en frame eller nåt.
 
 I.e. have as little as possible as fields on the Game Object
 
-# Maybe an object HAVING actions is incorrect abstraction?
-
-Because that coupling/abstraction breaks apart in some
-actions (parallel_all, parallel_race and similar).
-
 # Maybe id and attr_id should be separate?
 
 So that you can for example spawn a new object (i.e.
@@ -90,11 +98,6 @@ yup shorter.
 
 Add some setting via env or something to toggle validation
 on an off.
-
-# Wrap state in context
-
-And just like in golang thread context down as FIRST
-argument.
 
 # Rename game_state to state and game_object to object
 
