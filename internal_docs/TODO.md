@@ -1,3 +1,12 @@
+# Implement an until_changed action
+
+I think that could be used a performance optimization, for
+example so that "child pixels" don't need to update their
+position all the time but only when .parent.x has changed.
+
+If it works it works, but if it doesn't have any impact
+maybe scrap that action??
+
 # Have an if where you don't need to specify the else path
 
 It just accumes no action for the else path.
