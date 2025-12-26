@@ -88,8 +88,8 @@
                 despawn
             ]),
 
-            repeat(30, [
-                wait(6),
+            repeat(37, [
+                wait(10),
                 move_delta(0, 0, 1)
             ])
 

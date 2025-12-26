@@ -5,8 +5,8 @@
         spawn([
             log("log at start of spawn_player"),
             set_attr(.type, player),
-            set_attr(.x, 10),
-            set_attr(.y, 19),
+            set_attr(.x, 16),
+            set_attr(.y, 31),
             log("Player spawned!"),
             set_attr(.displayChar, 64),  % '@'
             log("displayChar was set to 64"),
@@ -18,7 +18,7 @@
                         copy_attr(.parent_id.x, .x),
                         copy_attr(.parent_id.y, .y),
                         set_attr(.displayChar, 42),  % '*'
-                        repeat(19, [
+                        repeat(31, [
                             move_delta(1, 0, -1)
                         ]),
                         despawn
@@ -30,8 +30,8 @@
                 loop([
                     wait_key_held(39),
                     move_delta(0, 1, 0),
-                    attr_if(.x > 19,
-                        [set_attr(.x, 19)],
+                    attr_if(.x > 31,
+                        [set_attr(.x, 31)],
                         []
                     ),
                     wait(1)
@@ -60,8 +60,8 @@
                 loop([
                     wait_key_held(40),
                     move_delta(0, 0, 1),
-                    attr_if(.y > 19,
-                        [set_attr(.y, 19)],
+                    attr_if(.y > 31,
+                        [set_attr(.y, 31)],
                         []
                     ),
                     wait(1)

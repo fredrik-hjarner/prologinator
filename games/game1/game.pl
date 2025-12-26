@@ -5,6 +5,11 @@
     load("games/game1/spawn_enemy.pl"),
     
     spawn_player,
-    spawn_enemy(10, -3),
+    wait(20),
+    spawn_enemy(16, -3),
+    wait(20),
+    spawn_enemy(8, -3),
+    wait(20),
+    spawn_enemy(24, -3),
     log("end of game.pl")
 ].
