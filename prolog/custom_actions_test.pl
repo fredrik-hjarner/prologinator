@@ -1,16 +1,7 @@
 :- module(custom_actions_test, []).
 
-:- use_module('../build/prologinator').
-:- use_module('../prolog/util/test_util').
-
-:- use_module(library(lists), [member/2]).
-:- use_module(library(assoc), [
-    empty_assoc/1,
-    put_assoc/4,
-    gen_assoc/3
-]).
-:- use_module(library(format)).
-:- use_module(library(lists), [length/2]).
+#include "./build/prologinator.pl"
+#include "./prolog/util/test_util.pl"
 
 % ==========================================================
 % Tests: Custom Actions (define_action and user-defined
@@ -26,7 +17,7 @@ test("define_action: stores action definition", (
     % Arrange
     % ------------------------------------------------------
     % Clear any existing definitions
-    retractall(prologinator:user_action(_, _)),
+    retractall(user_action(_, _)),
     
     ActionsIn = [
         define_action(
@@ -59,7 +50,7 @@ test("define_action: stores action definition", (
     % Action should be removed from queue
     expect(ActionsOut = []),
     % Definition should be stored
-    expect(prologinator:user_action(zigzag(_, _), _)),
+    expect(user_action(zigzag(_, _), _)),
     expect(ctx_spawnCmds([], CtxNew, CtxNew))
 )).
 
@@ -72,13 +63,13 @@ test("custom_action: zigzag expands and executes", (
     % Arrange
     % ------------------------------------------------------
     % Clear any existing definitions
-    retractall(prologinator:user_action(_, _)),
+    retractall(user_action(_, _)),
     
     % Define the action
     % zigzag(Delta, Times) -> repeat Times: 
     %   move(10 frames, Delta, 0), 
     %   move(10 frames, -Delta, 0)
-    assertz(prologinator:user_action(
+    assertz(user_action(
         zigzag(Delta, Times),
         repeat(Times, [
             move_delta(10, Delta, 0),
@@ -151,7 +142,7 @@ test("custom_action: define and use in same action list", (
     % Arrange
     % ------------------------------------------------------
     % Clear any existing definitions
-    retractall(prologinator:user_action(_, _)),
+    retractall(user_action(_, _)),
     
     ObjIn = object(id(0)),
     ActionsIn = [
@@ -259,7 +250,7 @@ test("custom_action: shoot_burst defines and executes", (
     % Arrange
     % ------------------------------------------------------
     % Clear any existing definitions
-    retractall(prologinator:user_action(_, _)),
+    retractall(user_action(_, _)),
     
     ObjIn = object(id(0)),
     ActionsIn = [
@@ -346,7 +337,7 @@ test("custom_action: multiple definitions work", (
     % Arrange
     % ------------------------------------------------------
     % Clear any existing definitions
-    retractall(prologinator:user_action(_, _)),
+    retractall(user_action(_, _)),
     
     ObjIn = object(id(0)),
     ActionsIn = [
@@ -441,10 +432,10 @@ substituted", (
     % Arrange
     % ------------------------------------------------------
     % Clear any existing definitions
-    retractall(prologinator:user_action(_, _)),
+    retractall(user_action(_, _)),
     
     % Define a custom action with multiple parameters
-    assertz(prologinator:user_action(
+    assertz(user_action(
         move_pattern(X1, Y1, X2, Y2, Frames),
         list([
             move_to(X1, Y1, Frames),

@@ -1,15 +1,7 @@
 :- module(parallel_all_fwd_test, []).
 
-:- use_module('../../../build/prologinator').
-:- use_module('../../../prolog/util/test_util').
-
-:- use_module(library(lists), [member/2]).
-:- use_module(library(assoc), [
-    empty_assoc/1,
-    put_assoc/4,
-    gen_assoc/3
-]).
-:- use_module(library(format)).
+#include "./build/prologinator.pl"
+#include "./prolog/util/test_util.pl"
 
 % ==========================================================
 % Helper predicates

@@ -4,15 +4,6 @@
 
 #include "settings.pp"
 
-% We must not declare the module if we are building the TPL
-% because it will cause clpz errors:
-% https://github.com/trealla-prolog/trealla/pull/951
-#ifndef TPL
-:- module(prologinator, [
-#include "../prolog/exports.pl"
-]).
-#endif
-
 % 1. Global Imports (Import all libraries ONCE)
 #include "../prolog/imports.pl"
 

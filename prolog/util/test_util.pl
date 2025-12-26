@@ -1,5 +1,3 @@
-:- module(test_util, []).
-
 % ==========================================================
 % Test Utility Functions
 % ==========================================================
@@ -22,6 +20,10 @@
 % We use 'true' instead of '!' because '->' automatically
 % commits.
 % Must hook into user module for the compiler to pick it up
+% TODO: Remove `multifile`.
+% TODO: I can change `expect` into a normal predicate now
+%       since I am no longer using Prolog's crappy module
+%       system.
 :- multifile(user:goal_expansion/2).
 
 user:goal_expansion(expect(Goal, Message), Expanded) :-

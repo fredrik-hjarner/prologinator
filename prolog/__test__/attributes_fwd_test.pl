@@ -1,12 +1,7 @@
 :- module(attributes_fwd_test, []).
 
-:- use_module('../../build/prologinator').
-:- use_module('../test_utils/test_action_sequence').
-
-:- use_module(library(assoc), [
-    empty_assoc/1,
-    put_assoc/4
-]).
+#include "./build/prologinator.pl"
+#include "./prolog/test_utils/test_action_sequence.pl"
 
 test("simply set an attribute verify that it was set",(
     test_action_sequence(

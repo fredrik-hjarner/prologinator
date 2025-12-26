@@ -1,12 +1,7 @@
 :- module(wait_key_up_fwd_test, []).
 
-:- use_module('../../..'/build/prologinator).
-:- use_module('../../..'/prolog/util/test_util).
-
-:- use_module(library(assoc), [
-    empty_assoc/1,
-    put_assoc/4
-]).
+#include "./build/prologinator.pl"
+#include "./prolog/util/test_util.pl"
 
 % ==========================================================
 % Tests: wait_key_up Action (Forward)

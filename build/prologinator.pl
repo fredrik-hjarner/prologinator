@@ -4,105 +4,6 @@
 
 % #define ENABLE_LOG_ACTIONS
 
-% We must not declare the module if we are building the TPL
-% because it will cause clpz errors:
-% https://github.com/trealla-prolog/trealla/pull/951
-
-:- module(prologinator, [
-% Export list for prologinator module
-% This file contains the list of exported predicates
-
-    op(101, fy, '.'),
-    op(100, yfx, '.'),
-    action_validation/1,
-    action_validation_helper/1,
-    builtin_action/1,
-    command_validation/1,
-    context_validation/2,
-    ctx_actionstore/3,
-    ctx_set_actionstore/3,
-    ctx_attr_val/4,
-    ctx_set_attr_val/4,
-    ctx_attrs/3,
-    ctx_set_attrs/3,
-    ctx_cmds/3,
-    ctx_set_cmds/3,
-    ctx_spawnCmds/3,
-    ctx_set_spawnCmds/3,
-    ctx_forkCmds/3,
-    ctx_set_forkCmds/3,
-    ctx_events/3,
-    ctx_frame/3,
-    ctx_set_frame/3,
-    ctx_held/3,
-    ctx_input/3,
-    ctx_set_input/3,
-    ctx_nextid/3,
-    ctx_set_nextid_cmds/4,
-    ctx_set_nextid/3,
-    ctx_objs/3,
-    ctx_objs_attrs/4,
-    ctx_set_objs_attrs/4,
-    ctx_objs_cmds/4,
-    ctx_set_objs_cmds/4,
-    ctx_set_objs/3,
-    ctx_objs_nextid_cmds/5,
-    ctx_set_objs_nextid_cmds/5,
-    ctx_state/3,
-    ctx_set_state/3,
-    ctx_status/3,
-    ctx_status_cmds/4,
-    ctx_set_status_cmds/4,
-    ctx_set_status/3,
-    ctx_with_attrs/2,
-    ctx_with_frame_attrs/3,
-    ctx_with_frame_objs_input/5,
-    ctx_with_inputevents_inputheld/3,
-    ctx_with_objs/2,
-    ctx_with_objs_input/4,
-    detect_collisions/2,
-    empty_attr_store/1,
-    empty_ctx/1,
-    execute_action/5,
-    execute_action_impl/5,
-    execute_action_resolved/5,
-    execute_despawn/3,
-    execute_move_delta/9,
-    execute_move_to/9,
-    execute_fork/4,
-    game_status_validation/1,
-    is_list/1,
-    main/0,
-    obj_id/2,
-    obj_id_type/5,
-    obj_type/4,
-    object_validation/1,
-    object_validation_helper/1,
-    pos_validation/1,
-    resolve_action/5,
-    resolve_arg/5,
-    % Exporting the DCG wrappers (expanded arity)
-    resolve_path_strict/5,
-    resolve_path_to_attr/5,
-    % Exporting the non-DCG strict resolution (used by
-    % condition checker)
-    strict_resolve_path/4,
-    spawn_request_validation/1,
-    state_change_validation/1,
-    state_change_validation_helper/1,
-    state_validation/1,
-    state_validation_helper/1,
-    tick/2,
-    tick_action_streams/4,
-    tick_object/5,
-    user_action/2,
-    % Added for the new condition system:
-    check_condition/3,
-    resolve_path/4
-
-]).
-
-
 % 1. Global Imports (Import all libraries ONCE)
 % Centralized library imports
 % Imports all libraries used across the codebase
@@ -3954,9 +3855,7 @@ main :-
 
             (   catch(consult(InputFileAtom), _, fail),
                 catch(
-
-                    user:input_timeline(TimelineList),
-
+                    input_timeline(TimelineList),
                     _,
                     fail
                 )

@@ -1,12 +1,7 @@
 :- module(adv_accessors_bwd_test, []).
 
-:- use_module('../../build/prologinator').
-:- use_module('../../prolog/util/test_util').
-
-:- use_module(library(assoc), [
-    put_assoc/4
-]).
-:- use_module(library(lists), [member/2]).
+#include "./build/prologinator.pl"
+#include "./prolog/util/test_util.pl"
 
 % ==========================================================
 % Backward Tests for adv_accessors

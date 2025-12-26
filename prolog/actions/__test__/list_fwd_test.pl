@@ -1,7 +1,7 @@
 :- module(list_fwd_test, []).
 
-:- use_module('../../../build/prologinator').
-:- use_module('../../test_utils/test_action_sequence').
+#include "./build/prologinator.pl"
+#include "./prolog/test_utils/test_action_sequence.pl"
 
 test("list: blocks outer actions until inner finishes", (
     test_action_sequence(

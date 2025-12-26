@@ -21,30 +21,6 @@ is not in use.
 
 So I can see immediately if there is some action that is not implemented or added to the prologinator.pp file.
 
-# Don't have the stuff in `prologinator` namespace
-
-Yea, just have in in user namespace. Should be doable.
-
-Remove
-    exports.pl
-
-Remove prologinator module declaration from
-    prologinator.pp
-
-Remove all
-    prologinator:
-Maybe also remove all
-    user:
-
-Replace all
-    :- use_module('../../build/prologinator').
-    :- use_module('../test_utils/test_action_sequence').
-with
-    #include "../../build/prologinator"
-    #include "../test_utils/test_action_sequence"
-
-etc then I need to run gpp on the test file to preprocess it
-
 # Maybe change all my actions to use '' instead of ""
 
 Yea I am not sure but I ran into a problem with

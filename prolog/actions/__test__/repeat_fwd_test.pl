@@ -1,7 +1,7 @@
 :- module(repeat_fwd_test, []).
 
-:- use_module('../../../build/prologinator').
-:- use_module('../../test_utils/test_action_sequence').
+#include "./build/prologinator.pl"
+#include "./prolog/test_utils/test_action_sequence.pl"
 
 test("repeat: runs N times immediately if non-blocking", (
     test_action_sequence(

@@ -1,13 +1,6 @@
 :- module(engine_test, []).
 
-:- use_module('../build/prologinator').
-
-:- use_module(library(lists), [member/2, length/2]).
-:- use_module(library(assoc), [
-    empty_assoc/1,
-    put_assoc/4,
-    gen_assoc/3
-]).
+#include "./build/prologinator.pl"
 
 % ==========================================================
 % Tests for tick_object/5

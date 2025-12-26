@@ -1,11 +1,6 @@
 :- module(collisions_fwd_test, []).
 
-:- use_module('../build/prologinator').
-:- use_module(library(assoc), [
-    empty_assoc/1,
-    put_assoc/4
-]).
-:- use_module(library(lists), [length/2, member/2]).
+#include "./build/prologinator.pl"
 
 % ==========================================================
 % Forward Tests for Collision Detection

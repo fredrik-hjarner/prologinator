@@ -11,16 +11,6 @@
 % way then the number of lines of code they takes up can be
 % reduced substantially.
 
-:- module(test_action_sequence, [
-    test_action_sequence/4
-]).
-
-:- use_module('../../build/prologinator').
-
-:- use_module(library(assoc)).
-:- use_module(library(lists)).
-:- use_module(library(format)).
-
 % ==========================================================
 % 1. Setup / Fixture
 % ==========================================================

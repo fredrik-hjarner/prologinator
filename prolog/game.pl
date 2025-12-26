@@ -22,11 +22,7 @@ main :-
 
             (   catch(consult(InputFileAtom), _, fail),
                 catch(
-#ifdef TPL
                     input_timeline(TimelineList),
-#else
-                    user:input_timeline(TimelineList),
-#endif
                     _,
                     fail
                 )

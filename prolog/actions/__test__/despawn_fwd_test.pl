@@ -1,7 +1,7 @@
 :- module(despawn_fwd_test, []).
 
-:- use_module('../../../build/prologinator').
-:- use_module('../../test_utils/test_action_sequence').
+#include "./build/prologinator.pl"
+#include "./prolog/test_utils/test_action_sequence.pl"
 
 test("despawn: stops execution of remaining actions", (
     test_action_sequence(

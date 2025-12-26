@@ -1,7 +1,7 @@
 :- module(fork_fwd_test, []).
 
-:- use_module('../../../build/prologinator').
-:- use_module('../../test_utils/test_action_sequence').
+#include "./build/prologinator.pl"
+#include "./prolog/test_utils/test_action_sequence.pl"
 
 test("fork: executes new stream in same frame", (
     test_action_sequence(

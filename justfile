@@ -43,53 +43,57 @@ lint-all: build
     @echo "Linting files..."
     @echo "Linting prologinator.pl..."
     @just lint build/prologinator.pl
-    @echo "Linting engine_test.pl..."
-    @just lint prolog/engine_test.pl || exit 1
-    @echo "Linting types/adv_accessors_fwd_test.pl..."
-    @just lint prolog/types/adv_accessors_fwd_test.pl || exit 1
-    @echo "Linting types/adv_accessors_bwd_test.pl..."
-    @just lint prolog/types/adv_accessors_bwd_test.pl || exit 1
-    @echo "Linting types/validation_test.pl..."
-    @just lint prolog/types/validation_test.pl || exit 1
-    @echo "Linting custom_actions_test.pl..."
-    @just lint prolog/custom_actions_test.pl || exit 1
-    @echo "Linting collisions_fwd_test.pl..."
-    @just lint prolog/collisions_fwd_test.pl || exit 1
 
-    @echo "Linting actions/__test__/attr_if_fwd_test.pl..."
-    @just lint prolog/actions/__test__/attr_if_fwd_test.pl || exit 1
+    # Commented out these because tests now use gpp so
+    #     they would need to be processed by gpp first.
 
-    @echo "Linting execute_action_fwd_test.pl..."
-    @just lint prolog/execute_action_fwd_test.pl || exit 1
+    # @echo "Linting engine_test.pl..."
+    # @just lint prolog/engine_test.pl || exit 1
+    # @echo "Linting types/adv_accessors_fwd_test.pl..."
+    # @just lint prolog/types/adv_accessors_fwd_test.pl || exit 1
+    # @echo "Linting types/adv_accessors_bwd_test.pl..."
+    # @just lint prolog/types/adv_accessors_bwd_test.pl || exit 1
+    # @echo "Linting types/validation_test.pl..."
+    # @just lint prolog/types/validation_test.pl || exit 1
+    # @echo "Linting custom_actions_test.pl..."
+    # @just lint prolog/custom_actions_test.pl || exit 1
+    # @echo "Linting collisions_fwd_test.pl..."
+    # @just lint prolog/collisions_fwd_test.pl || exit 1
 
-    @echo "Linting actions/__test__/move_to_fwd_test.pl..."
-    @just lint prolog/actions/__test__/move_to_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/trigger_state_change_fwd_test.pl..."
-    @just lint prolog/actions/__test__/trigger_state_change_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/despawn_fwd_test.pl..."
-    @just lint prolog/actions/__test__/despawn_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/noop_fwd_test.pl..."
-    @just lint prolog/actions/__test__/noop_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/list_fwd_test.pl..."
-    @just lint prolog/actions/__test__/list_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/set_attr_fwd_test.pl..."
-    @just lint prolog/actions/__test__/set_attr_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/parallel_race_fwd_test.pl..."
-    @just lint prolog/actions/__test__/parallel_race_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/repeat_fwd_test.pl..."
-    @just lint prolog/actions/__test__/repeat_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/move_delta_fwd_test.pl..."
-    @just lint prolog/actions/__test__/move_delta_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/value_resolution_fwd_test.pl..."
-    @just lint prolog/actions/__test__/value_resolution_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/wait_key_down_fwd_test.pl..."
-    @just lint prolog/actions/__test__/wait_key_down_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/wait_key_up_fwd_test.pl..."
-    @just lint prolog/actions/__test__/wait_key_up_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/wait_key_held_fwd_test.pl..."
-    @just lint prolog/actions/__test__/wait_key_held_fwd_test.pl || exit 1
-    @echo "Linting actions/__test__/wait_until_fwd_test.pl..."
-    @just lint prolog/actions/__test__/wait_until_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/attr_if_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/attr_if_fwd_test.pl || exit 1
+
+    # @echo "Linting execute_action_fwd_test.pl..."
+    # @just lint prolog/execute_action_fwd_test.pl || exit 1
+
+    # @echo "Linting actions/__test__/move_to_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/move_to_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/trigger_state_change_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/trigger_state_change_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/despawn_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/despawn_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/noop_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/noop_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/list_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/list_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/set_attr_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/set_attr_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/parallel_race_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/parallel_race_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/repeat_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/repeat_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/move_delta_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/move_delta_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/value_resolution_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/value_resolution_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/wait_key_down_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/wait_key_down_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/wait_key_up_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/wait_key_up_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/wait_key_held_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/wait_key_held_fwd_test.pl || exit 1
+    # @echo "Linting actions/__test__/wait_until_fwd_test.pl..."
+    # @just lint prolog/actions/__test__/wait_until_fwd_test.pl || exit 1
     @echo "All files passed linting!"
 
 # lint the max length of files.

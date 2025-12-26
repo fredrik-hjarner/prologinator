@@ -1,6 +1,9 @@
 #!/usr/bin/env bun
 
 import { basename } from "path";
+import { tmpdir } from "os";
+import { join } from "path";
+import { unlink } from "fs/promises";
 
 let MODULE = process.argv[2];
 
@@ -18,18 +21,63 @@ if (MODULE.endsWith(".pl")) {
 const base = basename(MODULE);
 const TIMEOUT_SECONDS = 10;
 
-const prologCommand = `use_module('submodules/scryer-prolog/src/tests/test_framework'),
-use_module('./${MODULE}'),
-main(${base}),
-halt.`;
+// Temp file for gpp output
+const tmpFile = join(tmpdir(), `${base}.gpp.pl`);
 
-const proc = Bun.spawn(["scryer-prolog", "-g", prologCommand], {
-    stdout: "pipe",
-    stderr: "pipe"
-});
+// --------------------------------------------------
+// Run gpp preprocessing
+// --------------------------------------------------
+const gpp = Bun.spawn(
+    [
+        "gpp",
+        "-P",
+        "--warninglevel",
+        "0",
+        "-I",
+        ".",
+        `${MODULE}.pl`,
+        "-o",
+        tmpFile
+    ],
+    {
+        stdout: "pipe",
+        stderr: "pipe"
+    }
+);
+
+// Forward gpp stderr (warnings/errors)
+for await (const chunk of gpp.stderr) {
+    process.stderr.write(chunk);
+}
+
+const gppExitCode = await gpp.exited;
+
+if (gppExitCode !== 0) {
+    console.error("\n❌ Error: gpp preprocessing failed");
+    process.exit(1);
+}
+
+// --------------------------------------------------
+// Run Scryer-Prolog
+// --------------------------------------------------
+const prologCommand = `
+use_module('submodules/scryer-prolog/src/tests/test_framework'),
+use_module('${tmpFile}'),
+main(${base}),
+halt.
+`;
+
+const proc = Bun.spawn(
+    ["scryer-prolog", "-g", prologCommand],
+    {
+        stdout: "pipe",
+        stderr: "pipe"
+    }
+);
 
 let output = "";
 
+// Timeout guard
 const timeoutId = setTimeout(() => {
     proc.kill();
     process.stdout.write(output);
@@ -37,12 +85,14 @@ const timeoutId = setTimeout(() => {
     process.exit(1);
 }, TIMEOUT_SECONDS * 1000);
 
+// Capture stdout
 for await (const chunk of proc.stdout) {
     const text = new TextDecoder().decode(chunk);
     output += text;
     process.stdout.write(chunk);
 }
 
+// Capture stderr
 for await (const chunk of proc.stderr) {
     const text = new TextDecoder().decode(chunk);
     output += text;
@@ -52,8 +102,11 @@ for await (const chunk of proc.stderr) {
 const exitCode = await proc.exited;
 clearTimeout(timeoutId);
 
+// --------------------------------------------------
+// Result checks
+// --------------------------------------------------
 if (output.includes("Failed")) {
-    console.error(`\nERROR: test failed`);
+    console.error(`\n❌ ERROR: test failed`);
     process.exit(1);
 }
 
@@ -65,5 +118,14 @@ if (output.includes(" causes: ")) {
 if (exitCode !== 0) {
     console.error(`\n❌ Test process exited with code ${exitCode}`);
     process.exit(1);
+}
+
+// --------------------------------------------------
+// Cleanup
+// --------------------------------------------------
+try {
+    await unlink(tmpFile);
+} catch {
+    // ignore cleanup errors
 }
 
