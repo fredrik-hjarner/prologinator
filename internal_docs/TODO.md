@@ -1,3 +1,7 @@
+# Remove all Scryer stuff, only use Trealla
+
+- [ ] Run tests with Trealla.
+
 # Implement an until_changed action
 
 I think that could be used a performance optimization, for

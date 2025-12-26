@@ -5,6 +5,8 @@
 % 2025-12-20 01:01:    300 frames in 33s
 % 2025-12-20 05:39:    300 frames in 15.5s
 % 2025-12-21 02:17:    300 frames in 14s
+% 2025-12-26 03:59:    300 frames in 21.5s (switched to
+%                      Trealla which seems a bit slower)
 
 :- use_module('../build/prologinator.pl').
 :- use_module(library(assoc)).

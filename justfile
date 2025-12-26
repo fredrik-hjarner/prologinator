@@ -2,8 +2,8 @@ default:
 	@just --list
 
 # Simple performance test
-perf: build
-    time scryer-prolog prolog/perf.pl -g "main_perf, halt"; \
+perf: build-tpl
+    time tpl -l prolog/perf.pl -g "main_perf, halt"; \
 
 # Run the monolithic build with Scryer Prolog
 # Usage: just game <game_name> (e.g., just game default)
