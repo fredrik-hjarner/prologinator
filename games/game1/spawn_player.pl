@@ -1,6 +1,18 @@
 [
     log("spawn_player.pl loaded successfully!"),
 
+    define_action(despawn_shot_behaviour, 
+        fork([
+            loop([
+                wait(1),
+                attr_if(.y < 0,
+                    [despawn],
+                    []
+                )
+            ])
+        ])
+    ),
+
     define_action(spawn_player_child(X, Y),
         spawn([
             set_attr(.type, player),
@@ -10,6 +22,22 @@
                 copy_attr(.parent_id.y, .y),
                 move_delta(0, X, Y),
                 wait(1)
+            ])
+        ])
+    ),
+
+    define_action(spawn_player_shot(DirX, DirY),
+        spawn([
+            set_attr(.type, proj),
+            copy_attr(.parent_id.x, .x),
+            copy_attr(.parent_id.y, .y),
+            set_attr(.displayChar, 42),  % '*'
+            despawn_shot_behaviour,
+            fork([
+                loop([
+                    wait(1),
+                    move_delta(0, DirX, DirY)
+                ])
             ])
         ])
     ),
@@ -38,17 +66,10 @@
 
             fork([
                 loop([
-                    wait(2),
-                    spawn([
-                        set_attr(.type, proj),
-                        copy_attr(.parent_id.x, .x),
-                        copy_attr(.parent_id.y, .y),
-                        set_attr(.displayChar, 42),  % '*'
-                        repeat(31, [
-                            move_delta(1, 0, -1)
-                        ]),
-                        despawn
-                    ])
+                    wait(3),
+                    spawn_player_shot(-1, -2),
+                    spawn_player_shot(0, -2),
+                    spawn_player_shot(1, -2)
                 ])
             ]),
             parallel_all([
@@ -56,8 +77,8 @@
                 loop([
                     wait_key_held(39),
                     move_delta(0, 1, 0),
-                    attr_if(.x > 30,
-                        [set_attr(.x, 30)],
+                    attr_if(.x > 62,
+                        [set_attr(.x, 62)],
                         []
                     ),
                     wait(1)
@@ -86,8 +107,8 @@
                 loop([
                     wait_key_held(40),
                     move_delta(0, 0, 1),
-                    attr_if(.y > 29,
-                        [set_attr(.y, 29)],
+                    attr_if(.y > 61,
+                        [set_attr(.y, 61)],
                         []
                     ),
                     wait(1)
