@@ -70,7 +70,7 @@ tick_action_streams_loop(
 tick_action_streams_loop(
     obj_id(ObjId),
     % We store what we have left to process in Left.
-    left([StreamToProcess|LeftRest]),
+    left([StreamToProcess|StreamToProcessRest]),
     % We build the new Action Streams List part by part and
     % store in Accum
     accum_old(AccumOld),
@@ -82,9 +82,15 @@ tick_action_streams_loop(
         obj_id(ObjId),
         result(TickStatus, actions_new(StreamsAfterTick))
     ),
+    % So at this point we run one stream until a stop state
+    %     and some might have added fork_cmd:s (added in
+    %     reverse with cons).
     % Check for fork commands and append to left (once,
     % before branching)
-    collect_and_append_forks(LeftRest, LeftWithForks),
+    collect_and_append_forks(
+        StreamToProcessRest,
+        StreamToProcessRestWithForkAcns
+    ),
     ({TickStatus = despawned} -> 
         ({AccumNew = []}, {Result = despawned})
     ;
@@ -93,7 +99,7 @@ tick_action_streams_loop(
             tick_action_streams_loop(
                 obj_id(ObjId),
                 % head processed. process rest (with forks).
-                left(LeftWithForks),
+                left(StreamToProcessRestWithForkAcns),
                 % completed, so don't need to add any
                 % resulting actions because there were none.
                 accum_old(AccumOld),
@@ -111,7 +117,7 @@ tick_action_streams_loop(
                     obj_id(ObjId),
                     % head processed. process rest (with
                     % forks).
-                    left(LeftWithForks),
+                    left(StreamToProcessRestWithForkAcns),
                     accum_old(Accum),
                     accum_new(AccumNew),
                     result(Result)
@@ -126,27 +132,52 @@ tick_action_streams_loop(
 
 % Collect fork commands and append their actions to the left
 % list. Removes processed commands from context.
-collect_and_append_forks(LeftRest, LeftWithForks) -->
+collect_and_append_forks(
+    StreamToProcessRest, % input
+    StreamToProcessRestWithForkAcns % output
+) -->
     ctx_forkCmds(ForkCmds),
     ( {ForkCmds = []} ->
         % No fork commands, nothing to append
-        {LeftWithForks = LeftRest}
+        {StreamToProcessRestWithForkAcns
+          = StreamToProcessRest}
     ;
         % Extract actions from all fork commands (all are
         % for this object)
-        {extract_actions_from_fork_cmds(ForkCmds,
-                                         NewStreams)},
+        {extract_actions_from_fork_cmds(
+            ForkCmds, NewStreams
+        )},
         % Append new streams to left
-        {append(LeftRest, NewStreams, LeftWithForks)},
+        {append(
+            StreamToProcessRest, % this was/is the input
+            NewStreams, % new streams. from the fork_cmd:s.
+            StreamToProcessRestWithForkAcns % output.
+        )},
         % Clear fork commands (all processed)
         ctx_set_forkCmds([])
     ).
 
-    % Extract actions from fork commands
-extract_actions_from_fork_cmds([], []).
-extract_actions_from_fork_cmds(
-    [fork_cmd(obj_id(_), actions(Actions))|Rest],
-    [Actions|RestActions]
+% Extract actions from fork commands
+% Recurses.
+% takes the fork_cmd:s (which are stored in revere) and
+%     simply returns action streams.
+% Simply "cons" them together.
+%     So reversed twice i.e. put back in correct order.
+% Wrapper
+extract_actions_from_fork_cmds(ForkCmds, ActionStreams) :-
+    extract_actions_acc(ForkCmds, [], ActionStreams).
+
+% Base case: Assign Accumulator to Result
+extract_actions_acc([], Acc, Acc).
+
+% Recursive: Take Head, put it at front of Accumulator
+% (Reversing logic)
+extract_actions_acc(
+    [fork_cmd(obj_id(_), actions(Actions)) | ForkCmdsRest], 
+    Acc, 
+    Result
 ) :-
-    extract_actions_from_fork_cmds(Rest, RestActions).
+    extract_actions_acc(
+        ForkCmdsRest, [Actions|Acc], Result
+    ).
 

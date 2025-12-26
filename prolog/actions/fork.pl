@@ -5,12 +5,15 @@ execute_action_impl(
 ) -->
     execute_fork(ID, Actions).
 
+% NOTE: Important to notice that fork_cmd:s are added in
+%       reverse for performance reasons.
 execute_fork(ObjID, Actions) -->
     % Add fork command instead of directly modifying
     % actionstore
     ctx_forkCmds(ForkCmdsOld),
-    {append(ForkCmdsOld,
-            [fork_cmd(obj_id(ObjID), actions(Actions))],
-            ForkCmdsNew)},
+    {ForkCmdsNew = [
+        fork_cmd(obj_id(ObjID), actions(Actions))
+        | ForkCmdsOld
+    ]},
     ctx_set_forkCmds(ForkCmdsNew).
 
