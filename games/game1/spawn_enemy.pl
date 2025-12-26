@@ -1,7 +1,7 @@
 [
     log("spawn_enemy.pl loaded successfully!"),
 
-    define_action(spawn_child(X, Y),
+    define_action(spawn_enemy_child(X, Y),
         spawn([
             set_attr(.type, enemy),
             set_attr(.displayChar, 35),  % '#'
@@ -30,7 +30,7 @@
         ])
     ),
     
-    log("spawn_child custom action was defined"),
+    log("spawn_enemy_child custom action was defined"),
 
     define_action(spawn_enemy(X, Y),
         spawn([
@@ -47,27 +47,27 @@
             %   #
 
             % row 1
-            spawn_child(0, -2),
+            spawn_enemy_child(0, -2),
 
             % row 2
-            spawn_child(-1, -1),
-            spawn_child(0, -1),
-            spawn_child(1, -1),
+            spawn_enemy_child(-1, -1),
+            spawn_enemy_child(0, -1),
+            spawn_enemy_child(1, -1),
 
             % row 3
-            spawn_child(-2, 0),
-            spawn_child(-1, 0),
-            % spawn_child(0, 0),
-            spawn_child(1, 0),
-            spawn_child(2, 0),
+            spawn_enemy_child(-2, 0),
+            spawn_enemy_child(-1, 0),
+            % spawn_enemy_child(0, 0),
+            spawn_enemy_child(1, 0),
+            spawn_enemy_child(2, 0),
 
             % row 4
-            spawn_child(-1, 1),
-            spawn_child(0, 1),
-            spawn_child(1, 1),
+            spawn_enemy_child(-1, 1),
+            spawn_enemy_child(0, 1),
+            spawn_enemy_child(1, 1),
 
             % row 5
-            spawn_child(0, 2),
+            spawn_enemy_child(0, 2),
 
             fork([
                 wait_until(.hp < 1),

@@ -1,6 +1,19 @@
 [
     log("spawn_player.pl loaded successfully!"),
 
+    define_action(spawn_player_child(X, Y),
+        spawn([
+            set_attr(.type, player),
+            set_attr(.displayChar, 35),  % '#'
+            loop([
+                copy_attr(.parent_id.x, .x),
+                copy_attr(.parent_id.y, .y),
+                move_delta(0, X, Y),
+                wait(1)
+            ])
+        ])
+    ),
+
     define_action(spawn_player,
         spawn([
             log("log at start of spawn_player"),
@@ -10,6 +23,19 @@
             log("Player spawned!"),
             set_attr(.displayChar, 64),  % '@'
             log("displayChar was set to 64"),
+
+            %   #
+            %  ###
+            %  ###
+
+            spawn_player_child(-1, 1),
+            spawn_player_child(0, 1),
+            spawn_player_child(1, 1),
+
+            spawn_player_child(-1, 2),
+            spawn_player_child(0, 2),
+            spawn_player_child(1, 2),
+
             fork([
                 loop([
                     wait(2),
@@ -30,8 +56,8 @@
                 loop([
                     wait_key_held(39),
                     move_delta(0, 1, 0),
-                    attr_if(.x > 31,
-                        [set_attr(.x, 31)],
+                    attr_if(.x > 30,
+                        [set_attr(.x, 30)],
                         []
                     ),
                     wait(1)
@@ -40,8 +66,8 @@
                 loop([
                     wait_key_held(37),
                     move_delta(0, -1, 0),
-                    attr_if(.x < 0,
-                        [set_attr(.x, 0)],
+                    attr_if(.x < 1,
+                        [set_attr(.x, 1)],
                         []
                     ),
                     wait(1)
@@ -60,8 +86,8 @@
                 loop([
                     wait_key_held(40),
                     move_delta(0, 0, 1),
-                    attr_if(.y > 31,
-                        [set_attr(.y, 31)],
+                    attr_if(.y > 29,
+                        [set_attr(.y, 29)],
                         []
                     ),
                     wait(1)
