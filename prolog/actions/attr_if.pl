@@ -47,10 +47,9 @@ execute_attr_if(
     Rest,
     result(Status, actions_new(ActionsOut))
 ) -->
-    ctx_get(Ctx),
     % TODO: Check condition should be made to work with dcgs
     %       by taking two Ctxs as last 2 args.
-    (   {check_condition(Ctx, ObjID, Condition)}
+    (   check_condition(ObjID, Condition)
     ->
         % Condition succeeded: execute ThenActions
         tick_object(

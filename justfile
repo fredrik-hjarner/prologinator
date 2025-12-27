@@ -117,6 +117,7 @@ ci: build
     just lint-len
     just lint-all
     just test-all
+    just tokens > tokens.txt
 
 aider:
     # aider --no-git --no-gitignore
@@ -144,3 +145,8 @@ build-tpl:
 	@mkdir -p build
 	@gpp -DTPL -P --warninglevel 0 scripts/prologinator.pp -o build/prologinator.pl
 	@echo "Built: build/prologinator.pl"
+
+# Count the tokens in a file
+tokens FILE="./build/prologinator.pl":
+    @just build > /dev/null 2>&1
+    @bun scripts/count-tokens.ts {{FILE}} | tee tokens.txt

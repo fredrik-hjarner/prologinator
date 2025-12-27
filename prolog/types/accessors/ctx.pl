@@ -40,7 +40,10 @@
 % ----------------------------------------------------------
 
 % getter ctx_get/3 for dcg use to get the whole context
-ctx_get(Ctx, Ctx, Ctx).
+% NOTE: If ctx_get is used it's usually an anti-pattern,
+%       just make the related functio with with dcgs instead
+%       by for example adding Ctx:es as last two args.
+% ctx_get(Ctx, Ctx, Ctx).
 
 % getter ctx_frame/3 for dcg use
 ctx_frame(F, Ctx, Ctx) :-

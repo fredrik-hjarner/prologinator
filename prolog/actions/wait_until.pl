@@ -23,9 +23,8 @@ execute_action_impl(
 execute_wait_until(
     ID, Condition, Rest, Status, ActionsOut
 ) -->
-    ctx_get(Ctx),
     % Try to check condition
-    ( {check_condition(Ctx, ID, Condition)} ->
+    ( check_condition(ID, Condition) ->
         % Condition satisfied - proceed
         {ActionsOut = Rest, Status = completed}
     ;

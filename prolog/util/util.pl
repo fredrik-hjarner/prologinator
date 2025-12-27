@@ -25,17 +25,6 @@ partition(Pred, [X|Xs], Yes, No) :-
     ).
 
 % ==========================================================
-% Flatten helper
-% ==========================================================
-% flatten(+ListOfLists, -FlatList)
-% Note: flattening is shallow!
-% Flattens a list of lists into a single list
-% This is an alias for append/2 from library(lists)
-
-flatten(ListOfLists, FlatList) :-
-    append(ListOfLists, FlatList).
-
-% ==========================================================
 % Select Many helper
 % ==========================================================
 % select_many(+Patterns, +List, -Remaining)

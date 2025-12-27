@@ -21,34 +21,34 @@
 % Resolves a path (attribute reference or literal) to its
 % value.
 
-resolve_path(Ctx, ObjID, Path, Value) :-
+resolve_path(ObjID, Path, Value) -->
     % Strip . prefix if present (syntactic sugar)
-    ( Path = .(InnerPath) ->
-        TruePath = InnerPath
+    ( {Path = .(InnerPath)} ->
+        {TruePath = InnerPath}
     ;
-        TruePath = Path
+        {TruePath = Path}
     ),
 
     (   % Case 1: Compound path using dot functor
-        TruePath = Head.Rest
+        {TruePath = Head.Rest}
     ->
-        resolve_path(Ctx, ObjID, Head, NextID),
+        resolve_path(ObjID, Head, NextID),
         % Then resolve Rest starting from that object.
         % Rest must resolve to the final attribute Key/Value
-        resolve_path(Ctx, NextID, Rest, Value)
+        resolve_path(NextID, Rest, Value)
 
     ;   % Case 2: Simple atom (Basecase: final attribute
         % Key)
-        atom(TruePath)
+        {atom(TruePath)}
     ->
         % MUST find an attribute. If ctx_attr_val fails,
         % the predicate fails (crash).
-        ctx_attr_val(ObjID/TruePath, Value, Ctx, Ctx)
+        ctx_attr_val(ObjID/TruePath, Value)
 
     ;  % Case 3: Numbers, variables, compounds (that aren't
        % dot):
        % pass through as-is (not attribute references)
-        Value = TruePath
+        {Value = TruePath}
     ).
 
 
@@ -59,32 +59,32 @@ resolve_path(Ctx, ObjID, Path, Value) :-
 % path doesn't exist. No fallback to literals.
 
 % 1. Handle . prefix (strip it and recurse)
-strict_resolve_path(Ctx, ObjID, .(Path), Value) :-
+strict_resolve_path(ObjID, .(Path), Value) -->
     !,
-    strict_resolve_path(Ctx, ObjID, Path, Value).
+    strict_resolve_path(ObjID, Path, Value).
 
 % 2. Compound path using dot functor (recursive step)
 strict_resolve_path(
-    Ctx, ObjID, FirstAttr.RestPath, Value
-) :-
+    ObjID, FirstAttr.RestPath, Value
+) -->
     !,
     % First resolve Head to get the next object ID
-    strict_resolve_path(Ctx, ObjID, FirstAttr, NextID),
+    strict_resolve_path(ObjID, FirstAttr, NextID),
     % Then resolve Rest starting from that object
-    strict_resolve_path(Ctx, NextID, RestPath, Value).
+    strict_resolve_path(NextID, RestPath, Value).
 
 % 3. Simple atom (base case for navigation, MUST exist)
-strict_resolve_path(Ctx, ObjID, Path, Value) :-
-    atom(Path),
+strict_resolve_path(ObjID, Path, Value) -->
+    {atom(Path)},
     !,
     % Fails if attribute missing
-    ctx_attr_val(ObjID/Path, Value, Ctx, Ctx).
+    ctx_attr_val(ObjID/Path, Value).
 
 % 4. Pass through (Numbers/Variables/Non-path compounds)
 % This must be the last clause. It handles literals that
 % were passed in (e.g., numbers, unbound variables, or
 % complex terms that aren't paths).
-strict_resolve_path(_Ctx, _ObjID, Path, Path).
+strict_resolve_path(_ObjID, Path, Path) --> [].
 
 
 % ==========================================================
@@ -95,8 +95,7 @@ strict_resolve_path(_Ctx, _ObjID, Path, Path).
 % resolve_path_strict(+ObjID, +Path, -Value) -->
 % Uses strict_resolve_path/4 internally
 resolve_path_strict(ObjID, Path, Value) -->
-    ctx_get(Ctx),
-    {strict_resolve_path(Ctx, ObjID, Path, Value)}.
+    strict_resolve_path(ObjID, Path, Value).
 
 % resolve_path_to_attr(+ObjID, +Path, -Pair) -->
 % Resolves the path down to the final object ID and

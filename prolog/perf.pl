@@ -91,7 +91,7 @@ main_perf :-
 % Run N frames (200 total), then return final context
 
 run_frames_perf(Ctx, Timeline, Frame, FinalCtx) :-
-    Frame < 4000,
+    Frame < 4500,
     !,
     Frame1 is Frame + 1,
     
