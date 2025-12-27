@@ -3782,12 +3782,35 @@ update_object_in_context(TargetID, NewList) -->
 
 % replace_by_id(+CurrentList, +TargetID, +ReplacementList,
 % -NewList)
-replace_by_id([], _, _, []).
-replace_by_id([Obj|Rest], TargetID, Replacement, Result) :-
+replace_by_id(
+    [], % Objects
+    _, % TargetID
+    _, % Replacement
+    [] % NewObjects
+).
+replace_by_id(
+    [Obj|Rest],
+    TargetID,
+    Replacement,
+    Result
+) :-
     obj_id(Obj, ID),
     ( ID = TargetID ->
-        append(Replacement, Rest, Result)
+        % MATCH FOUND: Determine operation based on
+        % Replacement list
+        ( Replacement = [] ->
+            % CASE 1: Deletion
+            % The result is simply the rest of the list.
+            Result = Rest
+        ;
+            % CASE 2: Update (Optimization: Assume 1 item)
+            % The result is the new object attached to the
+            % rest.
+            Replacement = [NewObj],
+            Result = [NewObj|Rest]
+        )
     ;
+        % NO MATCH: Keep searching
         Result = [Obj|NewRest],
         replace_by_id(Rest, TargetID, Replacement, NewRest)
     ).
