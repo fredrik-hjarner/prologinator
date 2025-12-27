@@ -5,6 +5,8 @@ execute_action_impl(
 ) -->
     execute_spawn(MyID, Actions).
 
+% NOTE: Important to notice that spawn_cmd:s are added in
+%       reverse for performance reasons.
 execute_spawn(ParentID, Actions) -->
     % Build actions list with parent_id automatically added
     {SpawnActions = [
@@ -14,9 +16,10 @@ execute_spawn(ParentID, Actions) -->
     % Add spawn command instead of directly modifying
     % actionstore
     ctx_spawnCmds(SpawnCmdsOld),
-    {append(SpawnCmdsOld,
-            [spawn_cmd(actions(SpawnActions))],
-            SpawnCmdsNew)},
+    {SpawnCmdsNew = [
+        spawn_cmd(actions(SpawnActions))
+        | SpawnCmdsOld
+    ]},
     ctx_set_spawnCmds(SpawnCmdsNew).
 
 

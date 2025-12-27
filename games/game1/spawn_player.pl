@@ -13,7 +13,7 @@
                     [despawn],
                     []
                 ),
-                attr_if(.x > 61,
+                attr_if(.x > 63,
                     [despawn],
                     []
                 )

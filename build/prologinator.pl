@@ -2234,6 +2234,8 @@ execute_action_impl(
 ) -->
     execute_spawn(MyID, Actions).
 
+% NOTE: Important to notice that spawn_cmd:s are added in
+%       reverse for performance reasons.
 execute_spawn(ParentID, Actions) -->
     % Build actions list with parent_id automatically added
     {SpawnActions = [
@@ -2243,9 +2245,10 @@ execute_spawn(ParentID, Actions) -->
     % Add spawn command instead of directly modifying
     % actionstore
     ctx_spawnCmds(SpawnCmdsOld),
-    {append(SpawnCmdsOld,
-            [spawn_cmd(actions(SpawnActions))],
-            SpawnCmdsNew)},
+    {SpawnCmdsNew = [
+        spawn_cmd(actions(SpawnActions))
+        | SpawnCmdsOld
+    ]},
     ctx_set_spawnCmds(SpawnCmdsNew).
 
 
@@ -3756,8 +3759,15 @@ tick_objects_loop([TargetObj|ObjsQueue]) -->
         % actionstore
         []
     ),
+    % So at this point we have processed all action streams
+    %     of one specific object... and in the process
+    %     the object might have spawned new objects...
+    %     So we need to add them!
     % Process spawn commands ASAP so spawned objects
     % can execute in the same frame
+    % So assuming `process_spawn_commands` works in a
+    %     reasonable way it should simply add the new
+    %     objects to the end.
     process_spawn_commands(ObjsQueue, ObjsQueueNew),
     % Recurse using the current TargetID as the new
     % floor
@@ -3786,22 +3796,25 @@ replace_by_id([Obj|Rest], TargetID, Replacement, Result) :-
 % Spawn Command Processing
 % ==========================================================
 
-% Process all spawn commands, creating objects and adding
-% them to actionstore. Processes commands ASAP so spawned
-% objects can execute in the same frame.
+% `process_spawn_commands` takes the ObjsQueue as input
+%     which is the queue (list) of objects left to process
+%     and it look through the spawn_cmd:s and add new
+%     spawned object to the end of the end the the queue so
+%     (TODO: Well actually it adds them to the front!)
+%     that the game loop will process them (this frame).
+% `process_spawn_commands` also adds the objects to the ctx.
+% `process_spawn_commands` also adds to the actionstore.
 process_spawn_commands(ObjsQueue, ObjsQueueNew) -->
-    ctx_spawnCmds(SpawnCmds),
+    % At this point SpawnCmds are in reverse order!
+    ctx_spawnCmds(SpawnCmds), 
     % Process all spawn commands
     process_spawn_commands_loop(
-        SpawnCmds,
+        spawn_cmds(SpawnCmds),
         ObjsQueue,
         ObjsQueueNew,
-        [],             % SpawnedObjsRev starts empty
-        SpawnedObjsRev  % collected spawns in reverse order
+        [],           % SpawnedObjs starts empty
+        SpawnedObjs   % collected spawns in correct order
     ),
-    % reverse the spawned objects to get them in the
-    % correct order
-    {reverse(SpawnedObjsRev, SpawnedObjs)},
     % add the spawned objects to the context
     ctx_objs(ObjsOld),
     {append(ObjsOld, SpawnedObjs, ObjsNew)},
@@ -3812,14 +3825,20 @@ process_spawn_commands(ObjsQueue, ObjsQueueNew) -->
 % Process each spawn command
 % base case: no spawn commands left to process
 process_spawn_commands_loop(
-    [], ObjsQueue, ObjsQueue, SpawnedObjsRev, SpawnedObjsRev
+    spawn_cmds([]),
+    ObjsQueue,
+    ObjsQueue,
+    SpawnedObjs,
+    SpawnedObjs
 ) --> !.
 process_spawn_commands_loop(
-    [spawn_cmd(actions(Actions))|CmdsRest],
+    spawn_cmds([
+        spawn_cmd(actions(SpawnObjActions))|CmdsRest
+    ]),
     ObjsQueue,
     ObjsQueueNew,
-    SpawnedObjsRevOld,
-    SpawnedObjsRevNew
+    SpawnedObjsOld,
+    SpawnedObjsNew
 ) -->
     % Generate new ID
     ctx_nextid(NewID),
@@ -3828,19 +3847,23 @@ process_spawn_commands_loop(
     % Create object
     {NewObj = object(id(NewID))},
 
-    % Add object to the left to precess queue
+    % Add object to the left to process queue
     % so yea we both add it to the the left to process queue
     % and to the context.
-    % NOTE: prepend because it's faster but this causes
-    % newly spawned objects to be processed first, but I
-    % don't think that's an issue, but it's worth knowing.
-    {ObjsQueueAfterAppend = [NewObj | ObjsQueue]},
+    % TODO: prepend because it's faster but this causes
+    % newly spawned objects to be processed first, which
+    % might not be ideal since the user might rely on stuff
+    % happening in a strict order.
+    {ObjsQueueAfterPrepend = [NewObj | ObjsQueue]},
 
     % "collect" the object. we will add it to context but
     % we don't do it one per one becuase that's slow, we
     % collect them and then add them in bulk.
-    % prepend because faster, reverse later.
-    {SpawnedObjAfterPrepend = [NewObj | SpawnedObjsRevOld]},
+    % Since the spawn_cmd:s were added in reverse originally
+    %     prepending here causes a double reverse i.e. order
+    %     of objects in `SpawnedObjsAfterPrepend` we be
+    %     in correct/normal order.
+    {SpawnedObjsAfterPrepend = [NewObj | SpawnedObjsOld]},
 
     % Add actions to actionstore (wrap in list for single
     % stream)
@@ -3850,17 +3873,17 @@ process_spawn_commands_loop(
     {put_assoc(
         NewID,
         ActionStore,
-        [Actions],
+        [SpawnObjActions],
         NewActionStore
     )},
     ctx_set_actionstore(NewActionStore),
     % Process remaining commands
     process_spawn_commands_loop(
-        CmdsRest,
-        ObjsQueueAfterAppend,
+        spawn_cmds(CmdsRest),
+        ObjsQueueAfterPrepend,
         ObjsQueueNew,
-        SpawnedObjAfterPrepend,
-        SpawnedObjsRevNew
+        SpawnedObjsAfterPrepend,
+        SpawnedObjsNew
     ).
 
 
