@@ -117,14 +117,6 @@ resolve_action(
     [].
 
 resolve_action(
-    _MyID,
-    noop,
-    noop
-) -->
-    !,
-    [].
-
-resolve_action(
     MyID,
     move_delta(Frames, DX, DY),
     move_delta(ResolvedFrames, ResolvedDX, ResolvedDY)

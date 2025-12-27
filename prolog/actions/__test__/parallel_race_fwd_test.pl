@@ -18,7 +18,7 @@ test("parallel_race: stops on child completion", (
     ActionsIn = [
         parallel_race([
             wait(5),
-            noop,
+            wait(0),
             wait(10)
         ]),
         wait(3)

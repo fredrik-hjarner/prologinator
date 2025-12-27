@@ -338,12 +338,12 @@ test("action_validation: set_attr invalid arity fails", (
     expect_exception(action_validation(Action))
 )).
 
-test("action_validation: noop passes", (
-    action_validation(noop)
+test("action_validation: wait(0) passes", (
+    action_validation(wait(0))
 )).
 
-test("action_validation: noop invalid arity fails", (
-    Action = noop(something),
+test("action_validation: wait(0) invalid arity fails", (
+    Action = wait(0, something),
     expect_exception(action_validation(Action))
 )).
 
@@ -358,7 +358,7 @@ test("action_validation: list invalid arity fails", (
 
 test("action_validation: parallel_race passes", (
     action_validation(
-        parallel_race([wait(1), noop])
+        parallel_race([wait(1), wait(0)])
     )
 )).
 

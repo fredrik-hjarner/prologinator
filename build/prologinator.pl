@@ -833,9 +833,6 @@ action_validation_helper(Term) :-
         ; Term = despawn ->
             % Structure matches, no content to validate
             true
-        ; Term = noop ->
-            % Structure matches, no content to validate
-            true
         ; Term = spawn(Acts) ->
             % Structure matches, validate content
             length(Acts, _)
@@ -1479,14 +1476,6 @@ resolve_action(
     [].
 
 resolve_action(
-    _MyID,
-    noop,
-    noop
-) -->
-    !,
-    [].
-
-resolve_action(
     MyID,
     move_delta(Frames, DX, DY),
     move_delta(ResolvedFrames, ResolvedDX, ResolvedDY)
@@ -1721,7 +1710,6 @@ builtin_action(loop(_, _)). % loop continuation
 builtin_action(list(_)).
 builtin_action(repeat(_, _)).
 builtin_action(repeat(_, _, _)). % repeat continuation
-builtin_action(noop).
 builtin_action(parallel_all(_)).
 builtin_action(parallel_race(_)).
 builtin_action(parallel_all_running(_)).
@@ -2129,15 +2117,6 @@ execute_despawn(ID) -->
     ctx_set_attrs(NewAttrStore).
 
 
-
-execute_action_impl(
-    actions_old([noop|Rest]),
-    obj_id(_ID),
-    result(completed, actions_new(Rest))
-) -->
-    execute_noop.
-
-execute_noop --> [].
 
 % Defines a custom action macro at runtime. Stores the
 % Signature->Body mapping in user_action/2. When Signature

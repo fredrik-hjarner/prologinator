@@ -47,7 +47,6 @@ file:
   # - prolog/actions/loop.pl
   # - prolog/actions/move_delta.pl
   # - prolog/actions/move_to.pl
-  # - prolog/actions/noop.pl
   # - prolog/actions/parallel_all.pl
   # - prolog/actions/parallel_race.pl
   # - prolog/actions/repeat.pl

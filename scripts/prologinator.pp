@@ -44,7 +44,6 @@
 #include "../prolog/actions/move_to.pl"
 #include "../prolog/actions/move_delta.pl"
 #include "../prolog/actions/despawn.pl"
-#include "../prolog/actions/noop.pl"
 #include "../prolog/actions/define_action.pl"
 #include "../prolog/actions/set_attr.pl"
 #include "../prolog/actions/copy_attr.pl"

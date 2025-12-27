@@ -476,9 +476,6 @@ action_validation_helper(Term) :-
         ; Term = despawn ->
             % Structure matches, no content to validate
             true
-        ; Term = noop ->
-            % Structure matches, no content to validate
-            true
         ; Term = spawn(Acts) ->
             % Structure matches, validate content
             length(Acts, _)

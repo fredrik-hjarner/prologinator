@@ -11,7 +11,7 @@ test("wait_key_held: completes when key is held", (
     % --------------------------------------------------
     % Arrange
     % --------------------------------------------------
-    ActionsIn = [wait_key_held(39), noop],
+    ActionsIn = [wait_key_held(39), wait(0)],
     % Create context with key 39 held
     ctx_with_inputevents_inputheld([], [39], Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
@@ -29,8 +29,8 @@ test("wait_key_held: completes when key is held", (
     % Assert
     % --------------------------------------------------
     expect(Status = completed, 'Status != completed'),
-    expect(ActionsOut = [noop],
-        'Actions != [noop]'),
+    expect(ActionsOut = [wait(0)],
+        'Actions != [wait(0)]'),
     expect(ctx_spawnCmds([], CtxNew, CtxNew),
            'SpawnCmds != []')
 )).
@@ -39,7 +39,7 @@ test("wait_key_held: yields when key not held", (
     % --------------------------------------------------
     % Arrange
     % --------------------------------------------------
-    ActionsIn = [wait_key_held(39), noop],
+    ActionsIn = [wait_key_held(39), wait(0)],
     % Create context with no keys held
     empty_ctx(Ctx0),
     ctx_set_attr_val(1/type, static, Ctx0, Ctx),
@@ -57,7 +57,7 @@ test("wait_key_held: yields when key not held", (
     % Assert
     % --------------------------------------------------
     expect(Status = yielded, 'Status != yielded'),
-    expect(ActionsOut = [wait_key_held(39), noop],
+    expect(ActionsOut = [wait_key_held(39), wait(0)],
         'Action not preserved'),
     expect(ctx_spawnCmds([], CtxNew, CtxNew),
            'SpawnCmds != []')

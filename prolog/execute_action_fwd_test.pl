@@ -250,14 +250,14 @@ override lost", (
 )).
 
 % ==========================================================
-% Tests: noop
+% Tests: wait(0)
 % ==========================================================
 
-test("noop: removes self from action queue", (
+test("wait(0): removes self from action queue", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ActionsIn = [noop, wait(1)],
+    ActionsIn = [wait(0), wait(1)],
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
@@ -409,7 +409,7 @@ test("parallel_race: stops on child completion", (
     % ------------------------------------------------------
     obj_id(Obj, ID),
     ActionsIn = [
-        parallel_race([wait(5), noop, wait(10)]),
+        parallel_race([wait(5), wait(0), wait(10)]),
         wait(3)
     ],
     execute_action(
@@ -500,7 +500,7 @@ despawns", (
 
 test("repeat: expands actions once and decrements", (
     ActionsIn = [
-        repeat(3, [noop, set_attr(count, 1)]),
+        repeat(3, [wait(0), set_attr(count, 1)]),
         despawn
     ],
     empty_ctx(Ctx0),
@@ -512,8 +512,8 @@ test("repeat: expands actions once and decrements", (
         Ctx,
         CtxNew
     ),
-    % Should expand to: [noop, set_attr(count, 1),
-    %   repeat(2, [noop, set_attr(count, 1)]), despawn]
+    % Should expand to: [wait(0), set_attr(count, 1),
+    %   repeat(2, [wait(0), set_attr(count, 1)]), despawn]
     ActionsOut = [despawn],
     ctx_spawnCmds([], CtxNew, CtxNew)
 )).
@@ -522,7 +522,7 @@ test("repeat: last repetition doesn't add repeat", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
-    ActionsIn = [repeat(1, [noop]), despawn],
+    ActionsIn = [repeat(1, [wait(0)]), despawn],
     empty_ctx(Ctx0),
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     % ------------------------------------------------------
@@ -551,7 +551,7 @@ test("repeat: multiple actions in repeat list", (
     % ------------------------------------------------------
     ActionsIn = [
         repeat(2, [
-            noop,
+            wait(0),
             set_attr(a, 1),
             set_attr(b, 2)
         ]),

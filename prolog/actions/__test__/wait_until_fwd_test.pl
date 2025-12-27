@@ -11,7 +11,10 @@ test("wait_until: completes when path exists", (
     % --------------------------------------------------
     % Arrange
     % --------------------------------------------------
-    ActionsIn = [wait_until(exists(.collision_id)), noop],
+    ActionsIn = [
+        wait_until(exists(.collision_id)),
+        wait(0)
+    ],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0, 
               [attr(type, static), attr(x, 0), attr(y, 0), 
@@ -32,8 +35,8 @@ test("wait_until: completes when path exists", (
     % Assert
     % --------------------------------------------------
     expect(Status = completed, 'Status != completed'),
-    expect(ActionsOut = [noop],
-        'Actions != [noop]'),
+    expect(ActionsOut = [wait(0)],
+        'Actions != [wait(0)]'),
     expect(ctx_spawnCmds([], CtxNew, CtxNew),
            'SpawnCmds != []')
 )).
@@ -43,7 +46,10 @@ test("wait_until: completes when path exists", (
 %     % --------------------------------------------------
 %     % Arrange
 %     % --------------------------------------------------
-%     ActionsIn = [wait_until(exists(collision_id)), noop],
+%     ActionsIn = [
+%         wait_until(exists(collision_id)),
+%         wait(0)
+%     ],
 %     empty_attr_store(EmptyAttrs0),
 %     put_assoc(1, EmptyAttrs0, 
 %               [attr(type, static), attr(x, 0), attr(y,0)],
@@ -65,7 +71,7 @@ test("wait_until: completes when path exists", (
 %     expect(Status = yielded, 'Status != yielded'),
 %     expect(
 %         ActionsOut = [
-%             wait_until(exists(collision_id)), noop
+%             wait_until(exists(collision_id)), wait(0)
 %         ],
 %         'Action not preserved'
 %     )
@@ -77,7 +83,7 @@ test("wait_until: works with nested paths", (
     % --------------------------------------------------
     ActionsIn = [
         wait_until(exists(.collision_id.collisionType)),
-        noop
+        wait(0)
     ],
     empty_attr_store(EmptyAttrs0),
     % Object 1 has collision_id pointing to object 5
@@ -105,8 +111,8 @@ test("wait_until: works with nested paths", (
     % Assert
     % --------------------------------------------------
     expect(Status = completed, 'Status != completed'),
-    expect(ActionsOut = [noop],
-        'Actions != [noop]')
+    expect(ActionsOut = [wait(0)],
+        'Actions != [wait(0)]')
 )).
 
 test("wait_until: yields when nested path does not exist", (
@@ -117,7 +123,7 @@ test("wait_until: yields when nested path does not exist", (
         wait_until(exists(
             .collision_id.collisionType
         )),
-        noop
+        wait(0)
     ],
     empty_attr_store(EmptyAttrs0),
     % Object 1 has collision_id pointing to object 5
@@ -148,7 +154,7 @@ test("wait_until: yields when nested path does not exist", (
     expect(Status = yielded, 'Status != yielded'),
     expect(ActionsOut = [
             wait_until(exists(.collision_id.collisionType)),
-            noop
+            wait(0)
         ],
         'Action not preserved'
     )
@@ -161,7 +167,7 @@ exist", (
     % --------------------------------------------------
     ActionsIn = [
         wait_until(exists(.collision_id.collisionType)),
-        noop
+        wait(0)
     ],
     empty_attr_store(EmptyAttrs0),
     % Object 1 has no collision_id at all
@@ -185,6 +191,6 @@ exist", (
     expect(Status = yielded, 'Status != yielded'),
     expect(ActionsOut = [wait_until(exists(
                              .collision_id.collisionType)),
-                         noop],
+                         wait(0)],
            'Action not preserved')
 )).
