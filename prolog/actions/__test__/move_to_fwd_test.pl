@@ -97,7 +97,7 @@ test("move_to: single frame, arrives at target", (
     execute_action(
         actions_old(ActionsIn),
         obj_id(1),
-        result(Status, actions_new(ActionsOut)),
+        result(Status, actions_new(_ActionsOut)),
         Ctx,
         CtxNew
     ),

@@ -1,3 +1,5 @@
+builtin_action(load(_)).
+
 % load(+Path)
 % Mode: load(+Path)
 % Description: Loads a file containing a list of actions

@@ -1,3 +1,6 @@
+builtin_action(loop(_)).
+builtin_action(loop(_, _)). % loop continuation
+
 % loop(+Actions)
 % Mode: loop(+Actions)
 % Description: Executes Actions repeatedly.

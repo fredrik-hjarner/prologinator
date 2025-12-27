@@ -1,3 +1,5 @@
+builtin_action(spawn(_)).
+
 execute_action_impl(
     actions_old([spawn(Actions)|Rest]),
     obj_id(MyID),

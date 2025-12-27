@@ -1,3 +1,5 @@
+builtin_action(wait(_)).
+
 execute_action_impl(
     actions_old([wait(N)|Rest]),
     obj_id(_ID),

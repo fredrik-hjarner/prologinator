@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
 import { Glob } from "bun";
-import { $ } from "bun";
-import { resolve } from "path";
+import { resolve, dirname, basename } from "path";
+import { mkdir } from "fs/promises";
 
 // ==========================================================
 // Configuration: Edit these patterns at the top of the file
@@ -11,6 +11,7 @@ import { resolve } from "path";
 // Array of glob patterns to include
 export const includePatterns: string[] = [
     "prolog/**/*.pl",
+    "prolog/*.pl",
 ];
 
 // Array of glob patterns to exclude
@@ -27,10 +28,12 @@ export const excludePatterns: string[] = [
     "**/*constraint*.pl",
     "**/*macro*.pl",
     "**/*xod*.pl",
-    "**/types/*.pl",
+    "**/types/**/*",
     "**/util/*.pl",
     "**/third_party/*.pl",
     "**/game.pl",
+    "**/perf.pl",
+    "**/prolog/test_utils/**/*",
 ];
 
 // ==========================================================
@@ -43,7 +46,6 @@ async function collectFilteredFiles(
 ): Promise<string[]> {
     const files: string[] = [];
 
-    // Collect files matching any include pattern
     for (const pattern of include) {
         const glob = new Glob(pattern);
         for await (const file of glob.scan(".")) {
@@ -51,26 +53,52 @@ async function collectFilteredFiles(
         }
     }
 
-    // Remove duplicates and sort
     const uniqueFiles = [...new Set(files)].sort();
 
-    // Filter out excluded patterns
-    const filteredFiles: string[] = [];
-    for (const file of uniqueFiles) {
-        let shouldExclude = false;
-        for (const excludePattern of exclude) {
-            const excludeGlob = new Glob(excludePattern);
-            if (excludeGlob.match(file)) {
-                shouldExclude = true;
-                break;
-            }
+    return uniqueFiles.filter(file => {
+        for (const pattern of exclude) {
+            const g = new Glob(pattern);
+            if (g.match(file)) return false;
         }
-        if (!shouldExclude) {
-            filteredFiles.push(file);
+        return true;
+    });
+}
+
+// ==========================================================
+// GPP preprocessing
+// ==========================================================
+
+async function preprocessWithGpp(files: string[]): Promise<string[]> {
+    const tmpRoot = resolve(process.cwd(), ".gpp_tmp");
+    await mkdir(tmpRoot, { recursive: true });
+
+    const outFiles: string[] = [];
+
+    for (const file of files) {
+        const abs = resolve(process.cwd(), file);
+
+        const outDir = resolve(tmpRoot, dirname(file));
+        await mkdir(outDir, { recursive: true });
+
+        const outFile = resolve(outDir, basename(file));
+
+        const proc = Bun.spawn(
+            ["gpp", "-P", "--warninglevel", "0", abs],
+            { stdout: "pipe", stderr: "inherit" }
+        );
+
+        const output = await new Response(proc.stdout).text();
+        const exitCode = await proc.exited;
+
+        if (exitCode !== 0) {
+            throw new Error(`gpp failed on ${file}`);
         }
+
+        await Bun.write(outFile, output);
+        outFiles.push(outFile);
     }
 
-    return filteredFiles;
+    return outFiles;
 }
 
 // ==========================================================
@@ -86,14 +114,16 @@ if (files.length === 0) {
 
 console.log(`Found ${files.length} Prolog files`);
 
-// Use absolute paths for the files
-const absoluteFiles = files.map(f => resolve(process.cwd(), f));
+const preprocessedFiles = await preprocessWithGpp(files);
+
+console.log(`Preprocessed ${preprocessedFiles.length} files with gpp`);
+
 const callgraphPath = resolve(process.cwd(), "scripts/call_graph/callgraph.pl");
 const outputPath = resolve(process.cwd(), "graph.dot");
 
-// Call swipl with the files
+// Call swipl with preprocessed files
 const proc = Bun.spawn(
-    ["swipl", "-g", "main", callgraphPath, "--", ...absoluteFiles],
+    ["swipl", "-g", "main", callgraphPath, "--", ...preprocessedFiles],
     {
         stdout: "pipe",
         stderr: "inherit",
@@ -112,4 +142,3 @@ if (exitCode !== 0) {
 }
 
 console.log(`Graph written to ${outputPath}`);
-

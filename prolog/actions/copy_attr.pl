@@ -1,3 +1,5 @@
+builtin_action(copy_attr(_, _)).
+
 execute_action_impl(
     actions_old([copy_attr(SourcePath, DestPath)|Rest]),
     obj_id(MyID),

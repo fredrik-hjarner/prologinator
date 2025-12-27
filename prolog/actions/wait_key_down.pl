@@ -1,3 +1,5 @@
+builtin_action(wait_key_down(_)).
+
 % wait_key_down(+KeyCode)
 % Mode: wait_key_down(+KeyCode)
 % Description: Waits until specified key is pressed

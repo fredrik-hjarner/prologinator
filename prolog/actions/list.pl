@@ -1,3 +1,5 @@
+builtin_action(list(_)).
+
 execute_action_impl(
     actions_old([list(ListActions)|RestActions]),
     obj_id(ID),

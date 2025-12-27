@@ -1,3 +1,5 @@
+builtin_action(fork(_)).
+
 execute_action_impl(
     actions_old([fork(Actions)|Rest]),
     obj_id(ID),

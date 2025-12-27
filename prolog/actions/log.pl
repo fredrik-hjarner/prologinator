@@ -1,3 +1,5 @@
+builtin_action(log(_)).
+
 execute_action_impl(
     actions_old([log(Msg)|Rest]),
     obj_id(_ID),

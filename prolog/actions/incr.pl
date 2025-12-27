@@ -1,3 +1,5 @@
+builtin_action(incr(_, _)).
+
 execute_action_impl(
     actions_old([incr(Path, Amount)|Rest]),
     obj_id(MyID),

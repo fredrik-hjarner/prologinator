@@ -1,3 +1,5 @@
+builtin_action(despawn).
+
 execute_action_impl(
     actions_old([despawn|_]),
     obj_id(ID),

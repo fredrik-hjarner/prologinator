@@ -1,3 +1,6 @@
+builtin_action(repeat(_, _)).
+builtin_action(repeat(_, _, _)). % repeat continuation
+
 % repeat(+Times, +Actions)
 % Mode: repeat(+Times, +Actions)
 % Description: Execute action list N times.

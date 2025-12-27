@@ -1,3 +1,5 @@
+builtin_action(parallel_race(_)).
+
 execute_action_impl(
     actions_old([parallel_race(Children)|RestActions]),
     obj_id(ID),

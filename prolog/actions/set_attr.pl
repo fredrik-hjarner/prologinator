@@ -1,3 +1,5 @@
+builtin_action(set_attr(_, _)).
+
 execute_action_impl(
     actions_old([set_attr(Path, Value)|Rest]),
     obj_id(MyID),

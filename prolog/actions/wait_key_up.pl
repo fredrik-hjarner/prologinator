@@ -1,3 +1,5 @@
+builtin_action(wait_key_up(_)).
+
 % wait_key_up(+KeyCode)
 % Mode: wait_key_up(+KeyCode)
 % Description: Waits until specified key is released

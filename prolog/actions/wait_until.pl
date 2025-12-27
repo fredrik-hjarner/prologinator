@@ -1,3 +1,5 @@
+builtin_action(wait_until(_)).
+
 % wait_until(+Condition)
 % Description: Waits until the specified condition is
 %   satisfied.

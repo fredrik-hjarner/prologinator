@@ -33,9 +33,8 @@
 
 % 4. Action Resolution and Builtins
 #include "../prolog/resolve_action.pl"
-#include "../prolog/builtin_actions.pl"
 
-% 5. Execute Action (declares multifile, must come before actions)
+% 5. Execute Action
 #include "../prolog/execute_action.pl"
 
 % 6. Action Implementations (all actions)

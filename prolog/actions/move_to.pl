@@ -1,3 +1,5 @@
+builtin_action(move_to(_, _, _)).
+
 execute_action_impl(
     actions_old([move_to(TargetX, TargetY, Frames)|Rest]),
     obj_id(ID),

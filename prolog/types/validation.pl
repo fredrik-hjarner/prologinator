@@ -539,13 +539,6 @@ action_validation_helper(Term) :-
             ;
                 true
             )
-        ; Term = parallel_all_running(Children) ->
-            % Structure matches, validate content
-            ( ground(Children) ->
-                length(Children, _)
-            ;
-                true
-            )
         ; Term = parallel_race(Children) ->
             % Structure matches, validate
             %   content

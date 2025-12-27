@@ -1,3 +1,5 @@
+builtin_action(trigger_state_change(_)).
+
 execute_action_impl(
     actions_old([trigger_state_change(Change)|Rest]),
     obj_id(_ID),

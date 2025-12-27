@@ -45,8 +45,11 @@ read_file_safe(File, Terms) :-
             close(In)
         ),
         _,
-        (format(user_error, "Skipping ~w~n", 
-                [File]),
+        (format(
+            user_error,
+            "Skipping ~w because syntax errors~n", 
+            [File]
+        ),
          Terms = [])
     ).
 

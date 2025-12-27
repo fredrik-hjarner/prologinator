@@ -1,3 +1,5 @@
+builtin_action(wait_key_held(_)).
+
 % wait_key_held(+KeyCode)
 % Mode: wait_key_held(+KeyCode)
 % Description: Yields every frame while key is held

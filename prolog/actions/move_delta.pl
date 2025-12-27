@@ -1,3 +1,5 @@
+builtin_action(move_delta(_, _, _)).
+
 % move_delta(+Frames, +DX, +DY)
 % Mode: move_delta(+Frames, +DX, +DY)
 % Description: Relative movement: move by (DX, DY)

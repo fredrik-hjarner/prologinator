@@ -28,8 +28,9 @@
 % monolithic build
 % This file must be included BEFORE any clauses are defined
 
-:- discontiguous(execute_action_impl/5).
+:- discontiguous(builtin_action/1).
 :- discontiguous(check_condition_impl/4).
+:- discontiguous(execute_action_impl/5).
 
 
 
@@ -899,13 +900,6 @@ action_validation_helper(Term) :-
             ;
                 true
             )
-        ; Term = parallel_all_running(Children) ->
-            % Structure matches, validate content
-            ( ground(Children) ->
-                length(Children, _)
-            ;
-                true
-            )
         ; Term = parallel_race(Children) ->
             % Structure matches, validate
             %   content
@@ -1683,41 +1677,8 @@ resolve_default(MyID, ValueExpr, _Fallback, V) -->
 % discontiguous warnings.
 % ==========================================================
 
-% Built-in Actions Module
-% Defines which actions are built-in (with arity checking)
 
-% Check if an action is a built-in action (with arity
-% checking)
-builtin_action(wait(_)).
-builtin_action(move_to(_, _, _)).
-builtin_action(move_delta(_, _, _)).
-builtin_action(despawn).
-builtin_action(spawn(_)).
-builtin_action(set_attr(_, _)).
-builtin_action(copy_attr(_, _)).
-builtin_action(incr(_, _)).
-builtin_action(decr(_, _)).
-builtin_action(loop(_)).
-builtin_action(loop(_, _)). % loop continuation
-builtin_action(list(_)).
-builtin_action(repeat(_, _)).
-builtin_action(repeat(_, _, _)). % repeat continuation
-builtin_action(parallel_all(_)).
-builtin_action(parallel_race(_)).
-builtin_action(parallel_all_running(_)).
-builtin_action(trigger_state_change(_)).
-builtin_action(define_action(_, _)).
-builtin_action(load(_)).
-builtin_action(log(_)).
-builtin_action(wait_key_down(_)).
-builtin_action(wait_key_up(_)).
-builtin_action(wait_key_held(_)).
-builtin_action(wait_until(_)).
-builtin_action(fork(_)).
-builtin_action(attr_if(_, _, _)).
-
-
-% 5. Execute Action (declares multifile, must come before actions)
+% 5. Execute Action
 % Action Execution Module
 % Handles execution of all game actions
 % Core interface - implementations are in separate modules
@@ -1825,6 +1786,8 @@ execute_action_resolved(
 
 
 % 6. Action Implementations (all actions)
+builtin_action(attr_if(_, _, _)).
+
 % =========================================================
 % attr_if Action
 % =========================================================
@@ -1895,6 +1858,8 @@ execute_attr_if(
         {append(ActionAfterTick, Rest, ActionsOut)}
     ).
 
+builtin_action(wait(_)).
+
 execute_action_impl(
     actions_old([wait(N)|Rest]),
     obj_id(_ID),
@@ -1919,6 +1884,8 @@ execute_wait(N, Rest, Status, ActionsOut) -->
             Status = yielded
         )
     }.
+
+builtin_action(move_to(_, _, _)).
 
 execute_action_impl(
     actions_old([move_to(TargetX, TargetY, Frames)|Rest]),
@@ -1990,6 +1957,8 @@ execute_move_to(
         % We must yield execution to the next frame.
         Status = yielded
     )}.
+
+builtin_action(move_delta(_, _, _)).
 
 % move_delta(+Frames, +DX, +DY)
 % Mode: move_delta(+Frames, +DX, +DY)
@@ -2088,6 +2057,8 @@ execute_move_delta(
         Status = yielded
     )}.
 
+builtin_action(despawn).
+
 execute_action_impl(
     actions_old([despawn|_]),
     obj_id(ID),
@@ -2109,6 +2080,8 @@ execute_despawn(ID) -->
 
 
 
+builtin_action(define_action(_, _)).
+
 % Defines a custom action macro at runtime. Stores the
 % Signature->Body mapping in user_action/2. When Signature
 % is called later, execute_action/5 will expand it with
@@ -2125,6 +2098,8 @@ execute_define_action(Signature, Body) -->
 
 
 
+builtin_action(set_attr(_, _)).
+
 execute_action_impl(
     actions_old([set_attr(Path, Value)|Rest]),
     obj_id(MyID),
@@ -2137,6 +2112,8 @@ execute_set_attr(MyID, Path, Value) -->
     ctx_set_attr_val(TargetID/Key, Value).
 
 
+
+builtin_action(copy_attr(_, _)).
 
 execute_action_impl(
     actions_old([copy_attr(SourcePath, DestPath)|Rest]),
@@ -2152,6 +2129,8 @@ execute_copy_attr(MyID, SourcePath, DestPath) -->
                          DestID/DestKey),
     ctx_attr_val(SourceID/SourceKey, Value),
     ctx_set_attr_val(DestID/DestKey, Value).
+
+builtin_action(incr(_, _)).
 
 execute_action_impl(
     actions_old([incr(Path, Amount)|Rest]),
@@ -2169,6 +2148,8 @@ execute_incr(MyID, Path, Amount) -->
     ),
     ctx_set_attr_val(TargetID/Key, NewValue).
 
+builtin_action(decr(_, _)).
+
 execute_action_impl(
     actions_old([decr(Path, Amount)|Rest]),
     obj_id(MyID),
@@ -2185,6 +2166,8 @@ execute_decr(MyID, Path, Amount) -->
     ),
     ctx_set_attr_val(TargetID/Key, NewValue).
 
+builtin_action(log(_)).
+
 execute_action_impl(
     actions_old([log(Msg)|Rest]),
     obj_id(_ID),
@@ -2196,6 +2179,8 @@ execute_log(Msg) -->
     {format("~s~n", [Msg])}.
 
 
+
+builtin_action(spawn(_)).
 
 execute_action_impl(
     actions_old([spawn(Actions)|Rest]),
@@ -2223,6 +2208,8 @@ execute_spawn(ParentID, Actions) -->
 
 
 
+builtin_action(fork(_)).
+
 execute_action_impl(
     actions_old([fork(Actions)|Rest]),
     obj_id(ID),
@@ -2242,6 +2229,9 @@ execute_fork(ObjID, Actions) -->
     ]},
     ctx_set_forkCmds(ForkCmdsNew).
 
+
+builtin_action(loop(_)).
+builtin_action(loop(_, _)). % loop continuation
 
 % loop(+Actions)
 % Mode: loop(+Actions)
@@ -2317,6 +2307,8 @@ handle_loop_result(
         Original, Original, Rest, ID, Status, ActionsOut
     ).
 
+builtin_action(list(_)).
+
 execute_action_impl(
     actions_old([list(ListActions)|RestActions]),
     obj_id(ID),
@@ -2360,6 +2352,9 @@ execute_list(
     ).
 
 
+
+builtin_action(repeat(_, _)).
+builtin_action(repeat(_, _, _)). % repeat continuation
 
 % repeat(+Times, +Actions)
 % Mode: repeat(+Times, +Actions)
@@ -2475,6 +2470,8 @@ handle_repeat_result(
         {Status = completed, ActionsOut = Rest}
     ).
 
+builtin_action(load(_)).
+
 % load(+Path)
 % Mode: load(+Path)
 % Description: Loads a file containing a list of actions
@@ -2511,6 +2508,8 @@ execute_load(Path, Rest, NewActions) -->
 
 
 
+builtin_action(trigger_state_change(_)).
+
 execute_action_impl(
     actions_old([trigger_state_change(Change)|Rest]),
     obj_id(_ID),
@@ -2528,6 +2527,8 @@ update_status(game_over(won), lost, lost).
 update_status(game_over(won), _, won).
 
 
+
+builtin_action(wait_key_down(_)).
 
 % wait_key_down(+KeyCode)
 % Mode: wait_key_down(+KeyCode)
@@ -2560,6 +2561,8 @@ execute_wait_key_down(KeyCode, Rest, Status, ActionsOut) -->
 
 
 
+builtin_action(wait_key_up(_)).
+
 % wait_key_up(+KeyCode)
 % Mode: wait_key_up(+KeyCode)
 % Description: Waits until specified key is released
@@ -2585,6 +2588,8 @@ execute_wait_key_up(KeyCode, Rest, Status, ActionsOut) -->
     ).
 
 
+
+builtin_action(wait_key_held(_)).
 
 % wait_key_held(+KeyCode)
 % Mode: wait_key_held(+KeyCode)
@@ -2617,6 +2622,8 @@ execute_wait_key_held(KeyCode, Rest, Status, ActionsOut) -->
     ).
 
 
+
+builtin_action(wait_until(_)).
 
 % wait_until(+Condition)
 % Description: Waits until the specified condition is
@@ -2653,6 +2660,8 @@ execute_wait_until(
         {ActionsOut = [wait_until(Condition)|Rest],
          Status = yielded}
     ).
+
+builtin_action(parallel_all(_)).
 
 % ==========================================================
 % Interface
@@ -2759,6 +2768,8 @@ tick_children(
     ).
 
 
+
+builtin_action(parallel_race(_)).
 
 execute_action_impl(
     actions_old([parallel_race(Children)|RestActions]),
