@@ -3,7 +3,7 @@ default:
 
 # Simple performance test
 perf: build-tpl
-    time tpl -l prolog/perf.pl -g "main_perf, halt"; \
+    tpl -l prolog/perf.pl -g "main_perf, halt"; \
 
 # Run the monolithic build with Scryer Prolog
 # Usage: just game <game_name> (e.g., just game default)

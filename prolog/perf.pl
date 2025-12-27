@@ -54,13 +54,27 @@ main_perf :-
           ctx_set_actionstore(ActionStore1, InitialContext1,
                               InitialContext),
           
+          % --- START TIMING ---
+          statistics(runtime, [Start|_]),
+          
           % Run 200 frames automatically
           run_frames_perf(InitialContext, Timeline, 0,
                           FinalCtx),
           
+          % --- END TIMING ---
+          statistics(runtime, [End|_]),
+          
           % Render final result
           render_perf(FinalCtx, FinalCtx),
           
+          % Calculate and Print
+          DurationMs is End - Start,
+          DurationSec is DurationMs / 1000,
+          format(
+              '~nExecution Time: ~w ms (~w s)~n~n',
+              [DurationMs, DurationSec]
+          ),
+
           % Halt with success
           halt(0)
         ),

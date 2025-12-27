@@ -267,7 +267,7 @@ resolve_action(
 % because it's the built-in actions themselves that does the
 % resolution.
 resolve_action(
-    MyID,
+    _MyID,
     Action,
     Action
 ) -->

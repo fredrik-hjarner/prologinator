@@ -63,7 +63,7 @@ check_condition_impl(Ctx, ObjID, exists(PathSpec)) :-
     % Use strict resolution: fails if attr doesn't exist
     strict_resolve_path(Ctx, ObjID, PathToResolve, _Value).
 
-check_condition_impl(Ctx, ObjID, Condition) :-
+check_condition_impl(_Ctx, _ObjID, Condition) :-
     % Unknown condition type
     throw(error(
         unknown_condition(Condition),
