@@ -1,3 +1,10 @@
+# trealla-js perf test
+
+I could have prolog run as fast as possible then just use
+js_eval to increment a counter which I can use to extimate
+max fps or something. That should give me kinda theoretical
+maximum fps I think.
+
 # in sconcat: should be able to delete entry with `d` key
 
 to reduce clutter.
