@@ -80,7 +80,7 @@ tick_action_streams_loop(
     tick_object(
         actions_old(StreamToProcess),
         obj_id(ObjId),
-        result(TickStatus, actions_new(StreamsAfterTick))
+        result(TickStatus, actions_new(StreamAfterTick))
     ),
     % So at this point we run one stream until a stop state
     %     and some might have added fork_cmd:s (added in
@@ -111,7 +111,7 @@ tick_action_streams_loop(
                 % add what was left after yield.
                 % AccumOld is in reverse order, prepend to
                 % build backwards (O(1))
-                {Accum = [StreamsAfterTick | AccumOld]},
+                {Accum = [StreamAfterTick | AccumOld]},
                 % recurse
                 tick_action_streams_loop(
                     obj_id(ObjId),
