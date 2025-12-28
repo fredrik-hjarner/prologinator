@@ -168,13 +168,13 @@ test("wait_key_down: in loop pattern", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
-    tick_object(
+    expect(tick_object(
         actions_old(ActionsIn),
         obj_id(1),
         result(Status1, actions_new(ActionsOut)),
         Ctx,
         Ctx1
-    ),
+    ), 'tick_object failed'),
     % --------------------------------------------------
     % Assert
     % --------------------------------------------------

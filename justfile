@@ -33,6 +33,10 @@ test-all: build
 test-all-verbose: build
     @ ./scripts/test-all.ts
 
+
+test-all-trealla: build-tpl
+    @ VALIDATION_ERR_MSG=false ./scripts/test-all-trealla.ts
+
 # Check a Prolog file for syntax errors
 # Usage: just lint prolog/engine.pl
 lint FILE:
