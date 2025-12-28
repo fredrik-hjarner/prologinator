@@ -5,15 +5,15 @@
         fork([
             loop([
                 wait(1),
-                attr_if(.y < 0,
+                attr_if(:y < 0,
                     [despawn],
                     []
                 ),
-                attr_if(.x < 0,
+                attr_if(:x < 0,
                     [despawn],
                     []
                 ),
-                attr_if(.x > 63,
+                attr_if(:x > 63,
                     [despawn],
                     []
                 )
@@ -23,11 +23,11 @@
 
     define_action(spawn_player_child(X, Y),
         spawn([
-            set_attr(.type, player),
-            set_attr(.displayChar, 35),  % '#'
+            set_attr(:type, player),
+            set_attr(:displayChar, 35),  % '#'
             loop([
-                copy_attr(.parent_id.x, .x),
-                copy_attr(.parent_id.y, .y),
+                copy_attr(:parent_id:x, :x),
+                copy_attr(:parent_id:y, :y),
                 move_delta(0, X, Y),
                 wait(1)
             ])
@@ -36,10 +36,10 @@
 
     define_action(spawn_player_shot(DirX, DirY),
         spawn([
-            set_attr(.type, proj),
-            copy_attr(.parent_id.x, .x),
-            copy_attr(.parent_id.y, .y),
-            set_attr(.displayChar, 42),  % '*'
+            set_attr(:type, proj),
+            copy_attr(:parent_id:x, :x),
+            copy_attr(:parent_id:y, :y),
+            set_attr(:displayChar, 42),  % '*'
             despawn_shot_behaviour,
             fork([
                 loop([
@@ -53,11 +53,11 @@
     define_action(spawn_player,
         spawn([
             log("log at start of spawn_player"),
-            set_attr(.type, player),
-            set_attr(.x, 16),
-            set_attr(.y, 31),
+            set_attr(:type, player),
+            set_attr(:x, 16),
+            set_attr(:y, 31),
             log("Player spawned!"),
-            set_attr(.displayChar, 64),  % '@'
+            set_attr(:displayChar, 64),  % '@'
             log("displayChar was set to 64"),
 
             %   #
@@ -85,8 +85,8 @@
                 loop([
                     wait_key_held(39),
                     move_delta(0, 1, 0),
-                    attr_if(.x > 62,
-                        [set_attr(.x, 62)],
+                    attr_if(:x > 62,
+                        [set_attr(:x, 62)],
                         []
                     ),
                     wait(1)
@@ -95,8 +95,8 @@
                 loop([
                     wait_key_held(37),
                     move_delta(0, -1, 0),
-                    attr_if(.x < 1,
-                        [set_attr(.x, 1)],
+                    attr_if(:x < 1,
+                        [set_attr(:x, 1)],
                         []
                     ),
                     wait(1)
@@ -105,8 +105,8 @@
                 loop([
                     wait_key_held(38),
                     move_delta(0, 0, -1),
-                    attr_if(.y < 0,
-                        [set_attr(.y, 0)],
+                    attr_if(:y < 0,
+                        [set_attr(:y, 0)],
                         []
                     ),
                     wait(1)
@@ -115,8 +115,8 @@
                 loop([
                     wait_key_held(40),
                     move_delta(0, 0, 1),
-                    attr_if(.y > 61,
-                        [set_attr(.y, 61)],
+                    attr_if(:y > 61,
+                        [set_attr(:y, 61)],
                         []
                     ),
                     wait(1)

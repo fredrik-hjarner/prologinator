@@ -12,7 +12,7 @@ test("wait_until: completes when path exists", (
     % Arrange
     % --------------------------------------------------
     ActionsIn = [
-        wait_until(exists(.collision_id)),
+        wait_until(exists(:collision_id)),
         wait(0)
     ],
     empty_attr_store(EmptyAttrs0),
@@ -82,7 +82,7 @@ test("wait_until: works with nested paths", (
     % Arrange
     % --------------------------------------------------
     ActionsIn = [
-        wait_until(exists(.collision_id.collisionType)),
+        wait_until(exists(:collision_id:collisionType)),
         wait(0)
     ],
     empty_attr_store(EmptyAttrs0),
@@ -121,7 +121,7 @@ test("wait_until: yields when nested path does not exist", (
     % --------------------------------------------------
     ActionsIn = [
         wait_until(exists(
-            .collision_id.collisionType
+            :collision_id:collisionType
         )),
         wait(0)
     ],
@@ -153,7 +153,7 @@ test("wait_until: yields when nested path does not exist", (
     write_term(ActionsOut, [quoted(true)]), nl,
     expect(Status = yielded, 'Status != yielded'),
     expect(ActionsOut = [
-            wait_until(exists(.collision_id.collisionType)),
+            wait_until(exists(:collision_id:collisionType)),
             wait(0)
         ],
         'Action not preserved'
@@ -166,7 +166,7 @@ exist", (
     % Arrange
     % --------------------------------------------------
     ActionsIn = [
-        wait_until(exists(.collision_id.collisionType)),
+        wait_until(exists(:collision_id:collisionType)),
         wait(0)
     ],
     empty_attr_store(EmptyAttrs0),
@@ -190,7 +190,7 @@ exist", (
     % --------------------------------------------------
     expect(Status = yielded, 'Status != yielded'),
     expect(ActionsOut = [wait_until(exists(
-                             .collision_id.collisionType)),
+                             :collision_id:collisionType)),
                          wait(0)],
            'Action not preserved')
 )).

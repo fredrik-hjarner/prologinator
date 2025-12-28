@@ -1,3 +1,7 @@
+# Treat singleton warnings as errors in test scripts!
+
+Otherwise I will swim in `Warning: singleton:` messages...
+
 # trealla-js perf test
 
 I could have prolog run as fast as possible then just use

@@ -13,11 +13,11 @@ test("despawn: stops execution of remaining actions", (
             % behavior
             spawn([
                 % 1. Set probe to 1 (Proof of life)
-                set_attr(parent_id.probe, 1),
+                set_attr(parent_id:probe, 1),
                 % 2. Despawn self
                 despawn,
                 % 3. Set probe to 2 (Should never happen)
-                set_attr(parent_id.probe, 2)
+                set_attr(parent_id:probe, 2)
             ])
             % Parent waits to allow child to tick
         ]),

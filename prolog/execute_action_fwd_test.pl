@@ -728,7 +728,7 @@ test("value_resolution: move_to with attr() references", (
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     ActionsIn = [
-        move_to(.target_x, .target_y, 5)
+        move_to(:target_x, :target_y, 5)
     ],
     execute_action(
         actions_old(ActionsIn),
@@ -754,9 +754,9 @@ test("value_resolution: set_attr with attr() source", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ActionsIn = [
         % TODO: Hm I notice the seeming inconsistency here
-        %       first attr does not need . but the other one
+        %       first attr does not need : but the other one
         %       does.. does'nt look too pretty or consistent
-        set_attr(source_x, .x)
+        set_attr(source_x, :x)
     ],
     execute_action(
         actions_old(ActionsIn),
@@ -783,7 +783,7 @@ test("value_resolution: path syntax parent_id/target_y", (
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     ActionsIn = [
-        set_attr(my_target_y, .parent_id.target_y)
+        set_attr(my_target_y, :parent_id:target_y)
     ],
     execute_action(
         actions_old(ActionsIn),
@@ -816,7 +816,7 @@ test("value_resolution: multi-hop path a/b/c", (
     ActionsIn = [
         set_attr(
             result,
-            .first_id.second_id.final_value
+            :first_id:second_id:final_value
         )
     ],
     execute_action(
@@ -875,9 +875,9 @@ test("value_resolution: mixed plain and attr() values", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     ActionsIn = [
         move_to(
-            .target_x,
+            :target_x,
             200,
-            .speed
+            :speed
         )
     ],
     execute_action(

@@ -15,6 +15,7 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     % Arrange
     % ------------------------------------------------------
+    % ...so over 1 frame move 5 right and 3 up.
     ActionsIn = [move_delta(1, 5, -3)],
     empty_attr_store(EmptyAttrs0),
     put_assoc(1, EmptyAttrs0,
@@ -38,7 +39,9 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     % Assert
     % ------------------------------------------------------
+    write_term(X, [quoted(true)]), nl,
     expect(X = 15, 'X != 15'),
+    write_term(Y, [quoted(true)]), nl,
     expect(Y = 17, 'Y != 17'),
     expect(SpawnCmds = [], 'SpawnCmds != []')
 )).

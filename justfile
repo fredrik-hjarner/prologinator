@@ -150,7 +150,7 @@ build:
 build-tpl:
 	@mkdir -p build
 	@gpp -DTPL -P --warninglevel 0 scripts/prologinator.pp -o build/prologinator.pl
-	bun scripts/preprocess-for-trealla.ts build/prologinator.pl
+	# bun scripts/preprocess-for-trealla.ts build/prologinator.pl
 	@echo "Built: build/prologinator.pl"
 
 # Count the tokens in a file

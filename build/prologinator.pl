@@ -51,12 +51,12 @@
 
 
 % 1.7. Operators (must be before any clauses)
-% . operator for attribute paths
+% : operator for attribute paths
 
-% prefix: .hp
-:- op(101, fy, '.').
-% infix: .a.b
-:- op(100, yfx, '.').
+% prefix: :hp
+:- op(101, fy, ':').
+% infix: :a:b
+:- op(100, yfx, ':').
 
 
 % 2. Types (foundational - no dependencies on game logic)
@@ -1351,7 +1351,7 @@ pretty_print_args([Arg|Args], Indent) :-
 % Resolves attr() references in actions before execution
 %
 % This module handles resolution of attr() references in
-% actions. When a user writes: set_attr(dest, .x)
+% actions. When a user writes: set_attr(dest, :x)
 % The attr(x) gets resolved to the actual value (e.g., 42)
 % before the action executes.
 
@@ -1364,7 +1364,7 @@ pretty_print_args([Arg|Args], Indent) :-
 %   Input:  set_attr(Path, ValueExpr)
 %   Output: set_attr(Path, 42)  (if x = 42)
 %
-%   Input:  move_to(.target_x, .target_y, 5)
+%   Input:  move_to(:target_x, :target_y, 5)
 %   Output: move_to(100, 200, 5)
 %           (if target_x=100, target_y=200)
 
@@ -1626,12 +1626,12 @@ resolve_action(
 % If the argument is prefixed with ., it is treated as a
 % path reference that must resolve to a value (read
 % context).
-resolve_arg(MyID, .Path, V) -->
+resolve_arg(MyID, :Path, V) -->
     !,
     (   {ground(Path)} % Only resolve if path is ground
     % Use strict path resolution to get the value
     ->  resolve_path_strict(MyID, Path, V)
-    ;   {V = .Path}
+    ;   {V = :Path}
     ).
 
 
@@ -1654,7 +1654,7 @@ resolve_arg(MyID, default(ValueExpr, Fallback), V) -->
 resolve_arg(_MyID, Other, Other) --> !, [].
 
 % Helper for default/2 resolution in actions
-resolve_default(MyID, .Path, Fallback, V) -->
+resolve_default(MyID, :Path, Fallback, V) -->
     {ground(Path)},
     !,
     ( resolve_path_strict(MyID, Path, ResolvedValue) ->
@@ -1667,14 +1667,14 @@ resolve_default(MyID, .Path, Fallback, V) -->
     ).
 
 % Catch-all?
-% If ValueExpr is not an .Path, resolve it normally.
+% If ValueExpr is not an :Path, resolve it normally.
 % Note: This handles cases like default(10, 0) -> 10
 resolve_default(MyID, ValueExpr, _Fallback, V) -->
     !,
     resolve_arg(MyID, ValueExpr, V).
 
 % ==========================================================
-% Path Resolution (DCG version: handles x.y.z chains)
+% Path Resolution (DCG version: handles x:y:z chains)
 % NOTE: resolve_path_strict//3 and resolve_path_to_attr//3
 % definitions are now consolidated in
 % prolog/conditions/path_resolution.pl to avoid
@@ -3240,11 +3240,11 @@ key_held(KeyCode) -->
 %
 % New Path Structure (Input to resolve_path):
 %   - Key (Atom): Resolves attribute Key on ObjID.
-%   - ObjectSpec.Key: ObjectSpec resolves to NextID, then
+%   - ObjectSpec:Key: ObjectSpec resolves to NextID, then
 %     Key is resolved on NextID.
-%   - .Path: Wraps a path to indicate it is an attribute.
+%   - :Path: Wraps a path to indicate it is an attribute.
 %
-% NOTE: The . prefix is treated as syntactic sugar and is
+% NOTE: The : prefix is treated as syntactic sugar and is
 % stripped automatically to resolve the underlying path.
 
 % ==========================================================
@@ -3254,15 +3254,15 @@ key_held(KeyCode) -->
 % value.
 
 resolve_path(ObjID, Path, Value) -->
-    % Strip . prefix if present (syntactic sugar)
-    ( {Path = .(InnerPath)} ->
+    % Strip : prefix if present (syntactic sugar)
+    ( {Path = :(InnerPath)} ->
         {TruePath = InnerPath}
     ;
         {TruePath = Path}
     ),
 
     (   % Case 1: Compound path using dot functor
-        {TruePath = Head.Rest}
+        {TruePath = Head:Rest}
     ->
         resolve_path(ObjID, Head, NextID),
         % Then resolve Rest starting from that object.
@@ -3290,14 +3290,14 @@ resolve_path(ObjID, Path, Value) -->
 % Unlike resolve_path, this fails if any attribute in the
 % path doesn't exist. No fallback to literals.
 
-% 1. Handle . prefix (strip it and recurse)
-strict_resolve_path(ObjID, .(Path), Value) -->
+% 1. Handle : prefix (strip it and recurse)
+strict_resolve_path(ObjID, :(Path), Value) -->
     !,
     strict_resolve_path(ObjID, Path, Value).
 
 % 2. Compound path using dot functor (recursive step)
 strict_resolve_path(
-    ObjID, FirstAttr.RestPath, Value
+    ObjID, FirstAttr:RestPath, Value
 ) -->
     !,
     % First resolve Head to get the next object ID
@@ -3333,7 +3333,7 @@ resolve_path_strict(ObjID, Path, Value) -->
 % Resolves the path down to the final object ID and
 % attribute Key.
 % Path can be a location path or wrapped in ..
-resolve_path_to_attr(MyID, .(Path), Pair) -->
+resolve_path_to_attr(MyID, :(Path), Pair) -->
     !,
     resolve_path_to_attr(MyID, Path, Pair).
 
@@ -3342,7 +3342,7 @@ resolve_path_to_attr(MyID, AttrName, MyID/AttrName) -->
     !.
 
 resolve_path_to_attr(MyID,
-                     FirstAttr.RestPath,
+                     FirstAttr:RestPath,
                      FinalID/Key) -->
     !,
     % Navigate through FirstAttr to get NextID
@@ -3468,11 +3468,11 @@ check_condition_impl(ObjID, Comparison) -->
 check_condition_impl(ObjID, exists(PathSpec)) -->
     !,
     % Rule: PathSpec MUST be an attribute reference (start
-    % with .)
-    ( {PathSpec = .(Path)} ->
+    % with :)
+    ( {PathSpec = :(Path)} ->
         {PathToResolve = Path}
     ;
-        % If it doesn't start with ., it's an invalid path
+        % If it doesn't start with :, it's an invalid path
         % specification for exists/1 (bare atom or wrong
         % structure)
         {throw(
@@ -3537,9 +3537,9 @@ check_comparison(ObjID, Comparison) -->
 % Resolves a value specification (Path or default/2) for use
 % in conditions.
 
-% Helper to strip the prefix . operator if present
-% If PathSpec is .(Path), we extract Path.
-strip_prefix_at(.(Path), Path) :- !.
+% Helper to strip the prefix : operator if present
+% If PathSpec is :(Path), we extract Path.
+strip_prefix_at(:(Path), Path) :- !.
 strip_prefix_at(Path, Path).
 
 % Case 1: Explicit default/2 handling
@@ -3571,8 +3571,8 @@ resolve_condition_value(
 
 % Case 2: Standard path resolution
 resolve_condition_value(ObjID, PathSpec, Value) -->
-    % --- FIX: Enforce . prefix for attribute lookups ---
-    ( {PathSpec = .(Path)} ->
+    % --- FIX: Enforce : prefix for attribute lookups ---
+    ( {PathSpec = :(Path)} ->
         % Explicit attribute reference: resolve path
         resolve_path(ObjID, Path, Value)
     ; {atom(PathSpec)} ->
@@ -3608,7 +3608,7 @@ resolve_condition_value(ObjID, PathSpec, Value) -->
 %
 % Item can be:
 %   - A literal value (sword, 42, etc.)
-%   - An attribute path (parent_id.weapon, etc.)
+%   - An attribute path (parent_id:weapon, etc.)
 %
 % AttributePath must resolve to a list.
 %
@@ -3618,8 +3618,8 @@ resolve_condition_value(ObjID, PathSpec, Value) -->
 %   → resolve inventory to list
 %   → check member(sword, list)
 %
-%   parent_id.weapon in allowed_weapons
-%   → Item=parent_id.weapon, Path=allowed_weapons
+%   parent_id:weapon in allowed_weapons
+%   → Item=parent_id:weapon, Path=allowed_weapons
 %   → resolve Item to weapon on parent
 %   → resolve Path to list
 %   → check membership
@@ -3672,12 +3672,12 @@ check_membership(ObjID, Item, AttributePath) -->
 % Example Complex Condition:
 %   and([
 %       or([
-%           default(.hp, 0) < 0,
+%           default(:hp, 0) < 0,
 %           status = dead
 %       ]),
-%       not(exists(.invulnerable)),
+%       not(exists(:invulnerable)),
 %       sword in inventory,
-%       parent_id.team = ally
+%       parent_id:team = ally
 %   ])
 %
 % All of these compose naturally without special syntax.

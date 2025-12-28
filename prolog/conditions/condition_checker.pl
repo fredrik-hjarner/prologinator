@@ -53,11 +53,11 @@ check_condition_impl(ObjID, Comparison) -->
 check_condition_impl(ObjID, exists(PathSpec)) -->
     !,
     % Rule: PathSpec MUST be an attribute reference (start
-    % with .)
-    ( {PathSpec = .(Path)} ->
+    % with :)
+    ( {PathSpec = :(Path)} ->
         {PathToResolve = Path}
     ;
-        % If it doesn't start with ., it's an invalid path
+        % If it doesn't start with :, it's an invalid path
         % specification for exists/1 (bare atom or wrong
         % structure)
         {throw(
@@ -122,9 +122,9 @@ check_comparison(ObjID, Comparison) -->
 % Resolves a value specification (Path or default/2) for use
 % in conditions.
 
-% Helper to strip the prefix . operator if present
-% If PathSpec is .(Path), we extract Path.
-strip_prefix_at(.(Path), Path) :- !.
+% Helper to strip the prefix : operator if present
+% If PathSpec is :(Path), we extract Path.
+strip_prefix_at(:(Path), Path) :- !.
 strip_prefix_at(Path, Path).
 
 % Case 1: Explicit default/2 handling
@@ -156,8 +156,8 @@ resolve_condition_value(
 
 % Case 2: Standard path resolution
 resolve_condition_value(ObjID, PathSpec, Value) -->
-    % --- FIX: Enforce . prefix for attribute lookups ---
-    ( {PathSpec = .(Path)} ->
+    % --- FIX: Enforce : prefix for attribute lookups ---
+    ( {PathSpec = :(Path)} ->
         % Explicit attribute reference: resolve path
         resolve_path(ObjID, Path, Value)
     ; {atom(PathSpec)} ->
@@ -193,7 +193,7 @@ resolve_condition_value(ObjID, PathSpec, Value) -->
 %
 % Item can be:
 %   - A literal value (sword, 42, etc.)
-%   - An attribute path (parent_id.weapon, etc.)
+%   - An attribute path (parent_id:weapon, etc.)
 %
 % AttributePath must resolve to a list.
 %
@@ -203,8 +203,8 @@ resolve_condition_value(ObjID, PathSpec, Value) -->
 %   → resolve inventory to list
 %   → check member(sword, list)
 %
-%   parent_id.weapon in allowed_weapons
-%   → Item=parent_id.weapon, Path=allowed_weapons
+%   parent_id:weapon in allowed_weapons
+%   → Item=parent_id:weapon, Path=allowed_weapons
 %   → resolve Item to weapon on parent
 %   → resolve Path to list
 %   → check membership
@@ -257,12 +257,12 @@ check_membership(ObjID, Item, AttributePath) -->
 % Example Complex Condition:
 %   and([
 %       or([
-%           default(.hp, 0) < 0,
+%           default(:hp, 0) < 0,
 %           status = dead
 %       ]),
-%       not(exists(.invulnerable)),
+%       not(exists(:invulnerable)),
 %       sword in inventory,
-%       parent_id.team = ally
+%       parent_id:team = ally
 %   ])
 %
 % All of these compose naturally without special syntax.

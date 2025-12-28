@@ -10,9 +10,9 @@ test("attr_if on attr that exists and condition is true", (
         ]),
         actions([
             attr_if(
-                .x = 0, % this condition is fulfilled
-                [set_attr(.report, 1)], % should do this
-                [set_attr(.report, 2)] % shouldnt do this
+                :x = 0, % this condition is fulfilled
+                [set_attr(:report, 1)], % should do this
+                [set_attr(:report, 2)] % shouldnt do this
             )
         ]),
         ticks(1),
@@ -30,9 +30,9 @@ test("attr_if on attr that exists and condition is false", (
         ]),
         actions([
             attr_if(
-                .x = 1, % this condition is not fulfilled
-                [set_attr(.report, 1)], % should do this
-                [set_attr(.report, 2)] % shouldnt do this
+                :x = 1, % this condition is not fulfilled
+                [set_attr(:report, 1)], % should do this
+                [set_attr(:report, 2)] % shouldnt do this
             )
         ]),
         ticks(1),

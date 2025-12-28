@@ -9,7 +9,7 @@ test("simply set an attribute verify that it was set",(
             [hp-0]
         ),
         actions(
-            [set_attr(.hp, 100)]
+            [set_attr(:hp, 100)]
         ),
         ticks(
             1
@@ -44,8 +44,8 @@ test("set attribute then copy.",(
             hp-0
         ]),
         actions([
-            set_attr(.hp, 100),
-            copy_attr(.hp, .hp2)
+            set_attr(:hp, 100),
+            copy_attr(:hp, :hp2)
         ]),
         ticks(
             1
@@ -62,8 +62,8 @@ test("default should be utilized for non-existing stuff.",(
         start_attrs([
         ]),
         actions([
-            wait_until(default(.parent_id.hp, -1) < 1),
-            set_attr(.yup, true)
+            wait_until(default(:parent_id:hp, -1) < 1),
+            set_attr(:yup, true)
         ]),
         ticks(
             1
@@ -82,8 +82,8 @@ In this case a non-existing object is referenced.",(
             ptr-5
         ]),
         actions([
-            wait_until(default(.ptr.hp, -1) < 1),
-            set_attr(.yup, true)
+            wait_until(default(:ptr:hp, -1) < 1),
+            set_attr(:yup, true)
         ]),
         ticks(
             1

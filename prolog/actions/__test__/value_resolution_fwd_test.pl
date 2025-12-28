@@ -19,7 +19,7 @@ test("value_resolution: move_to with attr() references", (
                attr(target_y, 200)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    ActionsIn = [move_to(.target_x, .target_y, 5)],
+    ActionsIn = [move_to(:target_x, :target_y, 5)],
     execute_action(
         actions_old(ActionsIn),
         obj_id(1),
@@ -42,7 +42,7 @@ test("value_resolution: set_attr with attr() source", (
                attr(source_x, 0)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    ActionsIn = [set_attr(source_x, .x)],
+    ActionsIn = [set_attr(source_x, :x)],
     execute_action(
         actions_old(ActionsIn),
         obj_id(1),
@@ -68,7 +68,7 @@ test("value_resolution: path syntax parent_id/target_y", (
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     ActionsIn = [set_attr(my_target_y,
-                          .parent_id.target_y)],
+                          :parent_id:target_y)],
     execute_action(
         actions_old(ActionsIn),
         obj_id(1),
@@ -98,7 +98,7 @@ test("value_resolution: multi-hop path a/b/c", (
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
     ActionsIn = [
-        set_attr(result, .first_id.second_id.final_value)
+        set_attr(result, :first_id:second_id:final_value)
     ],
     execute_action(
         actions_old(ActionsIn),
@@ -155,7 +155,7 @@ test("value_resolution: mixed plain and attr() values", (
                attr(speed, 5)],
               EmptyAttrs),
     ctx_with_attrs(EmptyAttrs, Ctx),
-    ActionsIn = [move_to(.target_x, 200, .speed)],
+    ActionsIn = [move_to(:target_x, 200, :speed)],
     execute_action(
         actions_old(ActionsIn),
         obj_id(1),

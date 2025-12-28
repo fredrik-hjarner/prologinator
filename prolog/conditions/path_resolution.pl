@@ -8,11 +8,11 @@
 %
 % New Path Structure (Input to resolve_path):
 %   - Key (Atom): Resolves attribute Key on ObjID.
-%   - ObjectSpec.Key: ObjectSpec resolves to NextID, then
+%   - ObjectSpec:Key: ObjectSpec resolves to NextID, then
 %     Key is resolved on NextID.
-%   - .Path: Wraps a path to indicate it is an attribute.
+%   - :Path: Wraps a path to indicate it is an attribute.
 %
-% NOTE: The . prefix is treated as syntactic sugar and is
+% NOTE: The : prefix is treated as syntactic sugar and is
 % stripped automatically to resolve the underlying path.
 
 % ==========================================================
@@ -22,15 +22,15 @@
 % value.
 
 resolve_path(ObjID, Path, Value) -->
-    % Strip . prefix if present (syntactic sugar)
-    ( {Path = .(InnerPath)} ->
+    % Strip : prefix if present (syntactic sugar)
+    ( {Path = :(InnerPath)} ->
         {TruePath = InnerPath}
     ;
         {TruePath = Path}
     ),
 
     (   % Case 1: Compound path using dot functor
-        {TruePath = Head.Rest}
+        {TruePath = Head:Rest}
     ->
         resolve_path(ObjID, Head, NextID),
         % Then resolve Rest starting from that object.
@@ -58,14 +58,14 @@ resolve_path(ObjID, Path, Value) -->
 % Unlike resolve_path, this fails if any attribute in the
 % path doesn't exist. No fallback to literals.
 
-% 1. Handle . prefix (strip it and recurse)
-strict_resolve_path(ObjID, .(Path), Value) -->
+% 1. Handle : prefix (strip it and recurse)
+strict_resolve_path(ObjID, :(Path), Value) -->
     !,
     strict_resolve_path(ObjID, Path, Value).
 
 % 2. Compound path using dot functor (recursive step)
 strict_resolve_path(
-    ObjID, FirstAttr.RestPath, Value
+    ObjID, FirstAttr:RestPath, Value
 ) -->
     !,
     % First resolve Head to get the next object ID
@@ -101,7 +101,7 @@ resolve_path_strict(ObjID, Path, Value) -->
 % Resolves the path down to the final object ID and
 % attribute Key.
 % Path can be a location path or wrapped in ..
-resolve_path_to_attr(MyID, .(Path), Pair) -->
+resolve_path_to_attr(MyID, :(Path), Pair) -->
     !,
     resolve_path_to_attr(MyID, Path, Pair).
 
@@ -110,7 +110,7 @@ resolve_path_to_attr(MyID, AttrName, MyID/AttrName) -->
     !.
 
 resolve_path_to_attr(MyID,
-                     FirstAttr.RestPath,
+                     FirstAttr:RestPath,
                      FinalID/Key) -->
     !,
     % Navigate through FirstAttr to get NextID

@@ -3,27 +3,27 @@
 
     define_action(spawn_enemy_child(X, Y),
         spawn([
-            set_attr(.type, enemy),
-            set_attr(.displayChar, 35),  % '#'
+            set_attr(:type, enemy),
+            set_attr(:displayChar, 35),  % '#'
             fork([
                 wait_until(
-                    % TODO: if .parent_id.hp is not set
+                    % TODO: if :parent_id:hp is not set
                     %       the code sadly still cant handle
                     %       it :'/
-                    default(.parent_id.hp, -1) < 1
+                    default(:parent_id:hp, -1) < 1
                 ),
                 despawn
             ]),
             fork([
                 loop([
-                    wait_until(exists(.collision_id)),
-                    decr(.parent_id.hp, 1),
+                    wait_until(exists(:collision_id)),
+                    decr(:parent_id:hp, 1),
                     wait(1)
                 ])
             ]),
             loop([
-                copy_attr(.parent_id.x, .x),
-                copy_attr(.parent_id.y, .y),
+                copy_attr(:parent_id:x, :x),
+                copy_attr(:parent_id:y, :y),
                 move_delta(0, X, Y),
                 wait(1)
             ])
@@ -34,11 +34,11 @@
 
     define_action(spawn_enemy(X, Y),
         spawn([
-            set_attr(.type, enemy),
-            set_attr(.hp, 10),
-            set_attr(.displayChar, 35),  % '#'
-            set_attr(.x, X),
-            set_attr(.y, Y),
+            set_attr(:type, enemy),
+            set_attr(:hp, 10),
+            set_attr(:displayChar, 35),  % '#'
+            set_attr(:x, X),
+            set_attr(:y, Y),
  
             %   #
             %  ###
@@ -70,7 +70,7 @@
             spawn_enemy_child(0, 2),
 
             fork([
-                wait_until(.hp < 1),
+                wait_until(:hp < 1),
                 % TODO: Without this wait(1) the parent will
                 % despawn before the children, and all will
                 % crash when the children try to access the
