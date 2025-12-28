@@ -2,7 +2,7 @@ WIP. Alpha. Still in conceptual/code design phase.
 
 **Prolog 2D Game Engine**.
 
-Like it's predecessor [Schmupinator](https://github.com/fredrik-hjarner/schmupinator) Prologinator has a Domain Specific Language
+Like it's predecessor [Schmupinator](https://github.com/fredrik-hjarner/schmupinator) Prologinator has it's own Domain Specific Language
 (DSL) that allows you to makes games. The concept is
 simple: all that exist are game objects and every such game
 object executes a list of actions, that's it. To bootstrap
@@ -27,7 +27,7 @@ I'm using all kinds of stuff for development:
   - sudo apt install gpp
 - just (task runner)
   - sudo apt install just
-- trealla prolog
-- trealla-js (to run prolog in browser)
-- scryer prolog
-- swi prolog
+- [trealla prolog](https://github.com/trealla-prolog/trealla)
+- [trealla-js](https://github.com/guregu/trealla-js) (to run prolog in browser)
+- [scryer prolog](https://github.com/mthom/scryer-prolog)
+- [swi prolog](https://www.swi-prolog.org/)
