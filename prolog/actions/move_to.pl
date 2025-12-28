@@ -5,10 +5,13 @@ execute_action_impl(
     obj_id(ID),
     result(Status, actions_new(NewActions))
 ) -->
+    resolve_arg(ID, TargetX, ResolvedTargetX),
+    resolve_arg(ID, TargetY, ResolvedTargetY),
+    resolve_arg(ID, Frames, ResolvedFrames),
     execute_move_to(
-        TargetX,
-        TargetY,
-        Frames,
+        ResolvedTargetX,
+        ResolvedTargetY,
+        ResolvedFrames,
         ID,
         Rest,
         Status,

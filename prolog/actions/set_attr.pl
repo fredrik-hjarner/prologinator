@@ -5,7 +5,10 @@ execute_action_impl(
     obj_id(MyID),
     result(completed, actions_new(Rest))
 ) -->
-    execute_set_attr(MyID, Path, Value).
+    % Path is always a path.
+    % Value should always "resolve" to a value.
+    resolve_arg(MyID, Value, ResolvedValue),
+    execute_set_attr(MyID, Path, ResolvedValue).
 
 execute_set_attr(MyID, Path, Value) -->
     resolve_path_to_attr(MyID, Path, TargetID/Key),

@@ -11,10 +11,13 @@ execute_action_impl(
     obj_id(ID),
     result(Status, actions_new(NewActions))
 ) -->
+    resolve_arg(ID, Frames, ResolvedFrames),
+    resolve_arg(ID, DX, ResolvedDX),
+    resolve_arg(ID, DY, ResolvedDY),
     execute_move_delta(
-        Frames,
-        DX,
-        DY,
+        ResolvedFrames,
+        ResolvedDX,
+        ResolvedDY,
         ID,
         Rest,
         Status,

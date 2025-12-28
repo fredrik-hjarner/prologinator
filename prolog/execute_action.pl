@@ -19,34 +19,12 @@
 % NOTE: dynamic declaration is now in prolog/dynamic.pl
 
 % ==========================================================
-% Top-level execute_action (with resolution)
-% ==========================================================
-execute_action(
-    actions_old([Action|Rest]),
-    obj_id(ID),
-    result(Status, actions_new(ActionsOut))
-) -->
-    % TODO: Add toggle to enable/disable debug logging here
-    % {Action =.. [Functor|_]},
-    % {format("execute_action: ~w~n", [Functor])},
-    % 1. Resolve value specs in action
-    resolve_action(ID, Action, ResolvedAction),
-    % 2. Delegate to existing logic (renamed)
-    % We need to put the ResolvedAction as new head on
-    % actions_old
-    execute_action_resolved(
-        actions_old([ResolvedAction|Rest]),
-        obj_id(ID),
-        result(Status, actions_new(ActionsOut))
-    ).
-
-% ==========================================================
-% execute_action_resolved
+% execute_action
 % ==========================================================
 % Wrapper: validates action then delegates to implementation
 % Now threads Context directly to accumulate side effects.
 % Also handles user-defined actions via runtime expansion.
-execute_action_resolved(
+execute_action(
     actions_old([Action|Rest]),
     obj_id(ID),
     result(Status, actions_new(ActionsOut))

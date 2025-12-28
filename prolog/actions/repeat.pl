@@ -24,10 +24,11 @@ execute_action_impl(
     obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->
+    resolve_arg(ID, Times, ResolvedTimes),
     % Constraint from original: Times > 0
-    {Times #> 0},
+    {ResolvedTimes #> 0},
     execute_repeat_managed(
-        Times,
+        ResolvedTimes,
         Actions,
         Actions,
         Rest,

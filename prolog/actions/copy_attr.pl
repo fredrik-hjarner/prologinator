@@ -5,6 +5,8 @@ execute_action_impl(
     obj_id(MyID),
     result(completed, actions_new(Rest))
 ) -->
+    % Both SourcePath and DestPath are paths so dont need
+    % any resolution.
     execute_copy_attr(MyID, SourcePath, DestPath).
 
 execute_copy_attr(MyID, SourcePath, DestPath) -->

@@ -8,10 +8,13 @@ builtin_action(wait_key_up(_)).
 
 execute_action_impl(
     actions_old([wait_key_up(KeyCode)|Rest]),
-    obj_id(_ID),
+    obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->
-    execute_wait_key_up(KeyCode, Rest, Status, ActionsOut).
+    resolve_arg(ID, KeyCode, ResolvedKeyCode),
+    execute_wait_key_up(
+        ResolvedKeyCode, Rest, Status, ActionsOut
+    ).
 
 execute_wait_key_up(KeyCode, Rest, Status, ActionsOut) -->
     % Check if key released THIS frame

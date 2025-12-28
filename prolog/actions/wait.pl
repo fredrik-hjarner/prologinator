@@ -2,10 +2,12 @@ builtin_action(wait(_)).
 
 execute_action_impl(
     actions_old([wait(N)|Rest]),
-    obj_id(_ID),
+    obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->
-    execute_wait(N, Rest, Status, ActionsOut).
+    % N should always "resolve" to a value.
+    resolve_arg(ID, N, ResolvedN),
+    execute_wait(ResolvedN, Rest, Status, ActionsOut).
 
 execute_wait(N, Rest, Status, ActionsOut) -->
     {
