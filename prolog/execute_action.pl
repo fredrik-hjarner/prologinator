@@ -20,9 +20,6 @@ execute_action_resolved(
     obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->
-#ifdef ENABLE_VALIDATION
-    {action_validation(Action)},
-#endif
     ( {builtin_action(Action)} ->
 #ifdef ENABLE_LOG_ACTIONS
         {functor(Action, Functor, _)},
@@ -40,7 +37,7 @@ execute_action_resolved(
               throw(Error)
             )
         )
-    ; {user_action(Action, Body)} -> % total prolog voodoo!
+    ; {user_action(Action, Body)} ->
         execute_action(
             actions_old([Body|Rest]),
             obj_id(ID),

@@ -40,11 +40,6 @@ ctx_set_objs(O, ctx(state(F, _, A, S, N, C, AS), I),
 ctx_set_attrs(A, ctx(state(F, O, _, S, N, C, AS), I),
               ctx(state(F, O, attrs(A), S, N, C, AS), I)).
 
-ctx_set_cmds(commands(SC, FC),
-             ctx(state(F, O, A, S, N, _, AS), I),
-             ctx(state(F, O, A, S, N,
-                       commands(SC, FC), AS), I)).
-
 ctx_set_spawnCmds(SC,
                   ctx(state(F, O, A, S, N,
                             commands(spawn_cmds(_),

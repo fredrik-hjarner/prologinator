@@ -8,14 +8,11 @@
 % 1. Global Imports (Import all libraries ONCE)
 
 :- use_module(library(assoc)).
-:- use_module(library(charsio)).
 :- use_module(library(clpz)).
-:- use_module(library(dif)).
 :- use_module(library(format)).
 :- use_module(library(iso_ext)).
 :- use_module(library(lists)).
 :- use_module(library(os)).
-:- use_module(library(time)).
 
 
 % 1.5. Discontiguous Declarations (must be before any clauses)
@@ -82,11 +79,6 @@ ctx_set_objs(O, ctx(state(F, _, A, S, N, C, AS), I),
 ctx_set_attrs(A, ctx(state(F, O, _, S, N, C, AS), I),
               ctx(state(F, O, attrs(A), S, N, C, AS), I)).
 
-ctx_set_cmds(commands(SC, FC),
-             ctx(state(F, O, A, S, N, _, AS), I),
-             ctx(state(F, O, A, S, N,
-                       commands(SC, FC), AS), I)).
-
 ctx_set_spawnCmds(SC,
                   ctx(state(F, O, A, S, N,
                             commands(spawn_cmds(_),
@@ -144,9 +136,6 @@ catch_dcg(Goal, Catcher, Handler, S0, S) :-
         Catcher,
         Handler
     ).
-
-is_list([]).
-is_list([_|T]) :- is_list(T).
 
 
 % 4. Action Resolution and Builtins
@@ -206,7 +195,6 @@ execute_action_resolved(
     obj_id(ID),
     result(Status, actions_new(ActionsOut))
 ) -->
-
     ( {builtin_action(Action)} ->
 
         {functor(Action, Functor, _)},
@@ -224,7 +212,7 @@ execute_action_resolved(
               throw(Error)
             )
         )
-    ; {user_action(Action, Body)} -> % total prolog voodoo!
+    ; {user_action(Action, Body)} ->
         execute_action(
             actions_old([Body|Rest]),
             obj_id(ID),
