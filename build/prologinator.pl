@@ -337,7 +337,6 @@ handle_loop_result(
         Original, Original, Rest, ID, Status, ActionsOut
     ).
 
-% #include "../prolog/actions/load.pl"
 
 % 7. Core Engine Components
 
