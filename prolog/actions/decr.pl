@@ -1,5 +1,15 @@
-builtin_action(decr(_, _)).
+builtin_action(decr(_)). % decrement by 1.
+builtin_action(decr(_, _)). % decrement by amount.
 
+% decrement by 1.
+execute_action_impl(
+    actions_old([decr(Path)|Rest]),
+    obj_id(MyID),
+    result(completed, actions_new(Rest))
+) -->
+    execute_decr(MyID, Path, 1).
+
+% decrement by amount.
 execute_action_impl(
     actions_old([decr(Path, Amount)|Rest]),
     obj_id(MyID),

@@ -124,6 +124,7 @@ ci: build
     just lint-len
     just lint-all
     just test-all
+    just test-all-trealla
 
 aider:
     # aider --no-git --no-gitignore

@@ -1,4 +1,11 @@
-builtin_action(wait(_)).
+builtin_action(wait). % wait 1 frame.
+builtin_action(wait(_)). % wait N frames.
+
+execute_action_impl(
+    actions_old([wait|Rest]),
+    obj_id(_ID),
+    result(yielded, actions_new(Rest))
+) --> !, [].
 
 execute_action_impl(
     actions_old([wait(N)|Rest]),

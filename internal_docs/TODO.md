@@ -1,3 +1,12 @@
+# Read about whether `!, [].` is needed in dcgs?
+
+Can I only use `!` or only use `[]`?? How do dcgs behave?
+
+# Rename `attr_if` to `if` and `set_attr` to `set`?
+
+They work on attributes, they could work in no other way, so
+the attr part of the name is redundant.
+
 # Treat singleton warnings as errors in test scripts!
 
 Otherwise I will swim in `Warning: singleton:` messages...

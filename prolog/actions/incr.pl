@@ -1,5 +1,15 @@
-builtin_action(incr(_, _)).
+builtin_action(incr(_)). % increment by 1.
+builtin_action(incr(_, _)). % increment by amount.
 
+% increment by 1.
+execute_action_impl(
+    actions_old([incr(Path)|Rest]),
+    obj_id(MyID),
+    result(completed, actions_new(Rest))
+) -->
+    execute_incr(MyID, Path, 1).
+
+% increment by amount.
 execute_action_impl(
     actions_old([incr(Path, Amount)|Rest]),
     obj_id(MyID),

@@ -42,6 +42,7 @@
 % build
 % This file must be included BEFORE any clauses are defined
 
+:- dynamic(execute_action_impl/5). % I'm sad this is needed.
 :- dynamic(user_action/2).
 
 
@@ -1522,7 +1523,31 @@ execute_action(
 
 
 % 6. Action Implementations (all actions)
-builtin_action(attr_if(_, _, _)).
+builtin_action(attr_if(_, _)). % if-then
+builtin_action(attr_if(_, _, _)). % if-then-else-then
+
+% if-then
+execute_action_impl(
+    actions_old([
+        attr_if(Condition, ThenActions)|Rest
+    ]),
+    obj_id(ID),
+    result(Status, actions_new(ActionsOut))
+) -->
+    (check_condition(ID, Condition)
+    ->
+        % Condition succeeded: execute ThenActions
+        tick_object(
+            actions_old(ThenActions),
+            obj_id(ID),
+            result(Status, actions_new(ActionAfterTick))
+        ),
+        {append(ActionAfterTick, Rest, ActionsOut)}
+    ;
+        % Else: do nothing.
+        {Status = completed},
+        {ActionsOut = Rest}
+    ).
 
 % =========================================================
 % attr_if Action
@@ -1543,6 +1568,7 @@ builtin_action(attr_if(_, _, _)).
 %   - Membership: sword in inventory
 %   - Logical: and([...]), or([...]), not(...)
 
+% if-then-else-then
 execute_action_impl(
     actions_old([
         attr_if(Condition, ThenActions, ElseActions)|Rest
@@ -1573,9 +1599,7 @@ execute_attr_if(
     Rest,
     result(Status, actions_new(ActionsOut))
 ) -->
-    % TODO: Check condition should be made to work with dcgs
-    %       by taking two Ctxs as last 2 args.
-    (   check_condition(ObjID, Condition)
+    (check_condition(ObjID, Condition)
     ->
         % Condition succeeded: execute ThenActions
         tick_object(
@@ -1594,7 +1618,14 @@ execute_attr_if(
         {append(ActionAfterTick, Rest, ActionsOut)}
     ).
 
-builtin_action(wait(_)).
+builtin_action(wait). % wait 1 frame.
+builtin_action(wait(_)). % wait N frames.
+
+execute_action_impl(
+    actions_old([wait|Rest]),
+    obj_id(_ID),
+    result(yielded, actions_new(Rest))
+) --> !, [].
 
 execute_action_impl(
     actions_old([wait(N)|Rest]),
@@ -1699,7 +1730,28 @@ execute_move_to(
         Status = yielded
     )}.
 
-builtin_action(move_delta(_, _, _)).
+builtin_action(move_delta(_, _)). % teleport.
+builtin_action(move_delta(_, _, _)). % move over N frames.
+
+% Hm so the only positive with this specific action
+% performance wise is that it does not need to resolve
+% the frames?
+execute_action_impl(
+    actions_old([move_delta(DX, DY)|Rest]),
+    obj_id(ID),
+    result(Status, actions_new(NewActions))
+) -->
+    resolve_arg(ID, DX, ResolvedDX),
+    resolve_arg(ID, DY, ResolvedDY),
+    execute_move_delta(
+        0,
+        ResolvedDX,
+        ResolvedDY,
+        ID,
+        Rest,
+        Status,
+        NewActions
+    ).
 
 % move_delta(+Frames, +DX, +DY)
 % Mode: move_delta(+Frames, +DX, +DY)
@@ -1879,8 +1931,18 @@ execute_copy_attr(MyID, SourcePath, DestPath) -->
     ctx_attr_val(SourceID/SourceKey, Value),
     ctx_set_attr_val(DestID/DestKey, Value).
 
-builtin_action(incr(_, _)).
+builtin_action(incr(_)). % increment by 1.
+builtin_action(incr(_, _)). % increment by amount.
 
+% increment by 1.
+execute_action_impl(
+    actions_old([incr(Path)|Rest]),
+    obj_id(MyID),
+    result(completed, actions_new(Rest))
+) -->
+    execute_incr(MyID, Path, 1).
+
+% increment by amount.
 execute_action_impl(
     actions_old([incr(Path, Amount)|Rest]),
     obj_id(MyID),
@@ -1900,8 +1962,18 @@ execute_incr(MyID, Path, Amount) -->
     ),
     ctx_set_attr_val(TargetID/Key, NewValue).
 
-builtin_action(decr(_, _)).
+builtin_action(decr(_)). % decrement by 1.
+builtin_action(decr(_, _)). % decrement by amount.
 
+% decrement by 1.
+execute_action_impl(
+    actions_old([decr(Path)|Rest]),
+    obj_id(MyID),
+    result(completed, actions_new(Rest))
+) -->
+    execute_decr(MyID, Path, 1).
+
+% decrement by amount.
 execute_action_impl(
     actions_old([decr(Path, Amount)|Rest]),
     obj_id(MyID),

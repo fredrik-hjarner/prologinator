@@ -1,4 +1,28 @@
-builtin_action(attr_if(_, _, _)).
+builtin_action(attr_if(_, _)). % if-then
+builtin_action(attr_if(_, _, _)). % if-then-else-then
+
+% if-then
+execute_action_impl(
+    actions_old([
+        attr_if(Condition, ThenActions)|Rest
+    ]),
+    obj_id(ID),
+    result(Status, actions_new(ActionsOut))
+) -->
+    (check_condition(ID, Condition)
+    ->
+        % Condition succeeded: execute ThenActions
+        tick_object(
+            actions_old(ThenActions),
+            obj_id(ID),
+            result(Status, actions_new(ActionAfterTick))
+        ),
+        {append(ActionAfterTick, Rest, ActionsOut)}
+    ;
+        % Else: do nothing.
+        {Status = completed},
+        {ActionsOut = Rest}
+    ).
 
 % =========================================================
 % attr_if Action
@@ -19,6 +43,7 @@ builtin_action(attr_if(_, _, _)).
 %   - Membership: sword in inventory
 %   - Logical: and([...]), or([...]), not(...)
 
+% if-then-else-then
 execute_action_impl(
     actions_old([
         attr_if(Condition, ThenActions, ElseActions)|Rest
@@ -49,9 +74,7 @@ execute_attr_if(
     Rest,
     result(Status, actions_new(ActionsOut))
 ) -->
-    % TODO: Check condition should be made to work with dcgs
-    %       by taking two Ctxs as last 2 args.
-    (   check_condition(ObjID, Condition)
+    (check_condition(ObjID, Condition)
     ->
         % Condition succeeded: execute ThenActions
         tick_object(

@@ -1,4 +1,25 @@
-builtin_action(move_delta(_, _, _)).
+builtin_action(move_delta(_, _)). % teleport.
+builtin_action(move_delta(_, _, _)). % move over N frames.
+
+% Hm so the only positive with this specific action
+% performance wise is that it does not need to resolve
+% the frames?
+execute_action_impl(
+    actions_old([move_delta(DX, DY)|Rest]),
+    obj_id(ID),
+    result(Status, actions_new(NewActions))
+) -->
+    resolve_arg(ID, DX, ResolvedDX),
+    resolve_arg(ID, DY, ResolvedDY),
+    execute_move_delta(
+        0,
+        ResolvedDX,
+        ResolvedDY,
+        ID,
+        Rest,
+        Status,
+        NewActions
+    ).
 
 % move_delta(+Frames, +DX, +DY)
 % Mode: move_delta(+Frames, +DX, +DY)
