@@ -120,10 +120,10 @@ sconcat OUTPUT_FILE="concat.xml":
 # Run CI pipeline: lint-all then test-all
 # Fails if any step fails
 ci: build
+    just tokens > tokens.txt
     just lint-len
     just lint-all
     just test-all
-    just tokens > tokens.txt
 
 aider:
     # aider --no-git --no-gitignore
