@@ -57,7 +57,12 @@ execute_action_resolved(
 #ifdef ENABLE_VALIDATION
     {action_validation(Action)},
 #endif
-    % validate(Action, action_schema),
+    % {findall(
+    %     Head,
+    %     builtin_action(Head),
+    %     Heads
+    % )},
+    % {pretty_print(Heads)},
     ( {builtin_action(Action)} ->
         % It's a built-in action - execute normally
 #ifdef ENABLE_LOG_ACTIONS

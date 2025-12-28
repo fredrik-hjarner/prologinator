@@ -168,18 +168,18 @@ test("wait_key_down: in loop pattern", (
     % --------------------------------------------------
     % Act
     % --------------------------------------------------
-    % findall(
-    %     Head,
-    %     clause(execute_action_impl(Head,_,_,_,_), _),
-    %     Heads
-    % ),
-    % % pretty_print(Heads),
-    % % Specifically check for loop
-    % ( member(actions_old([loop(_)|_]), Heads) ->
-    %     format("LOOP ACTION FOUND~n", [])
-    % ;
-    %     format("LOOP ACTION MISSING~n", [])
-    % ),
+    findall(
+        Head,
+        clause(execute_action_impl(Head,_,_,_,_), _),
+        Heads
+    ),
+    % pretty_print(Heads),
+    % Specifically check for loop
+    ( member(actions_old([loop(_)|_]), Heads) ->
+        format("LOOP ACTION FOUND~n", [])
+    ;
+        format("LOOP ACTION MISSING~n", [])
+    ),
     expect(tick_object(
         actions_old(ActionsIn),
         obj_id(1),
