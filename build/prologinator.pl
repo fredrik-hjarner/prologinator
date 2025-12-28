@@ -29,7 +29,11 @@
 % This file must be included BEFORE any clauses are defined
 
 :- discontiguous(builtin_action/1).
+% :- dynamic(builtin_action/1).
+
 :- discontiguous(check_condition_impl/4).
+
+:- dynamic(execute_action_impl/5).
 :- discontiguous(execute_action_impl/5).
 
 
@@ -2285,7 +2289,7 @@ execute_loop_managed(
 % Case 1: Despawned
 handle_loop_result(
     despawned, _, _, _, _, despawned, []
-) --> [].
+) --> !, [].
 
 % Case 2: Yielded - Body yielded, so we yield the loop state
 handle_loop_result(
@@ -2296,7 +2300,7 @@ handle_loop_result(
     _,
     yielded,
     [loop(RunRemaining, Original)|Rest]
-) --> [].
+) --> !, [].
 
 % Case 3: Completed - Body finished, restart loop
 % immediately

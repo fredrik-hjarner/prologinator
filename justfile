@@ -33,6 +33,8 @@ test-all: build
 test-all-verbose: build
     @ ./scripts/test-all.ts
 
+test-trealla MODULE: build-tpl
+    @ VALIDATION_ERR_MSG=false ./scripts/test_trealla.ts {{MODULE}}
 
 test-all-trealla: build-tpl
     @ VALIDATION_ERR_MSG=false ./scripts/test-all-trealla.ts

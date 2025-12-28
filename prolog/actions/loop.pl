@@ -53,7 +53,7 @@ execute_loop_managed(
 % Case 1: Despawned
 handle_loop_result(
     despawned, _, _, _, _, despawned, []
-) --> [].
+) --> !, [].
 
 % Case 2: Yielded - Body yielded, so we yield the loop state
 handle_loop_result(
@@ -64,7 +64,7 @@ handle_loop_result(
     _,
     yielded,
     [loop(RunRemaining, Original)|Rest]
-) --> [].
+) --> !, [].
 
 % Case 3: Completed - Body finished, restart loop
 % immediately

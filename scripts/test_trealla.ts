@@ -69,7 +69,12 @@ halt.
 `;
 
 const proc = Bun.spawn(
-    ["tpl", "-g", prologCommand],
+    [
+        "tpl",
+        // "-t", // uncomment to turn on tracing
+        "-g",
+        prologCommand
+    ],
     {
         stdout: "pipe",
         stderr: "pipe"
