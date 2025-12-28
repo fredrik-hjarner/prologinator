@@ -200,6 +200,24 @@ execute_action_resolved(
         {functor(Action, Functor, _)},
         {format("executing `~w`~n", [Functor])},
 
+        {findall(
+            F/Arity,
+            (
+                clause(
+                    execute_action_impl(
+                        actions_old([ActionPattern|_]),
+                        _,
+                        _,
+                        _,
+                        _
+                    ),
+                    _
+                ),
+                functor(ActionPattern, F, Arity)
+            ),
+            FunctorArities
+        )},
+        {format("Available actions: ~w~n", [FunctorArities])},
         catch_dcg(
             execute_action_impl(
                 actions_old([Action|Rest]),
@@ -209,7 +227,7 @@ execute_action_resolved(
             Error,
             ( write('Error during execute_action_impl: '),
               write(Error), nl,
-              throw(Error)
+              halt(1)
             )
         )
     ; {user_action(Action, Body)} ->
