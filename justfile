@@ -161,3 +161,9 @@ build-tpl:
 tokens FILE="./build/prologinator.pl":
     @just build > /dev/null 2>&1
     @bun scripts/count-tokens.ts {{FILE}} | tee tokens.txt
+
+scryer: build
+    scryer-prolog build/prologinator.pl test_util.pl test.pl -g "main"
+
+trealla: build
+    tpl build/prologinator.pl test_util.pl test.pl -g "main"

@@ -1,4 +1,12 @@
 
+expect(Goal, Message) :- (
+    Goal ->
+        true
+    ;
+        write(user_output, Message),
+        nl,
+        halt(1)
+).
 
 test_fixture(Actions, AttrListKV, Ctx) :-
     empty_ctx(C0),
@@ -17,15 +25,12 @@ test_fixture(Actions, AttrListKV, Ctx) :-
 
 kv_to_attr(Key-Value, attr(Key, Value)).
 
-
 run_ticks(0, Ctx, Ctx) :- !.
 run_ticks(N, CtxIn, CtxOut) :-
     N > 0,
     tick(CtxIn, CtxMid),
     N1 is N - 1,
     run_ticks(N1, CtxMid, CtxOut).
-
-
 
 assert_attrs(Ctx, ExpectedKV) :-
     TargetID = 0,
@@ -55,7 +60,6 @@ check_expectations([Key-ExpectedVal|Rest], ActualList) :-
         format("   FAIL: Attr '~w' missing.~n~n", [Key]),
         fail
     ).
-
 
 test_action_sequence(
     start_attrs(StartAttrs),
