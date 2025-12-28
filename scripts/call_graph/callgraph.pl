@@ -1,7 +1,5 @@
-% Execute with SWI-Prolog!
 :- use_module(library(lists)).
 
-% 1. CONFIG: Operators
 :- op(700, xfx, #=).
 :- op(700, xfx, #>).
 :- op(700, xfx, #<).
@@ -12,12 +10,10 @@
 :- op(700, xfx, ins).
 :- op(450, xfx, ..).
 
-% 2. CONFIG: Blocklist
 ignore_predicate(format_).
 ignore_predicate(throw_error).
 ignore_predicate(is_list).
 
-% 3. MAIN
 main :-
     current_prolog_flag(argv, Files),
     (   Files == []
@@ -36,7 +32,6 @@ main :-
     write_dot(AllEdges),
     halt.
 
-% 4. READER
 read_file_safe(File, Terms) :-
     catch(
         setup_call_cleanup(
@@ -61,7 +56,6 @@ read_stream(In, Terms) :-
         read_stream(In, Rest)
     ).
 
-% 5. EXTRACTORS (name only)
 get_definitions(Terms, Defs) :-
     findall(Name, 
         (member(T, Terms), term_name(T, Name)),
@@ -96,7 +90,6 @@ term_body((_ :- Body), Body).
 term_body((_ --> Body), Body).
 term_body(_, true).
 
-% 6. WALKER
 body_call(Var, _) :- 
     var(Var), !, fail.
 body_call(_:G, Name) :- 
@@ -124,7 +117,6 @@ body_call(Goal, Name) :-
     Goal \= [],
     Name = Goal.
 
-% 7. WRITER
 write_dot(Edges) :-
     format("digraph G {~n", []),
     format("  rankdir=LR;~n", []),

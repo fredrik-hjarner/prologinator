@@ -1,10 +1,4 @@
-% Explicitly allow dynamic definition
-% (Correct Syntax: use parentheses)
-% NOTE: dynamic declaration is now in prolog/dynamic.pl
 
-% ==========================================================
-% Recursive Replacement Logic
-% ==========================================================
 
 replace_macros(Term, Term) :-
     var(Term), !.
@@ -14,19 +8,15 @@ replace_macros(Term, Replaced) :-
     functor(Term, def, 1),
     arg(1, Term, Name),
     atom(Name),
-    % No catch needed because we declared
-    % dynamic(macro_val/2)
     macro_val(Name, Value),
     !,
     Replaced = Value.
 
-% 3. Recursion for Lists
 replace_macros([H|T], [H2|T2]) :-
     !,
     replace_macros(H, H2),
     replace_macros(T, T2).
 
-% 4. Recursion for Compound Terms
 replace_macros(TermIn, TermOut) :-
     compound(TermIn),
     !,
@@ -34,12 +24,8 @@ replace_macros(TermIn, TermOut) :-
     maplist(replace_macros, ArgsIn, ArgsOut),
     TermOut =.. [Functor | ArgsOut].
 
-% 5. Everything else (Atoms, Numbers) stays same
 replace_macros(Term, Term).
 
-% ==========================================================
-% Term Expansion Hooks
-% ==========================================================
 
 user:term_expansion(Term, []) :-
     nonvar(Term),
@@ -51,10 +37,7 @@ user:term_expansion(Term, []) :-
 
 user:term_expansion(TermIn, TermOut) :-
     nonvar(TermIn),
-    % Don't expand define directives themselves
     \+ (TermIn = define(_, _)),
-    % Don't expand module declarations, directives, or
-    % term_expansion clauses
     \+ (TermIn = (:- _)),
     \+ (functor(TermIn, ':-', _)),
     \+ (functor(TermIn, term_expansion, _)),
@@ -62,9 +45,6 @@ user:term_expansion(TermIn, TermOut) :-
     replace_macros(TermIn, TermOut),
     TermIn \== TermOut.
 
-% ==========================================================
-% Tests
-% ==========================================================
 
 run_tests :-
     findall(
@@ -80,7 +60,6 @@ run_tests :-
         _
     ).
 
-% Helpers for tests to clean up after themselves
 set_def(K, V) :-
     ( retractall(macro_val(K, _))
     ; true

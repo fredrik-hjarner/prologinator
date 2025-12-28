@@ -1,7 +1,3 @@
-% ==========================================================
-% Test Utility Functions
-% ==========================================================
-% Test-related utilities for assertions and error reporting
 
 expect(Goal, Message) :- (
     Goal ->

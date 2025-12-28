@@ -1,13 +1,7 @@
-% ==========================================================
-% Main Game Loop
-% ==========================================================
 
 main :-
     catch(
         (
-            % ----------------------------------------------
-            % Resolve GAME directory
-            % ----------------------------------------------
             ( catch(getenv("GAME", RawGame), _, fail) ->
                 atom_chars(GameName, RawGame) 
             ;
@@ -32,9 +26,6 @@ main :-
                 throw('input_timeline not found in file')
             ),
 
-            % ----------------------------------------------
-            % Create root object & context
-            % ----------------------------------------------
             empty_assoc(AttrStore0),
             put_assoc(
                 0,
@@ -56,9 +47,6 @@ main :-
                 AttrStore1, InitialContext0, InitialContext1
             ),
 
-            % ----------------------------------------------
-            % Actionstore: load game via ENGINE (CRITICAL)
-            % ----------------------------------------------
             ctx_actionstore(
                 ActionStore0,
                 InitialContext1,
@@ -77,9 +65,6 @@ main :-
                 InitialContext
             ),
 
-            % ----------------------------------------------
-            % Start game loop
-            % ----------------------------------------------
             game_loop(
                 ctx_in(InitialContext),
                 [],
@@ -96,9 +81,6 @@ main :-
     ).
 
 
-% ==========================================================
-% Game Loop
-% ==========================================================
 
 game_loop(
     ctx_in(Ctx),
@@ -115,7 +97,6 @@ game_loop(
                     'Press: f=forward, r=reverse, q=quit'
                 ), nl,
                 flush_output,
-                % Scryer/Others return an Atom directly.
                 get_single_char(Char),
                 ( Char = end_of_file ->
                     ctx_set_status(lost, Ctx, NewCtx),
@@ -163,28 +144,23 @@ handle_input(
     keys_held(NewKeysHeld)
 ) :-
     (   char_code(Char, 102) ->  % 'f'
-        % Forward: lookup events, update keys, tick
         ctx_frame(Frame, Ctx, Ctx),
         Frame1 #= Frame + 1,
         
-        % Get events for next frame
         ( get_assoc(Frame1, Timeline, Events) ->
             true
         ;
             Events = []
         ),
         
-        % Update keys_held based on events
         apply_events(Events, KeysHeld, NewKeysHeld),
         
-        % Inject input(events, held) into context
         ctx_set_input(
           input(events(Events), held(NewKeysHeld)),
           Ctx,
           CtxWithInput
         ),
         
-        % Tick
         catch(
             tick(CtxWithInput, NewCtx),
             Error,
@@ -195,11 +171,9 @@ handle_input(
         ),
         NewHistory = [ctx_in(Ctx)|History]
     ;   char_code(Char, 114) ->  % 'r'
-        % Reverse: go back
         ( History = [ctx_in(PrevCtx)|RestHistory] ->
             NewCtx = PrevCtx,
             NewHistory = RestHistory,
-            % Reconstruct keys_held from PrevCtx
             ctx_input(
                 input(_, held(NewKeysHeld)),
                 PrevCtx, PrevCtx
@@ -210,26 +184,21 @@ handle_input(
             NewKeysHeld = KeysHeld
         )
     ;   char_code(Char, 113) ->  % 'q'
-        % Quit
         ctx_set_status(lost, Ctx, NewCtx),
         NewHistory = History,
         NewKeysHeld = KeysHeld
     ;
-        % Unknown input
         NewCtx = Ctx,
         NewHistory = History,
         NewKeysHeld = KeysHeld
     ).
 
-% apply_events(+Events, +KeysIn, -KeysOut)
-% Update key state based on frame events
 apply_events([], Keys, Keys).
 apply_events(
     [event(key(K), down)|Rest], 
     KeysIn, 
     KeysOut
 ) :-
-    % Add K if not present
     ( member(K, KeysIn) ->
         KeysTemp = KeysIn
     ;
@@ -241,7 +210,6 @@ apply_events(
     KeysIn, 
     KeysOut
 ) :-
-    % Remove K if present
     ( select(K, KeysIn, KeysTemp) ->
         true
     ;
@@ -249,41 +217,25 @@ apply_events(
     ),
     apply_events(Rest, KeysTemp, KeysOut).
 
-% ==========================================================
-% ASCII Rendering
-% ==========================================================
 render(Ctx, Ctx) :-
-    % Clear screen (ANSI escape code)
-    % COMMENTED OUT for debugging
-    % char_code(Esc, 27),  % ESC character
-    % write(Esc), write('[2J'), write(Esc), write('[H'),
     
-    % ctx_actionstore(ActionStore, Ctx, _),
-    % write('--- Action Store ---'), nl,
-    % pretty_print(ActionStore),
-    % nl,
-    % write('--------------------'), nl,
 
     ctx_frame(Frame, Ctx, Ctx),
     ctx_status(Status, Ctx, Ctx),
     ctx_objs(Objects, Ctx, Ctx),
     length(Objects, ObjCount),
     
-    % Header
     write('=== Tower Defense ==='), nl,
     write('Frame: '), write(Frame),
     write(' | Status: '), write(Status),
     write(' | Objects: '), write(ObjCount), nl,
     write('================================'), nl, nl,
     
-    % Render grid (20x20)
     render_grid(Objects, Ctx, Ctx),
     nl.
 
 render_grid(Objects, CtxIn, CtxOut) :-
-    % Build position map once: pos(X, Y) -> Symbol
     build_position_map(Objects, PosMap, CtxIn, CtxOut),
-    % Grid is 20x20, positions 0-19
     render_grid_rows(PosMap, 0).
 
 build_position_map(Objects, PosMap, CtxIn, CtxOut) :-
@@ -334,9 +286,6 @@ render_grid_row(_, _, X) :-
     X > 19.
 
 get_symbol(ID, Symbol, CtxIn, CtxOut) :-
-    % Get displayChar attribute (character code as integer)
-    % If attribute doesn't exist, predicate fails
-    % (object not displayed)
     ctx_attr_val(ID/displayChar, Symbol, CtxIn, CtxIn),
     integer(Symbol),
     CtxOut = CtxIn.

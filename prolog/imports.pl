@@ -1,5 +1,3 @@
-% Centralized library imports
-% Imports all libraries used across the codebase
 
 :- use_module(library(assoc)).
 :- use_module(library(charsio)).

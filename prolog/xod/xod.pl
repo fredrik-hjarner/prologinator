@@ -1,153 +1,17 @@
-% ================================================
-% VALIDATION SYSTEM - Phase 1
-% Target: Scryer Prolog (ISO Prolog)
-% ================================================
-%
-% CRITICAL FIXES APPLIED:
-% 1. Module context threaded through recursion
-%    (enables cross-module schema lookup)
-% 2. Integer range crash fixed
-%    (var check before range check)
-% 3. Optimization: arg/3 instead of =..
-%    (zero-allocation struct checking)
-%
-% RATIONALE & DESIGN
-% ==================
-%
-% This is a schema-driven validator that interprets
-% data structures to validate game state and
-% objects. It replaces hand-written validation
-% predicates with declarative schemas.
-%
-% Key Design Decisions:
-%
-% 1. SCHEMA-AS-DATA
-%    Schemas are Prolog terms (facts), not code.
-%    Example: game_state_schema(struct(...)).
-%    This keeps data and logic separate.
-%
-% 2. EXPLICIT FUNCTOR CHECKING
-%    Each struct includes its expected functor.
-%    Example: struct(game_state, [fields...]).
-%    This prevents type confusion. game_state(1,2)
-%    and enemy_state(1,2) are now distinct.
-%
-% 3. EXPLICIT SCHEMA REFERENCES
-%    Named schema lookups wrapped: schema(name).
-%    Example: objects(list(schema(
-%             game_object_schema))).
-%    This removes ambiguity. Parser knows: "go
-%    look up game_object_schema."
-%
-% 4. IMPLICIT OPTIONALITY (var(V) -> pass)
-%    Every field rule: If unbound, pass. If
-%    bound, validate. No explicit optional() needed.
-%    Example: integer(0, 100) accepts unbound,
-%    or if bound must be 0..100.
-%    This matches game state reality: partial
-%    structures (e.g., game(_, _, X, _, _)) are
-%    fine mid-computation.
-%
-% 5. FIELD-LEVEL VALIDATION
-%    No top-level ground/1 guard. Each field
-%    validates independently. Unbound C in
-%    game(a, b, C, d, e) does NOT stop validation
-%    of d and e.
-%
-% 6. STRUCTURED ERROR REPORTING WITH PATH REVERSAL
-%    Errors include Path (field nesting), stored
-%    left-to-right for human readability.
-%    Example: validation_error(
-%             [game_state, objects, [2]],
-%             expected_integer, not_int).
-%    This tells you exactly where validation broke,
-%    in outer-to-inner order.
-%
-% 7. SCHEMA LOOKUP
-%    Schemas are looked up in the current module
-%    (prologinator in the monolithic build).
-%
-% 8. NO SPECIAL SYNTAX
-%    Schemas are pure Prolog terms. No DSLs,
-%    no code generation. Homoiconic: data can
-%    be inspected, printed, stored in files.
-%
-% USAGE
-% =====
-%
-% 1. Define schema in your module:
-%    game_state_schema(struct(game_state, [
-%        frame(integer(0, 1000000)),
-%        status(enum([playing, won, lost])),
-%        ...
-%    ])).
-%
-% 2. Import validation:
-%    :- use_module(xod).
-%
-% 3. Call validator:
-%    validate(MyState, game_state_schema)
-%    -> Looks up schema in YOUR module
-%    -> Validates recursively with module
-%    -> Throws on error with full path
-%    -> If MyState has unbound fields, they pass
-%    -> If bound, they're checked
-%
-% 4. Handle errors (optional):
-%    catch(validate(State, Schema),
-%          validation_error(Path, Reason, Value),
-%          handle_error(Path, Reason, Value))
-%    % Path is now [Outer, ..., Inner] readable
-%
-% SCHEMA PRIMITIVES
-% =================
-%
-% any                   Always passes (any value)
-% integer               Bound: must be integer
-% integer(Min, Max)     Bound: in range [Min,Max]
-%                       Use _ for unbounded
-% atom                  Bound: must be atom
-% enum([a,b,c])         Bound: one of list
-% list(Schema)          Bound: list of Schema items
-% struct(Functor, [...]) Bound: compound term
-%                       with correct functor
-% schema(Name)          Bound: lookup named schema
-% union([S1, S2, ...])  Bound: matches first
-%                       succeeding schema
-%
-% All pass if unbound.
-%
-% ================================================
 
-% ================================================
-% ENTRY POINT
-% ================================================
 
-% validate(Term, SchemaName)
-% Looks up SchemaName in the current module context,
-% validates Term against it.
-% Throws validation_error if invalid.
-% Passes automatically if Term unbound.
 
 validate(Term, SchemaName) :-
     call(SchemaName, Schema),
     validates_against(Term, Schema, []).
 
-% ================================================
-% CORE SCHEMA INTERPRETER
-% ================================================
 
-% ANY: Always passes
 validates_against(_, any, _) :- !.
 
-% INTEGER: Must be integer if bound
 validates_against(V, integer, Path) :-
     check(V, integer(V), expected_integer,
           Path).
 
-% INTEGER(Min, Max): Range check if bound
-% CRITICAL FIX: Check var BEFORE range check
-% to avoid instantiation error
 validates_against(V, integer(Min, Max),
                   Path) :-
     (var(V) ->
@@ -161,11 +25,9 @@ validates_against(V, integer(Min, Max),
         )
     ).
 
-% ATOM: Must be atom if bound
 validates_against(V, atom, Path) :-
     check(V, atom(V), expected_atom, Path).
 
-% ENUM: Must be in options if bound
 validates_against(V, enum(Opts), Path) :-
     (ground(V) ->
         check(V, memberchk(V, Opts),
@@ -174,16 +36,12 @@ validates_against(V, enum(Opts), Path) :-
         true
     ).
 
-% LIST(Schema): List of items matching
-% Schema, if bound.
 validates_against(V, list(Schema),
                   Path) :-
     check(V, is_list(V), expected_list,
           Path),
     check_list_items(V, Schema, Path, 0).
 
-% STRUCT(Functor, Fields): Compound term
-% with correct functor and field schemas.
 validates_against(V, struct(Functor,
                            Fields), Path) :-
     (var(V) ->
@@ -193,8 +51,6 @@ validates_against(V, struct(Functor,
                     Path)
     ).
 
-% SCHEMA(Name): Named reference lookup
-% in the current module.
 validates_against(V, schema(SchemaName),
                   Path) :-
     (var(V) ->
@@ -216,12 +72,6 @@ validates_against(V, schema(SchemaName),
         )
     ).
 
-% UNION(Schemas): One of multiple schemas
-% Tries each schema in order until one
-% matches. If V is unbound, pass. If bound,
-% try each; throw if none match.
-% Example: union([wait_schema,
-%                 move_to_schema, ...])
 validates_against(V, union(Schemas),
                   Path) :-
     (var(V) ->
@@ -230,9 +80,6 @@ validates_against(V, union(Schemas),
         try_union_schemas(V, Schemas, Path)
     ).
 
-% try_union_schemas/3: Try each schema, catching
-% exceptions. If any succeeds, we're done. If all
-% fail or throw, throw no_matching_union error.
 try_union_schemas(V, [], Path) :-
     throw_error(Path, no_matching_union, V).
 try_union_schemas(V, [Schema|Rest], Path) :-
@@ -244,16 +91,7 @@ try_union_schemas(V, [Schema|Rest], Path) :-
         try_union_schemas(V, Rest, Path)
     ).
 
-% ================================================
-% GENERIC HELPER: Boilerplate Reduction
-% ================================================
 
-% check(V, Goal, ErrorReason, Path)
-% If V is unbound: pass.
-% If V is bound: execute Goal.
-%   If Goal succeeds: pass.
-%   If Goal fails: throw with error.
-% Reduces repetitive if-then-else pattern.
 
 check(V, Goal, ErrorReason, Path) :-
     (var(V) ->
@@ -266,27 +104,14 @@ check(V, Goal, ErrorReason, Path) :-
         )
     ).
 
-% Helper: Check if term is a list
-% Succeeds if V is [] or [H|T] where T is a list
 is_list([]).
 is_list([_|T]) :- is_list(T).
 
-% ================================================
-% TEST HELPER: Exception Expectation
-% ================================================
 
-% expect_exception/1: Succeeds if Goal throws an exception,
-% fails otherwise (if Goal succeeds or fails without
-% throwing).
 expect_exception(Goal) :-
     catch((Goal, fail), _, true).
 
-% ================================================
-% ERROR HELPER: Conditional format output
-% ================================================
 
-% format_/2: Outputs format message only if
-% VALIDATION_ERR_MSG is not set to "false"
 format_(Format, Args) :-
     ( catch(getenv("VALIDATION_ERR_MSG", Value), _, fail),
       Value = "false" ->
@@ -295,16 +120,7 @@ format_(Format, Args) :-
         format(Format, Args)  % Output normally
     ).
 
-% ================================================
-% ERROR HELPER: Path Reversal and Formatting
-% ================================================
 
-% throw_error(RevPath, Reason, Value)
-% Reverses the path (built backwards during
-% recursion) and throws with correct order.
-% Formats and prints error message before throwing.
-% Result: validation_error([Outer, Inner],
-%         Reason, Value) readable left-to-right.
 
 throw_error(RevPath, Reason, Value) :-
     reverse(RevPath, Path),
@@ -312,8 +128,6 @@ throw_error(RevPath, Reason, Value) :-
     throw(validation_error(Path, Reason,
                           Value)).
 
-% format_error_message/3: Formats and prints
-% validation error with path, reason, and value
 format_error_message(Path, Reason, Value) :-
     format_("ERROR: Validation failed~n", []),
     format_("  Path: ~w~n", [Path]),
@@ -327,9 +141,6 @@ format_error_message(Path, Reason, Value) :-
     ),
     flush_output.
 
-% ================================================
-% HELPERS: Integer Range
-% ================================================
 
 check_int_range(V, Min, Max, Path) :-
     (nonvar(Min), V < Min ->
@@ -343,11 +154,6 @@ check_int_range(V, Min, Max, Path) :-
         true
     ).
 
-% ================================================
-% HELPERS: Struct Validation
-% OPTIMIZATION: Use functor/3 + arg/3
-% instead of =.. (zero-allocation)
-% ================================================
 
 check_struct(V, ExpectedFunctor, Fields,
             Path) :-
@@ -377,7 +183,6 @@ check_struct_arity(V, Arity, Fields,
               Arity)
     ).
 
-% Iterate through struct arguments using arg/3
 check_struct_args(_, _, [], _).
 check_struct_args(V, Idx, [F|Fs],
                  Path) :-
@@ -389,9 +194,6 @@ check_struct_args(V, Idx, [F|Fs],
     check_struct_args(V, NextIdx, Fs,
                      Path).
 
-% ================================================
-% HELPERS: List Validation
-% ================================================
 
 check_list_items([], _, _, _).
 check_list_items([Item|Rest], Schema,
@@ -402,9 +204,6 @@ check_list_items([Item|Rest], Schema,
     check_list_items(Rest, Schema, Path,
                     NextIndex).
 
-% ================================================
-% SCHEMA DEFINITIONS
-% ================================================
 
 game_state_schema(struct(game_state, [
     frame(integer(0, _)),
@@ -432,11 +231,7 @@ test_rev_hint_schema(struct(rev_hint, [
     attrs(list(any))
 ])).
 
-% ================================================
-% TEST RUNNER
-% ================================================
 
-% Test: valid game_state passes
 test("valid game_state", (
     State = game_state(
         0,
@@ -451,14 +246,12 @@ test("valid game_state", (
     validate(State, game_state_schema)
 )).
 
-% Test: unbound fields in game_state pass
 test("game_state with unbound fields", (
     State = game_state(0, _, playing, 0,
                       1, _, _),
     validate(State, game_state_schema)
 )).
 
-% Test: complex valid state
 test("complex game_state", (
     State = game_state(
         5,
@@ -483,7 +276,6 @@ test("complex game_state", (
     validate(State, game_state_schema)
 )).
 
-% Test: invalid status throws (path correct)
 test("invalid status throws", (
     State = game_state(0, [], 
                       invalid_status,
@@ -496,7 +288,6 @@ test("invalid status throws", (
     )
 )).
 
-% Test: non-integer frame throws
 test("non-integer frame throws", (
     State = game_state(not_int, [],
                       playing, 0, 1,
@@ -505,7 +296,6 @@ test("non-integer frame throws", (
                              game_state_schema))
 )).
 
-% Test: wrong functor throws
 test("wrong functor throws", (
     State = enemy_state(0, [],
                        playing, 0, 1,
@@ -514,7 +304,6 @@ test("wrong functor throws", (
                              game_state_schema))
 )).
 
-% Test: nested error path (objects->index)
 test("nested path in error", (
     State = game_state(
         0,
@@ -537,14 +326,12 @@ test("nested path in error", (
     )
 )).
 
-% Test: valid game_object
 test("valid game_object", (
     Obj = game_object(0, static,
                      [], [], []),
     validate(Obj, game_object_schema)
 )).
 
-% Test: invalid object type throws
 test("invalid object type throws", (
     Obj = game_object(0, invalid_type,
                      [], [], []),
@@ -552,62 +339,53 @@ test("invalid object type throws", (
                              game_object_schema))
 )).
 
-% Test: integer range - in bounds
 test("integer range in bounds", (
     validates_against(50,
                      integer(0, 100),
                      [])
 )).
 
-% Test: integer range - zero lower
 test("integer range zero lower bound", (
     validates_against(0,
                      integer(0, 100),
                      [])
 )).
 
-% Test: integer range - unbounded upper
 test("integer range unbounded upper", (
     validates_against(1000000,
                      integer(0, _),
                      [])
 )).
 
-% Test: integer range - unbound passes
 test("integer range unbound passes", (
     validates_against(_,
                      integer(0, 100),
                      [])
 )).
 
-% Test: integer range - too high throws
 test("integer range too high throws", (
     expect_exception(validates_against(150,
                                      integer(0, 100),
                                      []))
 )).
 
-% Test: empty list passes
 test("empty list passes", (
     validates_against([], list(integer),
                      [])
 )).
 
-% Test: valid integer list
 test("valid integer list", (
     validates_against([1, 2, 3, 4],
                      list(integer),
                      [])
 )).
 
-% Test: list with invalid item throws
 test("list with invalid item throws", (
     expect_exception(validates_against([1, not_int, 3],
                                       list(integer),
                                       []))
 )).
 
-% Test: enum valid option
 test("enum valid option", (
     validates_against(playing,
                      enum([playing, won,
@@ -615,45 +393,38 @@ test("enum valid option", (
                      [])
 )).
 
-% Test: enum invalid option throws
 test("enum invalid option throws", (
     expect_exception(validates_against(invalid,
                                       enum([a, b, c]),
                                       []))
 )).
 
-% Test: any always passes
 test("any always passes", (
     validates_against(anything, any, [])
 )).
 
-% Test: any with unbound passes
 test("any with unbound passes", (
     validates_against(_, any, [])
 )).
 
-% Test: union - first schema matches
 test("union first schema matches", (
     validates_against(50,
         union([integer(0, 100), atom]),
         [])
 )).
 
-% Test: union - second schema matches
 test("union second schema matches", (
     validates_against(my_atom,
         union([integer, atom]),
         [])
 )).
 
-% Test: union - unbound passes
 test("union with unbound passes", (
     validates_against(_,
         union([integer, atom]),
         [])
 )).
 
-% Test: union - no schema matches throws
 test("union no schema matches throws", (
     expect_exception(validates_against(3.14,
         union([integer, atom]),

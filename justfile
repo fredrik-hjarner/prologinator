@@ -3,7 +3,11 @@ default:
 
 # Simple performance test
 perf +FLAGS='': build-tpl
-    tpl {{FLAGS}} -l prolog/perf.pl -g "main_perf, halt"; \
+    tpl {{FLAGS}} -l build/prologinator.pl -g "main_perf, halt"; \
+
+# Simple performance test
+perf-scryer +FLAGS='': build
+    scryer-prolog {{FLAGS}} build/prologinator.pl -g "main_perf, halt";
 
 # Run the monolithic build with Scryer Prolog
 # Usage: just game <game_name> (e.g., just game default)
@@ -150,7 +154,7 @@ build:
 build-tpl:
 	@mkdir -p build
 	@gpp -DTPL -P --warninglevel 0 scripts/prologinator.pp -o build/prologinator.pl
-	bun scripts/preprocess-for-trealla.ts build/prologinator.pl
+	# bun scripts/preprocess-for-trealla.ts build/prologinator.pl
 	@echo "Built: build/prologinator.pl"
 
 # Count the tokens in a file

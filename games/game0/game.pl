@@ -1,11 +1,7 @@
 [
-    % Example game: Simple tower defense with player
-    % This file contains a list of actions that the root object executes
     
-    % Test log action
     log("Game loaded successfully!"),
     
-    % Spawn player at center - responds to input
     spawn([
         set_attr(type, player),
         set_attr(x, 10),
@@ -13,22 +9,18 @@
         set_attr(displayChar, 64),  % '@'
         log("Player spawned!"),
         parallel_all([
-            % Right arrow (39) - move right
             loop([
                 wait_key_held(39),
                 move_delta(1, 1, 0)
             ]),
-            % Left arrow (37) - move left
             loop([
                 wait_key_held(37),
                 move_delta(1, -1, 0)
             ]),
-            % Up arrow (38) - move up
             loop([
                 wait_key_held(38),
                 move_delta(1, 0, -1)
             ]),
-            % Down arrow (40) - move down
             loop([
                 wait_key_held(40),
                 move_delta(1, 0, 1)
@@ -37,7 +29,6 @@
         log("parallel_all completed!")
     ]),
     
-    % Define a custom action for spawning towers
     define_action(spawn_tower(X, Y), list([
         spawn([
             set_attr(type, tower),
@@ -59,12 +50,10 @@
 
     log("define_action"),
     
-    % Spawn some towers
     spawn_tower(5, 19), log("spawn_tower(5, 19)"),
     spawn_tower(10, 19), log("spawn_tower(10, 19)"),
     spawn_tower(15, 19), log("spawn_tower(15, 19)"),
     
-    % Spawn enemy spawner
     spawn([
         set_attr(type, static),
         set_attr(x, 0),
