@@ -28,9 +28,6 @@ ctx_forkCmds(FC, Ctx, Ctx) :-
                     commands(spawn_cmds(_),
                              fork_cmds(FC)), _), _).
 
-ctx_status(S, Ctx, Ctx) :-
-    Ctx = ctx(state(_, _, _, status(S), _, _, _), _).
-
 ctx_nextid(N, Ctx, Ctx) :-
     Ctx = ctx(state(_, _, _, _, next_id(N), _, _), _).
 
@@ -40,32 +37,6 @@ ctx_actionstore(AS, Ctx, Ctx) :-
 
 ctx_input(I, Ctx, Ctx) :-
     Ctx = ctx(_, I).
-
-ctx_events(E, Ctx, Ctx) :-
-    Ctx = ctx(_, input(events(E), _)).
-
-ctx_held(H, Ctx, Ctx) :-
-    Ctx = ctx(_, input(_, held(H))).
-
-
-ctx_objs_cmds(Objs, Cmds) -->
-    ctx_objs(Objs),
-    ctx_cmds(Cmds).
-
-ctx_objs_attrs(Objs, Attrs) -->
-    ctx_objs(Objs),
-    ctx_attrs(Attrs).
-
-ctx_status_cmds(Status, Cmds) -->
-    ctx_status(Status),
-    ctx_cmds(Cmds).
-
-ctx_objs_nextid_cmds(Objs, NextID, Cmds) -->
-    ctx_objs(Objs),
-    ctx_nextid(NextID),
-    ctx_cmds(Cmds).
-
-
 
 ctx_set_frame(F, ctx(state(_, O, A, S, N, C, AS), I),
               ctx(state(frame(F), O, A, S, N, C, AS), I)).

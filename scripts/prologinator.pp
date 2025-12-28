@@ -20,7 +20,6 @@
 #include "../prolog/types/accessors/ctx.pl"
 #include "../prolog/types/accessors/obj.pl"
 #include "../prolog/types/constructors.pl"
-#include "../prolog/types/adv_accessors.pl"
 
 % 3. Utilities and Macros
 #include "../prolog/util/util.pl"
@@ -40,7 +39,6 @@
 % 7. Core Engine Components
 #include "../prolog/tick_action_streams.pl"
 #include "../prolog/tick_object.pl"
-#include "../prolog/conditions/path_resolution.pl"
 
 % 8. Main Engine
 #include "../prolog/engine.pl"

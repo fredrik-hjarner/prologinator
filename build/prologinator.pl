@@ -22,8 +22,6 @@
 
 :- discontiguous(builtin_action/1).
 
-:- discontiguous(check_condition_impl/4).
-
 :- dynamic(execute_action_impl/5).
 :- discontiguous(execute_action_impl/5).
 
@@ -72,9 +70,6 @@ ctx_forkCmds(FC, Ctx, Ctx) :-
                     commands(spawn_cmds(_),
                              fork_cmds(FC)), _), _).
 
-ctx_status(S, Ctx, Ctx) :-
-    Ctx = ctx(state(_, _, _, status(S), _, _, _), _).
-
 ctx_nextid(N, Ctx, Ctx) :-
     Ctx = ctx(state(_, _, _, _, next_id(N), _, _), _).
 
@@ -84,32 +79,6 @@ ctx_actionstore(AS, Ctx, Ctx) :-
 
 ctx_input(I, Ctx, Ctx) :-
     Ctx = ctx(_, I).
-
-ctx_events(E, Ctx, Ctx) :-
-    Ctx = ctx(_, input(events(E), _)).
-
-ctx_held(H, Ctx, Ctx) :-
-    Ctx = ctx(_, input(_, held(H))).
-
-
-ctx_objs_cmds(Objs, Cmds) -->
-    ctx_objs(Objs),
-    ctx_cmds(Cmds).
-
-ctx_objs_attrs(Objs, Attrs) -->
-    ctx_objs(Objs),
-    ctx_attrs(Attrs).
-
-ctx_status_cmds(Status, Cmds) -->
-    ctx_status(Status),
-    ctx_cmds(Cmds).
-
-ctx_objs_nextid_cmds(Objs, NextID, Cmds) -->
-    ctx_objs(Objs),
-    ctx_nextid(NextID),
-    ctx_cmds(Cmds).
-
-
 
 ctx_set_frame(F, ctx(state(_, O, A, S, N, C, AS), I),
               ctx(state(frame(F), O, A, S, N, C, AS), I)).
@@ -202,20 +171,6 @@ empty_ctx(ctx(state(
     empty_assoc(EmptyAttrs),
     empty_assoc(EmptyActionStore).
 
-ctx_with_attrs(Attrs, Ctx) :-
-    empty_ctx(Def),
-    ctx_set_attrs(Attrs, Def, Ctx).
-
-ctx_with_frame_attrs(Frame, Attrs, Ctx) :-
-    empty_ctx(Def),
-    ctx_set_frame(Frame, Def, Ctx1),
-    ctx_set_attrs(Attrs, Ctx1, Ctx).
-
-ctx_with_inputevents_inputheld(Events, Held, Ctx) :-
-    empty_ctx(Def),
-    ctx_set_input(input(events(Events), held(Held)), Def,
-                  Ctx).
-
 ctx_with_objs(Objects, Ctx) :-
     empty_ctx(Def),
     ctx_set_objs(Objects, Def, Ctx).
@@ -233,57 +188,6 @@ ctx_with_frame_objs_input(Frame, Objects, Events, Held,
     ctx_set_objs(Objects, Ctx1, Ctx2),
     ctx_set_input(input(events(Events), held(Held)), Ctx2,
                   Ctx).
-
-
-empty_attr_store(EmptyAttrs) :-
-    empty_assoc(EmptyAttrs).
-
-
-
-ctx_attr_val(ObjectID/Key, Value) -->
-    ctx_attrs(AttrStore),
-    {
-        gen_assoc(ObjectID, AttrStore, Attrs),
-        member(attr(Key, Value), Attrs)
-    }.
-
-ctx_attr_val(ObjectID/Key, Value, Ctx) :-
-    ctx_attr_val(ObjectID/Key, Value, Ctx, Ctx).
-
-ctx_set_attr_val(ObjectID/Key, Value) -->
-    ctx_attrs(AttrStoreIn),
-    {
-        set_attr_in_store_helper(
-            AttrStoreIn, ObjectID, Key, Value, AttrStoreOut
-        )
-    },
-    ctx_set_attrs(AttrStoreOut).
-
-set_attr_in_store_helper(AttrStoreIn, ObjectID, Key,
-                         Value, AttrStoreOut) :-
-    ( gen_assoc(ObjectID, AttrStoreIn, OldAttrs) ->
-        ( select(attr(Key, _), OldAttrs, Rest) ->
-            true
-        ;
-            Rest = OldAttrs
-        ),
-        NewAttrs = [attr(Key, Value)|Rest],
-        put_assoc(ObjectID, AttrStoreIn, NewAttrs,
-                  AttrStoreOut)
-    ;
-        NewAttrs = [attr(Key, Value)],
-        put_assoc(ObjectID, AttrStoreIn, NewAttrs,
-                  AttrStoreOut)
-    ).
-
-
-obj_type(Obj, Type) -->
-    {obj_id(Obj, ID)},
-    ctx_attr_val(ID/type, Type).
-
-obj_id_type(Obj, ID, Type) -->
-    {obj_id(Obj, ID)},
-    ctx_attr_val(ID/type, Type).
 
 
 % 3. Utilities and Macros
@@ -695,69 +599,6 @@ tick_object(
     ).
 
 
-
-
-resolve_path(ObjID, Path, Value) -->
-    ( {Path = .(InnerPath)} ->
-        {TruePath = InnerPath}
-    ;
-        {TruePath = Path}
-    ),
-
-    (   % Case 1: Compound path using dot functor
-        {TruePath = Head.Rest}
-    ->
-        resolve_path(ObjID, Head, NextID),
-        resolve_path(NextID, Rest, Value)
-
-    ;   % Case 2: Simple atom (Basecase: final attribute
-        {atom(TruePath)}
-    ->
-        ctx_attr_val(ObjID/TruePath, Value)
-
-    ;  % Case 3: Numbers, variables, compounds (that aren't
-        {Value = TruePath}
-    ).
-
-
-
-strict_resolve_path(ObjID, .(Path), Value) -->
-    !,
-    strict_resolve_path(ObjID, Path, Value).
-
-strict_resolve_path(
-    ObjID, FirstAttr.RestPath, Value
-) -->
-    !,
-    strict_resolve_path(ObjID, FirstAttr, NextID),
-    strict_resolve_path(NextID, RestPath, Value).
-
-strict_resolve_path(ObjID, Path, Value) -->
-    {atom(Path)},
-    !,
-    ctx_attr_val(ObjID/Path, Value).
-
-strict_resolve_path(_ObjID, Path, Path) --> [].
-
-
-
-resolve_path_strict(ObjID, Path, Value) -->
-    strict_resolve_path(ObjID, Path, Value).
-
-resolve_path_to_attr(MyID, .(Path), Pair) -->
-    !,
-    resolve_path_to_attr(MyID, Path, Pair).
-
-resolve_path_to_attr(MyID, AttrName, MyID/AttrName) -->
-    {atom(AttrName)},  % Base case: simple attribute name
-    !.
-
-resolve_path_to_attr(MyID,
-                     FirstAttr.RestPath,
-                     FinalID/Key) -->
-    !,
-    resolve_path_strict(MyID, FirstAttr, NextID),
-    resolve_path_to_attr(NextID, RestPath, FinalID/Key).
 
 % 8. Main Engine
 tick -->

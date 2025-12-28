@@ -12,20 +12,6 @@ empty_ctx(ctx(state(
     empty_assoc(EmptyAttrs),
     empty_assoc(EmptyActionStore).
 
-ctx_with_attrs(Attrs, Ctx) :-
-    empty_ctx(Def),
-    ctx_set_attrs(Attrs, Def, Ctx).
-
-ctx_with_frame_attrs(Frame, Attrs, Ctx) :-
-    empty_ctx(Def),
-    ctx_set_frame(Frame, Def, Ctx1),
-    ctx_set_attrs(Attrs, Ctx1, Ctx).
-
-ctx_with_inputevents_inputheld(Events, Held, Ctx) :-
-    empty_ctx(Def),
-    ctx_set_input(input(events(Events), held(Held)), Def,
-                  Ctx).
-
 ctx_with_objs(Objects, Ctx) :-
     empty_ctx(Def),
     ctx_set_objs(Objects, Def, Ctx).
@@ -43,7 +29,3 @@ ctx_with_frame_objs_input(Frame, Objects, Events, Held,
     ctx_set_objs(Objects, Ctx1, Ctx2),
     ctx_set_input(input(events(Events), held(Held)), Ctx2,
                   Ctx).
-
-
-empty_attr_store(EmptyAttrs) :-
-    empty_assoc(EmptyAttrs).
