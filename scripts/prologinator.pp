@@ -34,7 +34,7 @@
 #include "../prolog/actions/wait.pl"
 #include "../prolog/actions/log.pl"
 #include "../prolog/actions/loop.pl"
-#include "../prolog/actions/load.pl"
+% #include "../prolog/actions/load.pl"
 
 % 7. Core Engine Components
 #include "../prolog/tick_action_streams.pl"

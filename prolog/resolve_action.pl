@@ -1,10 +1,4 @@
 resolve_action(
-    _MyID, load(Path), load(Path)
-) -->
-    !,
-    [].
-
-resolve_action(
     MyID,
     wait(Frames),
     wait(Frames)
