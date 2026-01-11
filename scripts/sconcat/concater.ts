@@ -1,6 +1,12 @@
 import { relative } from "path";
 
-export default async function concatenateFiles(files: string[]): Promise<string> {
+/**
+ * Takes a list of files and returns them as concatenated
+ * string.
+ */
+export default async function concatenateFiles(
+    files: string[]
+): Promise<string> {
     const rootDir = process.cwd();
     let output = '';
 

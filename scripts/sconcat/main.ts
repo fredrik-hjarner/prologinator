@@ -4,38 +4,16 @@ import { spawn } from "child_process";
 import { relative } from "path";
 import collectFilteredFiles from "./feeder.js";
 import concatenateFiles from "./concater.js";
+import type { FileItem } from "./FileItem.ts";
+import {
+    clearScreen, restoreTerminal
+} from "./terminal.ts";
 
 const DEFAULT_OUTPUT_FILE = "concat.xml";
 
 // ==========================================================
-// Types
-// ==========================================================
-
-type FileItem = { path: string; selected: boolean };
-
-// ==========================================================
 // Terminal utilities
 // ==========================================================
-
-function restoreTerminal() {
-    try {
-        process.stdin.setRawMode(false);
-        process.stdin.pause();
-        process.stdout.write('\x1b[?25h');
-    } catch (error) {
-        // Ignore errors during cleanup
-    }
-}
-
-process.on('SIGINT', () => {
-    restoreTerminal();
-    process.exit(130);
-});
-
-process.on('SIGTERM', () => {
-    restoreTerminal();
-    process.exit(143);
-});
 
 async function readKey(): Promise<string> {
     return new Promise((resolve) => {
@@ -71,10 +49,6 @@ async function readKey(): Promise<string> {
 
         stdin.on('data', handler);
     });
-}
-
-function clearScreen() {
-    process.stdout.write('\x1b[2J\x1b[H');
 }
 
 // ==========================================================

@@ -3,6 +3,10 @@
 import { relative } from "path";
 import collectFilteredFiles from "./feeder.js";
 import concatenateFiles from "./concater.js";
+import type { FileItem } from "./FileItem.ts";
+import {
+    clearScreen, restoreTerminal
+} from "./terminal.ts";
 
 // ==========================================================
 // Configuration: Edit these at the top of the file
@@ -12,41 +16,8 @@ import concatenateFiles from "./concater.js";
 const DEFAULT_OUTPUT_FILE = "concat.xml";
 
 // ==========================================================
-// Types
-// ==========================================================
-
-type FileItem = { path: string; selected: boolean };
-
-// ==========================================================
 // Interactive file selection and reordering
 // ==========================================================
-
-// Global cleanup function to restore terminal state
-function restoreTerminal() {
-    try {
-        process.stdin.setRawMode(false);
-        process.stdin.pause();
-        process.stdout.write('\x1b[?25h'); // Show cursor
-    } catch (error) {
-        // Ignore errors during cleanup
-    }
-}
-
-// Set up cleanup handlers
-process.on('SIGINT', () => {
-    restoreTerminal();
-    process.exit(130);
-});
-
-process.on('SIGTERM', () => {
-    restoreTerminal();
-    process.exit(143);
-});
-
-process.on('uncaughtException', (error) => {
-    restoreTerminal();
-    throw error;
-});
 
 async function readKey(): Promise<string> {
     return new Promise((resolve) => {
@@ -85,10 +56,6 @@ async function readKey(): Promise<string> {
 
         stdin.on('data', handler);
     });
-}
-
-function clearScreen() {
-    process.stdout.write('\x1b[2J\x1b[H');
 }
 
 function renderInterface(
