@@ -1,1 +1,0 @@
-export type FileItem = { path: string; selected: boolean };

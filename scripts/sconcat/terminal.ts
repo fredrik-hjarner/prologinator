@@ -8,6 +8,47 @@ export const ANSI = {
     Down: '\x1b[B',
 };
 
+/**
+ * Puts terminal in raw mode to read single keystrokes.
+ */
+export async function waitForKey(): Promise<string> {
+    return new Promise((resolve) => {
+        const stdin = process.stdin;
+        stdin.setRawMode(true);
+        stdin.resume();
+        stdin.setEncoding('utf8');
+
+        let buffer = '';
+        let timeout: ReturnType<typeof setTimeout> | null = null;
+        
+        const cleanup = () => {
+            if (timeout) clearTimeout(timeout);
+            stdin.removeListener('data', handler);
+            stdin.setRawMode(false);
+            stdin.pause();
+        };
+        
+        const handler = (data: Buffer) => {
+            buffer += data.toString();
+            
+            // If it starts with ESC (\x1b), it might be a sequence (like arrow keys)
+            // We wait 10ms to see if more bytes arrive.
+            if (buffer.startsWith('\x1b[')) {
+                if (timeout) clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    cleanup();
+                    resolve(buffer);
+                }, 10);
+            } else {
+                cleanup();
+                resolve(buffer);
+            }
+        };
+
+        stdin.on('data', handler);
+    });
+}
+
 export function clearScreen() {
     process.stdout.write(ANSI.CLEAR);
 }
