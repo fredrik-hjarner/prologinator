@@ -2,7 +2,7 @@ builtin_action(trigger_state_change(_)).
 
 execute_action_impl(
     actions_old([trigger_state_change(Change)|Rest]),
-    obj_id(_ID),
+    obj(_Obj),
     result(completed, actions_new(Rest))
 ) -->
     execute_trigger_state_change(Change).

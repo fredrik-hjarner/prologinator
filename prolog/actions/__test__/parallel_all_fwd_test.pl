@@ -22,7 +22,7 @@ tick_n(N, ObjIn, ObjOut, CtxIn, CtxOut) :-
         phrase(
             tick_object(
                 actions_old(ActionsIn),
-                obj_id(ID),
+                obj(object(id(ID))),
                 result(_, actions_new(ActionsOut))
             ),
             CtxIn,
@@ -75,7 +75,7 @@ attributes.", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -117,7 +117,7 @@ test("parallel_all: yields when child yields", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -168,7 +168,7 @@ test("parallel_all: despawns when child despawns", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(_)),
         Ctx,
         CtxNew
@@ -204,7 +204,7 @@ test("parallel_all: should continue until all complete", (
     % ------------------------------------------------------
     tick_object(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -224,7 +224,7 @@ test("parallel_all: should continue until all complete", (
     % ------------------------------------------------------
     tick_object(
         actions_old(ActionsOut),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status2, actions_new(ActionsOut2)),
         CtxNew,
         Ctx2
@@ -244,7 +244,7 @@ test("parallel_all: should continue until all complete", (
     % ------------------------------------------------------
     tick_object(
         actions_old(ActionsOut2),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status3, actions_new(ActionsOut3)),
         Ctx2,
         Ctx3

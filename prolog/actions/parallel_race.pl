@@ -2,12 +2,13 @@ builtin_action(parallel_race(_)).
 
 execute_action_impl(
     actions_old([parallel_race(Children)|RestActions]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    % {obj_id(Obj, ID)},
     % Execute children sequentially (stop immediately
     % if one finishes).
-    tick_children_race(Children, ID, Result),
+    tick_children_race(Children, Obj, Result),
     {( Result = despawned ->
         Status = despawned,
         ActionsOut = []
@@ -29,17 +30,17 @@ execute_action_impl(
 % Helpers
 % ==========================================================
 
-% tick_children_race(+Children, +ID, -Result, +CtxIn,
+% tick_children_race(+Children, +Obj, -Result, +CtxIn,
 % -CtxOut)
 % Result is one of:
 %   - despawned
 %   - race_won       <-- At least one finished
 %   - ongoing(List)  <-- All children yielded
-tick_children_race([], _ID, ongoing([])) --> [].
+tick_children_race([], _Obj, ongoing([])) --> [].
 
 tick_children_race(
     [ChildAction|RestChildren],
-    ID,
+    Obj,
     Result
 ) -->
     % 1. Normalize child to list
@@ -51,7 +52,7 @@ tick_children_race(
     % 2. Tick the child
     tick_object(
         actions_old(ChildList),
-        obj_id(ID),
+        obj(Obj),
         result(ChildStatus, actions_new(RemainingActions))
     ),
     ( {ChildStatus = despawned} ->
@@ -64,7 +65,7 @@ tick_children_race(
         % Child yielded, check the next racer
         tick_children_race(
             RestChildren,
-            ID,
+            Obj,
             RestResult
         ),
         {( RestResult = despawned ->

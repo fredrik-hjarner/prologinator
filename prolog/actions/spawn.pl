@@ -2,9 +2,10 @@ builtin_action(spawn(_)).
 
 execute_action_impl(
     actions_old([spawn(Actions)|Rest]),
-    obj_id(MyID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, MyID)},
     execute_spawn(MyID, Actions).
 
 % NOTE: Important to notice that spawn_cmd:s are added in

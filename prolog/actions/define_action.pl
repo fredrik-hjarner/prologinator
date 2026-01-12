@@ -6,7 +6,7 @@ builtin_action(define_action(_, _)).
 % parameter substitution and execute the Body.
 execute_action_impl(
     actions_old([define_action(Signature, Body)|Rest]),
-    obj_id(_ID),
+    obj(_Obj),
     result(completed, actions_new(Rest))
 ) -->
     execute_define_action(Signature, Body).

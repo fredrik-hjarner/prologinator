@@ -51,12 +51,13 @@ tick_objects_loop([]) --> !.
 % The loop finds the next object with ID > LastID
 tick_objects_loop([TargetObj|ObjsQueue]) -->
     % Found an object to tick
-    {obj_id(TargetObj, TargetID)},
     % Process actions from actionstore
-    tick_action_streams(TargetID, Status),
+    tick_action_streams(obj(TargetObj), Status),
     % Update the context with the result of this
     % specific object based on status
     ( {Status = despawned} ->
+        % Extract ID for removal
+        {obj_id(TargetObj, TargetID)},
         % Remove object from context and actionstore
         % (cleaned by tick_action_streams)
         update_object_in_context(TargetID, [])

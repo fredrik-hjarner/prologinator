@@ -1461,7 +1461,7 @@ resolve_default(MyID, ValueExpr, _Fallback, V) -->
 % Also handles user-defined actions via runtime expansion.
 execute_action(
     actions_old([Action|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     % TODO: action_validation nowadays it almost useless
@@ -1479,13 +1479,13 @@ execute_action(
 
         % execute_action_impl(
         %     actions_old([Action|Rest]),
-        %     obj_id(ID),
+        %     obj(Obj),
         %     result(Status, actions_new(ActionsOut))
         % )
         catch_dcg(
             execute_action_impl(
                 actions_old([Action|Rest]),
-                obj_id(ID),
+                obj(Obj),
                 result(Status, actions_new(ActionsOut))
             ),
             Error,
@@ -1504,7 +1504,7 @@ execute_action(
         % Replace the user action with its Body in the queue
         execute_action(
             actions_old([Body|Rest]),
-            obj_id(ID),
+            obj(Obj),
             result(Status, actions_new(ActionsOut))
         )
     ;
@@ -1531,15 +1531,16 @@ execute_action_impl(
     actions_old([
         attr_if(Condition, ThenActions)|Rest
     ]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     (check_condition(ID, Condition)
     ->
         % Condition succeeded: execute ThenActions
         tick_object(
             actions_old(ThenActions),
-            obj_id(ID),
+            obj(Obj),
             result(Status, actions_new(ActionAfterTick))
         ),
         {append(ActionAfterTick, Rest, ActionsOut)}
@@ -1573,11 +1574,11 @@ execute_action_impl(
     actions_old([
         attr_if(Condition, ThenActions, ElseActions)|Rest
     ]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     execute_attr_if(
-        ID,
+        Obj,
         Condition,
         ThenActions,
         ElseActions,
@@ -1592,19 +1593,20 @@ execute_action_impl(
 % branches. No yielding.
 
 execute_attr_if(
-    ObjID,
+    Obj,
     Condition,
     ThenActions,
     ElseActions,
     Rest,
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ObjID)},
     (check_condition(ObjID, Condition)
     ->
         % Condition succeeded: execute ThenActions
         tick_object(
             actions_old(ThenActions),
-            obj_id(ObjID),
+            obj(Obj),
             result(Status, actions_new(ActionAfterTick))
         ),
         {append(ActionAfterTick, Rest, ActionsOut)}
@@ -1612,7 +1614,7 @@ execute_attr_if(
         % Condition failed: execute ElseActions
         tick_object(
             actions_old(ElseActions),
-            obj_id(ObjID),
+            obj(Obj),
             result(Status, actions_new(ActionAfterTick))
         ),
         {append(ActionAfterTick, Rest, ActionsOut)}
@@ -1623,15 +1625,16 @@ builtin_action(wait(_)). % wait N frames.
 
 execute_action_impl(
     actions_old([wait|Rest]),
-    obj_id(_ID),
+    obj(_Obj),
     result(yielded, actions_new(Rest))
 ) --> !, [].
 
 execute_action_impl(
     actions_old([wait(N)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     % N should always "resolve" to a value.
     resolve_arg(ID, N, ResolvedN),
     execute_wait(ResolvedN, Rest, Status, ActionsOut).
@@ -1658,9 +1661,10 @@ builtin_action(move_to(_, _, _)).
 
 execute_action_impl(
     actions_old([move_to(TargetX, TargetY, Frames)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(NewActions))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, TargetX, ResolvedTargetX),
     resolve_arg(ID, TargetY, ResolvedTargetY),
     resolve_arg(ID, Frames, ResolvedFrames),
@@ -1738,9 +1742,10 @@ builtin_action(move_delta(_, _, _)). % move over N frames.
 % the frames?
 execute_action_impl(
     actions_old([move_delta(DX, DY)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(NewActions))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, DX, ResolvedDX),
     resolve_arg(ID, DY, ResolvedDY),
     execute_move_delta(
@@ -1761,9 +1766,10 @@ execute_action_impl(
 
 execute_action_impl(
     actions_old([move_delta(Frames, DX, DY)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(NewActions))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, Frames, ResolvedFrames),
     resolve_arg(ID, DX, ResolvedDX),
     resolve_arg(ID, DY, ResolvedDY),
@@ -1857,9 +1863,10 @@ builtin_action(despawn).
 
 execute_action_impl(
     actions_old([despawn|_]),
-    obj_id(ID),
+    obj(Obj),
     result(despawned, actions_new([]))
 ) -->
+    {obj_id(Obj, ID)},
     execute_despawn(ID).
 
 execute_despawn(ID) -->
@@ -1884,7 +1891,7 @@ builtin_action(define_action(_, _)).
 % parameter substitution and execute the Body.
 execute_action_impl(
     actions_old([define_action(Signature, Body)|Rest]),
-    obj_id(_ID),
+    obj(_Obj),
     result(completed, actions_new(Rest))
 ) -->
     execute_define_action(Signature, Body).
@@ -1898,9 +1905,10 @@ builtin_action(set_attr(_, _)).
 
 execute_action_impl(
     actions_old([set_attr(Path, Value)|Rest]),
-    obj_id(MyID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, MyID)},
     % Path is always a path.
     % Value should always "resolve" to a value.
     resolve_arg(MyID, Value, ResolvedValue),
@@ -1916,9 +1924,10 @@ builtin_action(copy_attr(_, _)).
 
 execute_action_impl(
     actions_old([copy_attr(SourcePath, DestPath)|Rest]),
-    obj_id(MyID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, MyID)},
     % Both SourcePath and DestPath are paths so dont need
     % any resolution.
     execute_copy_attr(MyID, SourcePath, DestPath).
@@ -1937,17 +1946,19 @@ builtin_action(incr(_, _)). % increment by amount.
 % increment by 1.
 execute_action_impl(
     actions_old([incr(Path)|Rest]),
-    obj_id(MyID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, MyID)},
     execute_incr(MyID, Path, 1).
 
 % increment by amount.
 execute_action_impl(
     actions_old([incr(Path, Amount)|Rest]),
-    obj_id(MyID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, MyID)},
     % Path is always a path.
     % Amount should always "resolve" to a value.
     resolve_arg(MyID, Amount, ResolvedAmount),
@@ -1968,17 +1979,19 @@ builtin_action(decr(_, _)). % decrement by amount.
 % decrement by 1.
 execute_action_impl(
     actions_old([decr(Path)|Rest]),
-    obj_id(MyID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, MyID)},
     execute_decr(MyID, Path, 1).
 
 % decrement by amount.
 execute_action_impl(
     actions_old([decr(Path, Amount)|Rest]),
-    obj_id(MyID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, MyID)},
     % Path is always a path.
     % Amount should always "resolve" to a value.
     resolve_arg(MyID, Amount, ResolvedAmount),
@@ -1997,7 +2010,7 @@ builtin_action(log(_)).
 
 execute_action_impl(
     actions_old([log(Msg)|Rest]),
-    obj_id(_ID),
+    obj(_Obj),
     result(completed, actions_new(Rest))
 ) -->
     execute_log(Msg).
@@ -2011,9 +2024,10 @@ builtin_action(spawn(_)).
 
 execute_action_impl(
     actions_old([spawn(Actions)|Rest]),
-    obj_id(MyID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, MyID)},
     execute_spawn(MyID, Actions).
 
 % NOTE: Important to notice that spawn_cmd:s are added in
@@ -2039,9 +2053,10 @@ builtin_action(fork(_)).
 
 execute_action_impl(
     actions_old([fork(Actions)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, ID)},
     execute_fork(ID, Actions).
 
 % NOTE: Important to notice that fork_cmd:s are added in
@@ -2071,32 +2086,32 @@ builtin_action(loop(_, _)). % loop continuation
 % Initial call: loop(Actions)
 execute_action_impl(
     actions_old([loop(Actions)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     % Start the loop with Actions as both Running and
     %Original
     execute_loop_managed(
-        Actions, Actions, Rest, ID, Status, ActionsOut
+        Actions, Actions, Rest, Obj, Status, ActionsOut
     ).
 
 % Continuation: loop(Running, Original)
 execute_action_impl(
     actions_old([loop(Running, Original)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     execute_loop_managed(
-        Running, Original, Rest, ID, Status, ActionsOut
+        Running, Original, Rest, Obj, Status, ActionsOut
     ).
 
 execute_loop_managed(
-    Running, Original, Rest, ID, Status, ActionsOut
+    Running, Original, Rest, Obj, Status, ActionsOut
 ) -->
     % Execute the current running actions (threads context)
     tick_object(
         actions_old(Running),
-        obj_id(ID),
+        obj(Obj),
         result(RunStatus, actions_new(RunRemaining))
     ),
     handle_loop_result(
@@ -2104,7 +2119,7 @@ execute_loop_managed(
         RunRemaining,
         Original,
         Rest,
-        ID,
+        Obj,
         Status,
         ActionsOut
     ).
@@ -2128,23 +2143,23 @@ handle_loop_result(
 % Case 3: Completed - Body finished, restart loop
 % immediately
 handle_loop_result(
-    completed, _, Original, Rest, ID, Status, ActionsOut
+    completed, _, Original, Rest, Obj, Status, ActionsOut
 ) -->
     execute_loop_managed(
-        Original, Original, Rest, ID, Status, ActionsOut
+        Original, Original, Rest, Obj, Status, ActionsOut
     ).
 
 builtin_action(list(_)).
 
 execute_action_impl(
     actions_old([list(ListActions)|RestActions]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     execute_list(
         ListActions,
         RestActions,
-        ID,
+        Obj,
         Status,
         ActionsOut
     ).
@@ -2152,7 +2167,7 @@ execute_action_impl(
 execute_list(
     ListActions,
     RestActions,
-    ID,
+    Obj,
     Status,
     ActionsOut
 ) -->
@@ -2160,7 +2175,7 @@ execute_list(
     % or despawns
     tick_object(
         actions_old(ListActions),
-        obj_id(ID),
+        obj(Obj),
         result(ListStatus, actions_new(RemainingInner))
     ),
     % Handle the result
@@ -2203,9 +2218,10 @@ execute_action_impl(
 % Initial call: repeat(Times, Actions)
 execute_action_impl(
     actions_old([repeat(Times, Actions)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, Times, ResolvedTimes),
     % Constraint from original: Times > 0
     {ResolvedTimes #> 0},
@@ -2214,7 +2230,7 @@ execute_action_impl(
         Actions,
         Actions,
         Rest,
-        ID,
+        Obj,
         Status,
         ActionsOut
     ).
@@ -2222,7 +2238,7 @@ execute_action_impl(
 % Continuation: repeat(RemainingTimes, Running, Original)
 execute_action_impl(
     actions_old([repeat(Times, Running, Original)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     execute_repeat_managed(
@@ -2230,18 +2246,18 @@ execute_action_impl(
         Running,
         Original,
         Rest,
-        ID,
+        Obj,
         Status,
         ActionsOut
     ).
 
 execute_repeat_managed(
-    Times, Running, Original, Rest, ID, Status, ActionsOut
+    Times, Running, Original, Rest, Obj, Status, ActionsOut
 ) -->
     % Execute the current running actions (threads context)
     tick_object(
         actions_old(Running),
-        obj_id(ID),
+        obj(Obj),
         result(RunStatus, actions_new(RunRemaining))
     ),
     handle_repeat_result(
@@ -2250,7 +2266,7 @@ execute_repeat_managed(
         Times,
         Original,
         Rest,
-        ID,
+        Obj,
         Status,
         ActionsOut
     ).
@@ -2277,7 +2293,7 @@ handle_repeat_result(
     Times,
     Original,
     Rest,
-    ID,
+    Obj,
     Status,
     ActionsOut
 ) -->
@@ -2289,7 +2305,7 @@ handle_repeat_result(
             Original,
             Original,
             Rest,
-            ID,
+            Obj,
             Status,
             ActionsOut
         )
@@ -2308,7 +2324,7 @@ builtin_action(load(_)).
 
 execute_action_impl(
     actions_old([load(Path)|Rest]),
-    obj_id(_ID),
+    obj(_Obj),
     result(completed, actions_new(NewActions))
 ) -->
     execute_load(Path, Rest, NewActions).
@@ -2340,7 +2356,7 @@ builtin_action(trigger_state_change(_)).
 
 execute_action_impl(
     actions_old([trigger_state_change(Change)|Rest]),
-    obj_id(_ID),
+    obj(_Obj),
     result(completed, actions_new(Rest))
 ) -->
     execute_trigger_state_change(Change).
@@ -2366,9 +2382,10 @@ builtin_action(wait_key_down(_)).
 
 execute_action_impl(
     actions_old([wait_key_down(KeyCode)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, KeyCode, ResolvedKeyCode),
     execute_wait_key_down(
         ResolvedKeyCode,
@@ -2400,9 +2417,10 @@ builtin_action(wait_key_up(_)).
 
 execute_action_impl(
     actions_old([wait_key_up(KeyCode)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, KeyCode, ResolvedKeyCode),
     execute_wait_key_up(
         ResolvedKeyCode, Rest, Status, ActionsOut
@@ -2431,9 +2449,10 @@ builtin_action(wait_key_held(_)).
 
 execute_action_impl(
     actions_old([wait_key_held(KeyCode)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, KeyCode, ResolvedKeyCode),
     execute_wait_key_held(
         ResolvedKeyCode,
@@ -2473,9 +2492,10 @@ builtin_action(wait_until(_)).
 
 execute_action_impl(
     actions_old([wait_until(Condition)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     execute_wait_until(
         ID, Condition, Rest, Status, ActionsOut
     ).
@@ -2502,12 +2522,13 @@ builtin_action(parallel_all(_)).
 
 execute_action_impl(
     actions_old([parallel_all(Children)|RestActions]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    % {obj_id(Obj, ID)},
     % Execute children sequentially, threading the object
     % state. Stop immediately if any child despawns.
-    tick_children(Children, ID, Result),
+    tick_children(Children, Obj, Result),
     {( Result = despawned ->
         Status = despawned,
         ActionsOut = []
@@ -2530,12 +2551,12 @@ execute_action_impl(
 % Helpers
 % ==========================================================
 
-% tick_children(+Children, +ID, -Result, +CtxIn, -CtxOut)
+% tick_children(+Children, +Obj, -Result, +CtxIn, -CtxOut)
 % Result's either 'despawned' or 'remaining(List)'
 % Threads the object state (attributes) through each child
 % execution via context.
 
-tick_children([], _ID, remaining([])) --> [].
+tick_children([], _Obj, remaining([])) --> [].
 
 % NOTE: Only the upper-/outer-most actions are executed in
 % parallel so to speak. If those are composite actions then
@@ -2544,7 +2565,7 @@ tick_children([], _ID, remaining([])) --> [].
 % parallel_all, parallel_race or similar)
 tick_children(
     [FirstTopLayerAcn|TopLayerAcnsRest],
-    ID,
+    Obj,
     Result
 ) -->
     % Normalize child to a list of actions (handle single
@@ -2558,7 +2579,7 @@ tick_children(
     % complete)
     tick_object(
         actions_old(FirstTopLayerAcnList),
-        obj_id(ID),
+        obj(Obj),
         result(
             ChildStatusAfterTick,
             actions_new(RemainingAcnsAfterTick)
@@ -2576,7 +2597,7 @@ tick_children(
         % next child.
         tick_children(
             TopLayerAcnsRest,
-            ID,
+            Obj,
             % RestResult contains all remaining actions
             % of the top level actions (except the first
             % which we already executed above) have each
@@ -2606,12 +2627,13 @@ builtin_action(parallel_race(_)).
 
 execute_action_impl(
     actions_old([parallel_race(Children)|RestActions]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    % {obj_id(Obj, ID)},
     % Execute children sequentially (stop immediately
     % if one finishes).
-    tick_children_race(Children, ID, Result),
+    tick_children_race(Children, Obj, Result),
     {( Result = despawned ->
         Status = despawned,
         ActionsOut = []
@@ -2633,17 +2655,17 @@ execute_action_impl(
 % Helpers
 % ==========================================================
 
-% tick_children_race(+Children, +ID, -Result, +CtxIn,
+% tick_children_race(+Children, +Obj, -Result, +CtxIn,
 % -CtxOut)
 % Result is one of:
 %   - despawned
 %   - race_won       <-- At least one finished
 %   - ongoing(List)  <-- All children yielded
-tick_children_race([], _ID, ongoing([])) --> [].
+tick_children_race([], _Obj, ongoing([])) --> [].
 
 tick_children_race(
     [ChildAction|RestChildren],
-    ID,
+    Obj,
     Result
 ) -->
     % 1. Normalize child to list
@@ -2655,7 +2677,7 @@ tick_children_race(
     % 2. Tick the child
     tick_object(
         actions_old(ChildList),
-        obj_id(ID),
+        obj(Obj),
         result(ChildStatus, actions_new(RemainingActions))
     ),
     ( {ChildStatus = despawned} ->
@@ -2668,7 +2690,7 @@ tick_children_race(
         % Child yielded, check the next racer
         tick_children_race(
             RestChildren,
-            ID,
+            Obj,
             RestResult
         ),
         {( RestResult = despawned ->
@@ -2700,15 +2722,16 @@ tick_children_race(
 % - recurse over all streams and call tick_object for each.
 % - resposible for removing despawned objects from acnnstore
 % tick_action_streams threads the context via DCG.
-% Takes an object ID and processes all action streams for
+% Takes an object and processes all action streams for
 % that object.
 % Returns Status: despawned, not_despawned
-tick_action_streams(ObjID, Status) -->
+tick_action_streams(obj(Obj), Status) -->
+    {obj_id(Obj, ObjID)},
     ctx_actionstore(AcnStoreIn),
     ( {gen_assoc(ObjID, AcnStoreIn, AcnStreamsOld)} ->
         % Process streams and get updated list
         tick_action_streams_loop(
-            obj_id(ObjID),
+            obj(Obj),
             left(AcnStreamsOld),
             accum_old([]),
             accum_new(AcnStreamsNew),
@@ -2752,7 +2775,7 @@ tick_action_streams(ObjID, Status) -->
 % AccumRev is in reverse order, reverse it here to get it
 % into non-reverse order.
 tick_action_streams_loop(
-    obj_id(_),
+    obj(_),
     left([]),
     accum_old(AccumRev),
     accum_new(Accum),
@@ -2762,7 +2785,7 @@ tick_action_streams_loop(
     !.
 
 tick_action_streams_loop(
-    obj_id(ObjId),
+    obj(Obj),
     % We store what we have left to process in Left.
     left([StreamToProcess|StreamToProcessRest]),
     % We build the new Action Streams List part by part and
@@ -2773,7 +2796,7 @@ tick_action_streams_loop(
 ) -->
     tick_object(
         actions_old(StreamToProcess),
-        obj_id(ObjId),
+        obj(Obj),
         result(TickStatus, actions_new(StreamAfterTick))
     ),
     % So at this point we run one stream until a stop state
@@ -2791,7 +2814,7 @@ tick_action_streams_loop(
         ({TickStatus = completed} ->
             % recurse
             tick_action_streams_loop(
-                obj_id(ObjId),
+                obj(Obj),
                 % head processed. process rest (with forks).
                 left(StreamToProcessRestWithForkAcns),
                 % completed, so don't need to add any
@@ -2808,7 +2831,7 @@ tick_action_streams_loop(
                 {Accum = [StreamAfterTick | AccumOld]},
                 % recurse
                 tick_action_streams_loop(
-                    obj_id(ObjId),
+                    obj(Obj),
                     % head processed. process rest (with
                     % forks).
                     left(StreamToProcessRestWithForkAcns),
@@ -2888,19 +2911,19 @@ extract_actions_acc(
 %       state.
 tick_object(
     actions_old([]),
-    obj_id(_ID),
+    obj(_Obj),
     result(completed, actions_new([]))
 ) --> [].
 
 tick_object(
     actions_old([Act|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     % Call execute_action with actions passed separately
     execute_action(
         actions_old([Act|Rest]),
-        obj_id(ID),
+        obj(Obj),
         result(ActStatus, actions_new(ActionsTemp))
     ),
     ( {ActStatus = despawned} ->
@@ -2910,7 +2933,7 @@ tick_object(
     ; % ActStatus = completed
         tick_object(
             actions_old(ActionsTemp),
-            obj_id(ID),
+            obj(Obj),
             result(Status, actions_new(ActionsOut))
         )
     ).
@@ -3555,12 +3578,13 @@ tick_objects_loop([]) --> !.
 % The loop finds the next object with ID > LastID
 tick_objects_loop([TargetObj|ObjsQueue]) -->
     % Found an object to tick
-    {obj_id(TargetObj, TargetID)},
     % Process actions from actionstore
-    tick_action_streams(TargetID, Status),
+    tick_action_streams(obj(TargetObj), Status),
     % Update the context with the result of this
     % specific object based on status
     ( {Status = despawned} ->
+        % Extract ID for removal
+        {obj_id(TargetObj, TargetID)},
         % Remove object from context and actionstore
         % (cleaned by tick_action_streams)
         update_object_in_context(TargetID, [])

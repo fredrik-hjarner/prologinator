@@ -2,9 +2,10 @@ builtin_action(move_to(_, _, _)).
 
 execute_action_impl(
     actions_old([move_to(TargetX, TargetY, Frames)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(NewActions))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, TargetX, ResolvedTargetX),
     resolve_arg(ID, TargetY, ResolvedTargetY),
     resolve_arg(ID, Frames, ResolvedFrames),

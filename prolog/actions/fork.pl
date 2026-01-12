@@ -2,9 +2,10 @@ builtin_action(fork(_)).
 
 execute_action_impl(
     actions_old([fork(Actions)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, ID)},
     execute_fork(ID, Actions).
 
 % NOTE: Important to notice that fork_cmd:s are added in

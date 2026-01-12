@@ -21,7 +21,7 @@ object", (
                         CtxWithActions),
     tick_object(
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj(ObjIn),
         result(Status, actions_new(ActionsOut)),
         CtxWithActions,
         CtxNew
@@ -46,7 +46,7 @@ after one execution", (
                         CtxWithActions),
     tick_object(
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj(ObjIn),
         result(Status, actions_new(ActionsOut)),
         CtxWithActions,
         CtxNew
@@ -71,7 +71,7 @@ continues until empty", (
                         CtxWithActions),
     tick_object(
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj(ObjIn),
         result(Status, actions_new(ActionsOut)),
         CtxWithActions,
         CtxNew

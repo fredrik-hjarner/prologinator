@@ -6,15 +6,16 @@ execute_action_impl(
     actions_old([
         attr_if(Condition, ThenActions)|Rest
     ]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     (check_condition(ID, Condition)
     ->
         % Condition succeeded: execute ThenActions
         tick_object(
             actions_old(ThenActions),
-            obj_id(ID),
+            obj(Obj),
             result(Status, actions_new(ActionAfterTick))
         ),
         {append(ActionAfterTick, Rest, ActionsOut)}
@@ -48,11 +49,11 @@ execute_action_impl(
     actions_old([
         attr_if(Condition, ThenActions, ElseActions)|Rest
     ]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     execute_attr_if(
-        ID,
+        Obj,
         Condition,
         ThenActions,
         ElseActions,
@@ -67,19 +68,20 @@ execute_action_impl(
 % branches. No yielding.
 
 execute_attr_if(
-    ObjID,
+    Obj,
     Condition,
     ThenActions,
     ElseActions,
     Rest,
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ObjID)},
     (check_condition(ObjID, Condition)
     ->
         % Condition succeeded: execute ThenActions
         tick_object(
             actions_old(ThenActions),
-            obj_id(ObjID),
+            obj(Obj),
             result(Status, actions_new(ActionAfterTick))
         ),
         {append(ActionAfterTick, Rest, ActionsOut)}
@@ -87,7 +89,7 @@ execute_attr_if(
         % Condition failed: execute ElseActions
         tick_object(
             actions_old(ElseActions),
-            obj_id(ObjID),
+            obj(Obj),
             result(Status, actions_new(ActionAfterTick))
         ),
         {append(ActionAfterTick, Rest, ActionsOut)}

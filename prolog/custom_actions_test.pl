@@ -39,7 +39,7 @@ test("define_action: stores action definition", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(0),
+        obj(object(id(0))),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -91,7 +91,7 @@ test("custom_action: zigzag expands and executes", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(0),
+        obj(object(id(0))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -456,7 +456,7 @@ substituted", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(0),
+        obj(object(id(0))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew

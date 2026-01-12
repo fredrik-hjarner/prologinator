@@ -10,19 +10,19 @@
 %       state.
 tick_object(
     actions_old([]),
-    obj_id(_ID),
+    obj(_Obj),
     result(completed, actions_new([]))
 ) --> [].
 
 tick_object(
     actions_old([Act|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     % Call execute_action with actions passed separately
     execute_action(
         actions_old([Act|Rest]),
-        obj_id(ID),
+        obj(Obj),
         result(ActStatus, actions_new(ActionsTemp))
     ),
     ( {ActStatus = despawned} ->
@@ -32,7 +32,7 @@ tick_object(
     ; % ActStatus = completed
         tick_object(
             actions_old(ActionsTemp),
-            obj_id(ID),
+            obj(Obj),
             result(Status, actions_new(ActionsOut))
         )
     ).

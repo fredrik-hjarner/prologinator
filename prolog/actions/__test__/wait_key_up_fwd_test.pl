@@ -21,7 +21,7 @@ test("wait_key_up: completes when key released", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -49,7 +49,7 @@ test("wait_key_up: yields when key not released", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -78,7 +78,7 @@ test("wait_key_up: waits for different key", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
@@ -109,7 +109,7 @@ test("wait_key_up: multiple key events", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
@@ -137,7 +137,7 @@ test("wait_key_up: ignores key down events", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
@@ -167,7 +167,7 @@ test("wait_key_up: ignores held keys", (
     % --------------------------------------------------
     execute_action(
         actions_old([wait_key_up(39)]),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
@@ -200,7 +200,7 @@ test("wait_key_up: in loop pattern", (
     % --------------------------------------------------
     tick_object(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status1, actions_new(ActionsOut)),
         Ctx,
         Ctx1

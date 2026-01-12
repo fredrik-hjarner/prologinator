@@ -22,7 +22,7 @@ test("value_resolution: move_to with attr() references", (
     ActionsIn = [move_to(:target_x, :target_y, 5)],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -45,7 +45,7 @@ test("value_resolution: set_attr with attr() source", (
     ActionsIn = [set_attr(source_x, :x)],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -71,7 +71,7 @@ test("value_resolution: path syntax parent_id/target_y", (
                           :parent_id:target_y)],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -102,7 +102,7 @@ test("value_resolution: multi-hop path a/b/c", (
     ],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -127,7 +127,7 @@ test("value_resolution: spawn at attr() position", (
                         copy_attr(spawn_y, y)])],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -158,7 +158,7 @@ test("value_resolution: mixed plain and attr() values", (
     ActionsIn = [move_to(:target_x, 200, :speed)],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -186,7 +186,7 @@ test("value_resolution: backward compatible plain values", (
     ActionsIn = [move_to(100, 200, 5)],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_ActionsOut)),
         Ctx,
         CtxNew

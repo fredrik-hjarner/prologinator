@@ -2,13 +2,13 @@ builtin_action(list(_)).
 
 execute_action_impl(
     actions_old([list(ListActions)|RestActions]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     execute_list(
         ListActions,
         RestActions,
-        ID,
+        Obj,
         Status,
         ActionsOut
     ).
@@ -16,7 +16,7 @@ execute_action_impl(
 execute_list(
     ListActions,
     RestActions,
-    ID,
+    Obj,
     Status,
     ActionsOut
 ) -->
@@ -24,7 +24,7 @@ execute_list(
     % or despawns
     tick_object(
         actions_old(ListActions),
-        obj_id(ID),
+        obj(Obj),
         result(ListStatus, actions_new(RemainingInner))
     ),
     % Handle the result

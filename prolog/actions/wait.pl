@@ -3,15 +3,16 @@ builtin_action(wait(_)). % wait N frames.
 
 execute_action_impl(
     actions_old([wait|Rest]),
-    obj_id(_ID),
+    obj(_Obj),
     result(yielded, actions_new(Rest))
 ) --> !, [].
 
 execute_action_impl(
     actions_old([wait(N)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     % N should always "resolve" to a value.
     resolve_arg(ID, N, ResolvedN),
     execute_wait(ResolvedN, Rest, Status, ActionsOut).

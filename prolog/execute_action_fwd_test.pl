@@ -27,7 +27,7 @@ remaining", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -60,7 +60,7 @@ remaining", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -92,7 +92,7 @@ test("move_to: single frame, arrives at target", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -123,7 +123,7 @@ continues with remaining frames", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -149,7 +149,7 @@ test("move_to: negative target coordinates", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -182,7 +182,7 @@ to won", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
@@ -208,7 +208,7 @@ to lost", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
@@ -235,7 +235,7 @@ override lost", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
@@ -265,7 +265,7 @@ test("wait(0): removes self from action queue", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(0),
+        obj(object(id(0))),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -297,7 +297,7 @@ test("list: executes actions immediately", (
     obj_id(ObjIn, ID),
     execute_action(
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj(ObjIn),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -316,7 +316,7 @@ test("list: empty list removes itself", (
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
         actions_old(ActionsIn),
-        obj_id(0),
+        obj(object(id(0))),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         _
@@ -349,7 +349,7 @@ actions from executing", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -376,7 +376,7 @@ executing after despawn", (
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -414,7 +414,7 @@ test("parallel_race: stops on child completion", (
     ],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(ID),
+        obj(Obj),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         _
@@ -446,7 +446,7 @@ done", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(0),
+        obj(object(id(0))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
@@ -478,7 +478,7 @@ despawns", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status_Despawn, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -507,7 +507,7 @@ test("repeat: expands actions once and decrements", (
     ctx_set_attr_val(0/type, static, Ctx0, Ctx),
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -530,7 +530,7 @@ test("repeat: last repetition doesn't add repeat", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -564,7 +564,7 @@ test("repeat: multiple actions in repeat list", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -596,7 +596,7 @@ test("move_delta: single frame moves and completes", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -628,7 +628,7 @@ test("move_delta: multiple frames continues", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -661,7 +661,7 @@ test("move_delta: negative deltas work", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -693,7 +693,7 @@ test("move_delta: preserves other attributes", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(yielded, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -732,7 +732,7 @@ test("value_resolution: move_to with attr() references", (
     ],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -760,7 +760,7 @@ test("value_resolution: set_attr with attr() source", (
     ],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -787,7 +787,7 @@ test("value_resolution: path syntax parent_id/target_y", (
     ],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -821,7 +821,7 @@ test("value_resolution: multi-hop path a/b/c", (
     ],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -845,7 +845,7 @@ test("value_resolution: spawn at attr() position", (
                         copy_attr(spawn_y, y)])],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -882,7 +882,7 @@ test("value_resolution: mixed plain and attr() values", (
     ],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(_)),
         Ctx,
         CtxNew
@@ -910,7 +910,7 @@ test("value_resolution: backward compatible plain values", (
     ActionsIn = [move_to(100, 200, 5)],
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(_, actions_new(ActionsOut)),
         Ctx,
         CtxNew

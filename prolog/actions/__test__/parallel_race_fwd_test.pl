@@ -33,7 +33,7 @@ test("parallel_race: stops on child completion", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(0),
+        obj(object(id(0))),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         _
@@ -65,7 +65,7 @@ done", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(0),
+        obj(object(id(0))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
@@ -97,7 +97,7 @@ despawns", (
     ctx_with_attrs(EmptyAttrs, Ctx),
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(ActionStatus, actions_new(_)),
         Ctx,
         CtxNew

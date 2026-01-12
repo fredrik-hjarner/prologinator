@@ -6,15 +6,16 @@
 % - recurse over all streams and call tick_object for each.
 % - resposible for removing despawned objects from acnnstore
 % tick_action_streams threads the context via DCG.
-% Takes an object ID and processes all action streams for
+% Takes an object and processes all action streams for
 % that object.
 % Returns Status: despawned, not_despawned
-tick_action_streams(ObjID, Status) -->
+tick_action_streams(obj(Obj), Status) -->
+    {obj_id(Obj, ObjID)},
     ctx_actionstore(AcnStoreIn),
     ( {gen_assoc(ObjID, AcnStoreIn, AcnStreamsOld)} ->
         % Process streams and get updated list
         tick_action_streams_loop(
-            obj_id(ObjID),
+            obj(Obj),
             left(AcnStreamsOld),
             accum_old([]),
             accum_new(AcnStreamsNew),
@@ -58,7 +59,7 @@ tick_action_streams(ObjID, Status) -->
 % AccumRev is in reverse order, reverse it here to get it
 % into non-reverse order.
 tick_action_streams_loop(
-    obj_id(_),
+    obj(_),
     left([]),
     accum_old(AccumRev),
     accum_new(Accum),
@@ -68,7 +69,7 @@ tick_action_streams_loop(
     !.
 
 tick_action_streams_loop(
-    obj_id(ObjId),
+    obj(Obj),
     % We store what we have left to process in Left.
     left([StreamToProcess|StreamToProcessRest]),
     % We build the new Action Streams List part by part and
@@ -79,7 +80,7 @@ tick_action_streams_loop(
 ) -->
     tick_object(
         actions_old(StreamToProcess),
-        obj_id(ObjId),
+        obj(Obj),
         result(TickStatus, actions_new(StreamAfterTick))
     ),
     % So at this point we run one stream until a stop state
@@ -97,7 +98,7 @@ tick_action_streams_loop(
         ({TickStatus = completed} ->
             % recurse
             tick_action_streams_loop(
-                obj_id(ObjId),
+                obj(Obj),
                 % head processed. process rest (with forks).
                 left(StreamToProcessRestWithForkAcns),
                 % completed, so don't need to add any
@@ -114,7 +115,7 @@ tick_action_streams_loop(
                 {Accum = [StreamAfterTick | AccumOld]},
                 % recurse
                 tick_action_streams_loop(
-                    obj_id(ObjId),
+                    obj(Obj),
                     % head processed. process rest (with
                     % forks).
                     left(StreamToProcessRestWithForkAcns),

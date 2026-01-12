@@ -15,9 +15,10 @@ builtin_action(wait_until(_)).
 
 execute_action_impl(
     actions_old([wait_until(Condition)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     execute_wait_until(
         ID, Condition, Rest, Status, ActionsOut
     ).

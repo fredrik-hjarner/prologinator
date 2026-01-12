@@ -6,12 +6,13 @@ builtin_action(parallel_all(_)).
 
 execute_action_impl(
     actions_old([parallel_all(Children)|RestActions]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    % {obj_id(Obj, ID)},
     % Execute children sequentially, threading the object
     % state. Stop immediately if any child despawns.
-    tick_children(Children, ID, Result),
+    tick_children(Children, Obj, Result),
     {( Result = despawned ->
         Status = despawned,
         ActionsOut = []
@@ -34,12 +35,12 @@ execute_action_impl(
 % Helpers
 % ==========================================================
 
-% tick_children(+Children, +ID, -Result, +CtxIn, -CtxOut)
+% tick_children(+Children, +Obj, -Result, +CtxIn, -CtxOut)
 % Result's either 'despawned' or 'remaining(List)'
 % Threads the object state (attributes) through each child
 % execution via context.
 
-tick_children([], _ID, remaining([])) --> [].
+tick_children([], _Obj, remaining([])) --> [].
 
 % NOTE: Only the upper-/outer-most actions are executed in
 % parallel so to speak. If those are composite actions then
@@ -48,7 +49,7 @@ tick_children([], _ID, remaining([])) --> [].
 % parallel_all, parallel_race or similar)
 tick_children(
     [FirstTopLayerAcn|TopLayerAcnsRest],
-    ID,
+    Obj,
     Result
 ) -->
     % Normalize child to a list of actions (handle single
@@ -62,7 +63,7 @@ tick_children(
     % complete)
     tick_object(
         actions_old(FirstTopLayerAcnList),
-        obj_id(ID),
+        obj(Obj),
         result(
             ChildStatusAfterTick,
             actions_new(RemainingAcnsAfterTick)
@@ -80,7 +81,7 @@ tick_children(
         % next child.
         tick_children(
             TopLayerAcnsRest,
-            ID,
+            Obj,
             % RestResult contains all remaining actions
             % of the top level actions (except the first
             % which we already executed above) have each

@@ -12,32 +12,32 @@ builtin_action(loop(_, _)). % loop continuation
 % Initial call: loop(Actions)
 execute_action_impl(
     actions_old([loop(Actions)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     % Start the loop with Actions as both Running and
     %Original
     execute_loop_managed(
-        Actions, Actions, Rest, ID, Status, ActionsOut
+        Actions, Actions, Rest, Obj, Status, ActionsOut
     ).
 
 % Continuation: loop(Running, Original)
 execute_action_impl(
     actions_old([loop(Running, Original)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     execute_loop_managed(
-        Running, Original, Rest, ID, Status, ActionsOut
+        Running, Original, Rest, Obj, Status, ActionsOut
     ).
 
 execute_loop_managed(
-    Running, Original, Rest, ID, Status, ActionsOut
+    Running, Original, Rest, Obj, Status, ActionsOut
 ) -->
     % Execute the current running actions (threads context)
     tick_object(
         actions_old(Running),
-        obj_id(ID),
+        obj(Obj),
         result(RunStatus, actions_new(RunRemaining))
     ),
     handle_loop_result(
@@ -45,7 +45,7 @@ execute_loop_managed(
         RunRemaining,
         Original,
         Rest,
-        ID,
+        Obj,
         Status,
         ActionsOut
     ).
@@ -69,8 +69,8 @@ handle_loop_result(
 % Case 3: Completed - Body finished, restart loop
 % immediately
 handle_loop_result(
-    completed, _, Original, Rest, ID, Status, ActionsOut
+    completed, _, Original, Rest, Obj, Status, ActionsOut
 ) -->
     execute_loop_managed(
-        Original, Original, Rest, ID, Status, ActionsOut
+        Original, Original, Rest, Obj, Status, ActionsOut
     ).

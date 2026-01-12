@@ -2,9 +2,10 @@ builtin_action(copy_attr(_, _)).
 
 execute_action_impl(
     actions_old([copy_attr(SourcePath, DestPath)|Rest]),
-    obj_id(MyID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, MyID)},
     % Both SourcePath and DestPath are paths so dont need
     % any resolution.
     execute_copy_attr(MyID, SourcePath, DestPath).

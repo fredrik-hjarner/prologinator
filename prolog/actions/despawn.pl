@@ -2,9 +2,10 @@ builtin_action(despawn).
 
 execute_action_impl(
     actions_old([despawn|_]),
-    obj_id(ID),
+    obj(Obj),
     result(despawned, actions_new([]))
 ) -->
+    {obj_id(Obj, ID)},
     execute_despawn(ID).
 
 execute_despawn(ID) -->

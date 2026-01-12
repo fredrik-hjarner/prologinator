@@ -21,9 +21,10 @@ execute_action_impl(
 % Initial call: repeat(Times, Actions)
 execute_action_impl(
     actions_old([repeat(Times, Actions)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, Times, ResolvedTimes),
     % Constraint from original: Times > 0
     {ResolvedTimes #> 0},
@@ -32,7 +33,7 @@ execute_action_impl(
         Actions,
         Actions,
         Rest,
-        ID,
+        Obj,
         Status,
         ActionsOut
     ).
@@ -40,7 +41,7 @@ execute_action_impl(
 % Continuation: repeat(RemainingTimes, Running, Original)
 execute_action_impl(
     actions_old([repeat(Times, Running, Original)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     execute_repeat_managed(
@@ -48,18 +49,18 @@ execute_action_impl(
         Running,
         Original,
         Rest,
-        ID,
+        Obj,
         Status,
         ActionsOut
     ).
 
 execute_repeat_managed(
-    Times, Running, Original, Rest, ID, Status, ActionsOut
+    Times, Running, Original, Rest, Obj, Status, ActionsOut
 ) -->
     % Execute the current running actions (threads context)
     tick_object(
         actions_old(Running),
-        obj_id(ID),
+        obj(Obj),
         result(RunStatus, actions_new(RunRemaining))
     ),
     handle_repeat_result(
@@ -68,7 +69,7 @@ execute_repeat_managed(
         Times,
         Original,
         Rest,
-        ID,
+        Obj,
         Status,
         ActionsOut
     ).
@@ -95,7 +96,7 @@ handle_repeat_result(
     Times,
     Original,
     Rest,
-    ID,
+    Obj,
     Status,
     ActionsOut
 ) -->
@@ -107,7 +108,7 @@ handle_repeat_result(
             Original,
             Original,
             Rest,
-            ID,
+            Obj,
             Status,
             ActionsOut
         )

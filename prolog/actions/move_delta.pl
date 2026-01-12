@@ -6,9 +6,10 @@ builtin_action(move_delta(_, _, _)). % move over N frames.
 % the frames?
 execute_action_impl(
     actions_old([move_delta(DX, DY)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(NewActions))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, DX, ResolvedDX),
     resolve_arg(ID, DY, ResolvedDY),
     execute_move_delta(
@@ -29,9 +30,10 @@ execute_action_impl(
 
 execute_action_impl(
     actions_old([move_delta(Frames, DX, DY)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(NewActions))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, Frames, ResolvedFrames),
     resolve_arg(ID, DX, ResolvedDX),
     resolve_arg(ID, DY, ResolvedDY),

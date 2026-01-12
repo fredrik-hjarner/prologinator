@@ -4,17 +4,19 @@ builtin_action(incr(_, _)). % increment by amount.
 % increment by 1.
 execute_action_impl(
     actions_old([incr(Path)|Rest]),
-    obj_id(MyID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, MyID)},
     execute_incr(MyID, Path, 1).
 
 % increment by amount.
 execute_action_impl(
     actions_old([incr(Path, Amount)|Rest]),
-    obj_id(MyID),
+    obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
+    {obj_id(Obj, MyID)},
     % Path is always a path.
     % Amount should always "resolve" to a value.
     resolve_arg(MyID, Amount, ResolvedAmount),

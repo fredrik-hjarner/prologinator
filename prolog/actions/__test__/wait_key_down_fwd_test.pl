@@ -21,7 +21,7 @@ test("wait_key_down: completes when key pressed", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -49,7 +49,7 @@ test("wait_key_down: yields when key not pressed", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -78,7 +78,7 @@ test("wait_key_down: waits for different key", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
@@ -109,7 +109,7 @@ test("wait_key_down: multiple key events", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
@@ -137,7 +137,7 @@ test("wait_key_down: ignores key up events", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
@@ -182,7 +182,7 @@ test("wait_key_down: in loop pattern", (
     ),
     expect(tick_object(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status1, actions_new(ActionsOut)),
         Ctx,
         Ctx1

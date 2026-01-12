@@ -26,7 +26,7 @@ test("wait_until: completes when path exists", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -60,7 +60,7 @@ test("wait_until: completes when path exists", (
 %     % --------------------------------------------------
 %     execute_action(
 %         actions_old(ActionsIn),
-%         obj_id(1),
+%         obj(object(id(1))),
 %         result(Status, actions_new(ActionsOut)),
 %         Ctx,
 %         _CtxNew
@@ -102,7 +102,7 @@ test("wait_until: works with nested paths", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _CtxNew
@@ -141,7 +141,7 @@ test("wait_until: yields when nested path does not exist", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _CtxNew
@@ -180,7 +180,7 @@ exist", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _CtxNew

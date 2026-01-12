@@ -26,7 +26,7 @@
 % Also handles user-defined actions via runtime expansion.
 execute_action(
     actions_old([Action|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
     % TODO: action_validation nowadays it almost useless
@@ -49,13 +49,13 @@ execute_action(
 #endif
         % execute_action_impl(
         %     actions_old([Action|Rest]),
-        %     obj_id(ID),
+        %     obj(Obj),
         %     result(Status, actions_new(ActionsOut))
         % )
         catch_dcg(
             execute_action_impl(
                 actions_old([Action|Rest]),
-                obj_id(ID),
+                obj(Obj),
                 result(Status, actions_new(ActionsOut))
             ),
             Error,
@@ -74,7 +74,7 @@ execute_action(
         % Replace the user action with its Body in the queue
         execute_action(
             actions_old([Body|Rest]),
-            obj_id(ID),
+            obj(Obj),
             result(Status, actions_new(ActionsOut))
         )
     ;

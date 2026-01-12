@@ -8,9 +8,10 @@ builtin_action(wait_key_down(_)).
 
 execute_action_impl(
     actions_old([wait_key_down(KeyCode)|Rest]),
-    obj_id(ID),
+    obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
+    {obj_id(Obj, ID)},
     resolve_arg(ID, KeyCode, ResolvedKeyCode),
     execute_wait_key_down(
         ResolvedKeyCode,

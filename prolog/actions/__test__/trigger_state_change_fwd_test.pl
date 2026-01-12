@@ -24,7 +24,7 @@ to won", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(completed, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
@@ -51,7 +51,7 @@ to lost", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(completed, actions_new(ActionsOut)),
         CtxIn,
         CtxOut
@@ -79,7 +79,7 @@ override lost", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(completed, actions_new(ActionsOut)),
         CtxIn,
         CtxOut

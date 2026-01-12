@@ -20,7 +20,7 @@ test("wait_key_held: completes when key is held", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -48,7 +48,7 @@ test("wait_key_held: yields when key not held", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -76,7 +76,7 @@ test("wait_key_held: waits for different key", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
@@ -103,7 +103,7 @@ test("wait_key_held: multiple keys held", (
     % --------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status, actions_new(ActionsOut)),
         Ctx,
         _
@@ -136,7 +136,7 @@ test("wait_key_held: in loop pattern", (
     % --------------------------------------------------
     tick_object(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(Status1, actions_new(ActionsOut)),
         Ctx,
         Ctx1

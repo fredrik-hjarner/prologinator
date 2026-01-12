@@ -26,7 +26,7 @@ test("set_attr: set new attribute", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -60,7 +60,7 @@ test("set_attr: replace existing attribute", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         CtxNew
@@ -93,21 +93,21 @@ duplicates", (
     % ------------------------------------------------------
     execute_action(
         actions_old(ActionsIn),
-        obj_id(1),
+        obj(object(id(1))),
         result(completed, actions_new(ActionsOut)),
         Ctx,
         Ctx1
     ),
     execute_action(
         actions_old(ActionsOut),
-        obj_id(1),
+        obj(object(id(1))),
         result(completed, actions_new(ActionsOut2)),
         Ctx1,
         Ctx2
     ),
     execute_action(
         actions_old(ActionsOut2),
-        obj_id(1),
+        obj(object(id(1))),
         result(completed, actions_new(_ActionsOut3)),
         Ctx2,
         CtxNew
