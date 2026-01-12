@@ -1,41 +1,12 @@
 import { Glob } from "bun";
 
 // ==========================================================
-// Configuration: Edit these patterns at the top of the file
-// ==========================================================
-
-// Array of glob patterns to include (e.g., ["**/*.pl", "**/*.ts"])
-export const includePatterns: string[] = [
-    // "**/*.pl",
-    "games/*",
-    "**/*.ts"
-];
-
-// Array of glob patterns to exclude (e.g., ["**/node_modules/**", "**/*.test.ts"])
-export const excludePatterns: string[] = [
-    "**/.git/**",
-    "**/.cursor/**",
-    "**/.husky/**",
-    "**/.vscode/**",
-    "**/internal_docs/**",
-    "**/node_modules/**",
-    "**/scripts/**",
-    "**/submodules/**",
-    "**/*_test.pl",
-    "**/xod.pl",
-    "**/validation2.pl",
-    "**/test_util.pl",
-    "**/prologinator.pl",
-    "**/types/constraints.pl",
-];
-
-// ==========================================================
 // File collection (filtered by patterns)
 // ==========================================================
 
 export default async function collectFilteredFiles(
-    include: string[] = includePatterns,
-    exclude: string[] = excludePatterns
+    include: string[],
+    exclude: string[]
 ): Promise<string[]> {
     const files: string[] = [];
 

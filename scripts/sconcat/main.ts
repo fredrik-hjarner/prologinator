@@ -1,18 +1,59 @@
 #!/usr/bin/env bun
 
 import { relative } from "path";
-import collectFilteredFiles, { excludePatterns } from "./feeder.ts";
+import collectFilteredFiles from "./feeder.ts";
 import concatenateFiles from "./concater.ts";
 import { InteractiveSelector } from "./Selector.ts";
 import { restoreTerminal } from "./terminal.ts";
 
 const DEFAULT_OUTPUT_FILE = "concat.xml";
 
+// Array of glob patterns to include
+export const includePatterns: string[] = [
+    "**/*.pl",
+    "games/*",
+    "**/*.ts"
+];
+
+// Array of glob patterns to exclude
+const excludePatterns: string[] = [
+    "**/.git/**",
+    "**/.cursor/**",
+    "**/.husky/**",
+    "**/.vscode/**",
+    "**/internal_docs/**",
+    "**/node_modules/**",
+    "**/scripts/**",
+    "**/submodules/**",
+    "**/*_test.pl",
+    "**/xod.pl",
+    "**/validation2.pl",
+    "**/test_util.pl",
+    "**/prologinator.pl",
+    "**/types/constraints.pl",
+];
+
 async function main() {
     try {
-        // ==========================================================
+        // =================================================
+        // Stage 0: Include Patterns
+        // =================================================
+        const includeItems = includePatterns.map(p => ({
+            id: p,
+            label: p,
+            selected: true 
+        }));
+
+        const includePatternSelector =
+            new InteractiveSelector(
+                includeItems, "Select Inclusion Patterns"
+            );
+        const activeIncludes =
+            await includePatternSelector.run();
+
+        // =================================================
         // Stage 1: Exclude Patterns
-        // ==========================================================
+        // =================================================
         const excludeItems = excludePatterns.map(p => ({
             id: p,
             label: p,
@@ -31,7 +72,9 @@ async function main() {
         // Stage 2: Collect Files
         // ==========================================================
         // Pass the selected excludes to the feeder
-        const foundFiles = await collectFilteredFiles(undefined, activeExcludes);
+        const foundFiles = await collectFilteredFiles(
+            activeIncludes, activeExcludes
+        );
 
         if (foundFiles.length === 0) {
             console.log("No files found matching criteria.");
