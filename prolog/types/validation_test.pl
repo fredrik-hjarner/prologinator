@@ -26,7 +26,8 @@ test("game_state_validation: valid state passes", (
         status(playing),
         next_id(1),
         commands(spawn_cmds([]), fork_cmds([])),
-        actionstore(EmptyActionStore)
+        actionstore(EmptyActionStore),
+        rng_index(0)
     ),
     state_validation(State)
 )).
@@ -61,7 +62,8 @@ multiple objects and commands", (
             spawn_cmd(actions([])),
             spawn_cmd(actions([]))
         ]), fork_cmds([])),
-        actionstore(EmptyActionStore)
+        actionstore(EmptyActionStore),
+        rng_index(0)
     ),
     state_validation(State)
 )).
@@ -146,7 +148,8 @@ test("game_state_validation: invalid status fails", (
         status(invalid_status),
         next_id(1),
         commands(spawn_cmds([]), fork_cmds([])),
-        actionstore(EmptyActionStore)
+        actionstore(EmptyActionStore),
+        rng_index(0)
     ),
     expect_exception(state_validation(State))
 )).
@@ -161,7 +164,8 @@ test("game_state_validation: non-integer frame fails", (
         status(playing),
         next_id(1),
         commands(spawn_cmds([]), fork_cmds([])),
-        actionstore(EmptyActionStore)
+        actionstore(EmptyActionStore),
+        rng_index(0)
     ),
     expect_exception(state_validation(State))
 )).
@@ -180,7 +184,8 @@ test("game_state_validation: NextID <= max ID fails", (
         status(playing),
         next_id(5),
         commands(spawn_cmds([]), fork_cmds([])),
-        actionstore(EmptyActionStore)
+        actionstore(EmptyActionStore),
+        rng_index(0)
     ),
     expect_exception(state_validation(State))
 )).
@@ -266,7 +271,8 @@ test("game_state_validation: wrong functor throws", (
         status(playing),
         next_id(1),
         commands(spawn_cmds([]), fork_cmds([])),
-        actionstore(EmptyActionStore)
+        actionstore(EmptyActionStore),
+        rng_index(0)
     ),
     expect_exception(state_validation(State))
 )).

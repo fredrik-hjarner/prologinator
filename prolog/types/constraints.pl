@@ -60,7 +60,8 @@ state_constraint(
       status(Status),
       next_id(NextID),
       commands(Commands),
-      actionstore(_ActionStore)
+      actionstore(_ActionStore),
+      rng_index(RngIdx)
   )
 ) :-
     Frame #>= 0,
@@ -83,7 +84,9 @@ state_constraint(
     NextID #> MaxID,
     
     game_status_constraint(Status),
-    bounded_list_of(command_constraint, Commands, 100).
+    bounded_list_of(command_constraint, Commands, 100),
+    RngIdx #>= 0,
+    RngIdx #< 256.
 
 % ==========================================================
 % Status Constraint

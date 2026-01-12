@@ -106,40 +106,44 @@
 
 % getter ctx_frame/3 for dcg use
 ctx_frame(F, Ctx, Ctx) :-
-    Ctx = ctx(state(frame(F), _, _, _, _, _, _), _).
+    Ctx = ctx(state(frame(F), _, _, _, _, _, _, _), _).
 
 ctx_objs(O, Ctx, Ctx) :-
-    Ctx = ctx(state(_, objects(O), _, _, _, _, _), _).
+    Ctx = ctx(state(_, objects(O), _, _, _, _, _, _), _).
 
 ctx_attrs(A, Ctx, Ctx) :-
-    Ctx = ctx(state(_, _, attrs(A), _, _, _, _), _).
+    Ctx = ctx(state(_, _, attrs(A), _, _, _, _, _), _).
 
 ctx_state(S, Ctx, Ctx) :-
     Ctx = ctx(S, _).
 
 ctx_cmds(commands(SC, FC), Ctx, Ctx) :-
     Ctx = ctx(state(_, _, _, _, _,
-                    commands(SC, FC), _), _).
+                    commands(SC, FC), _, _), _).
 
 ctx_spawnCmds(SC, Ctx, Ctx) :-
     Ctx = ctx(state(_, _, _, _, _,
                     commands(spawn_cmds(SC),
-                             fork_cmds(_)), _), _).
+                             fork_cmds(_)), _, _), _).
 
 ctx_forkCmds(FC, Ctx, Ctx) :-
     Ctx = ctx(state(_, _, _, _, _,
                     commands(spawn_cmds(_),
-                             fork_cmds(FC)), _), _).
+                             fork_cmds(FC)), _, _), _).
 
 ctx_status(S, Ctx, Ctx) :-
-    Ctx = ctx(state(_, _, _, status(S), _, _, _), _).
+    Ctx = ctx(state(_, _, _, status(S), _, _, _, _), _).
 
 ctx_nextid(N, Ctx, Ctx) :-
-    Ctx = ctx(state(_, _, _, _, next_id(N), _, _), _).
+    Ctx = ctx(state(_, _, _, _, next_id(N), _, _, _), _).
 
 ctx_actionstore(AS, Ctx, Ctx) :-
     Ctx = ctx(state(_, _, _, _, _, _,
-                    actionstore(AS)), _).
+                    actionstore(AS), _), _).
+
+ctx_rng_index(R, Ctx, Ctx) :-
+    Ctx = ctx(state(_, _, _, _, _, _, _,
+                    rng_index(R)), _).
 
 ctx_input(I, Ctx, Ctx) :-
     Ctx = ctx(_, I).
@@ -179,54 +183,69 @@ ctx_objs_nextid_cmds(Objs, NextID, Cmds) -->
 % Single Field Setters
 % ----------------------------------------------------------
 
-ctx_set_frame(F, ctx(state(_, O, A, S, N, C, AS), I),
-              ctx(state(frame(F), O, A, S, N, C, AS), I)).
+ctx_set_frame(
+    F,
+    ctx(state(_, O, A, S, N, C, AS, R), I),
+    ctx(state(frame(F), O, A, S, N, C, AS, R), I)
+).
 
-ctx_set_objs(O, ctx(state(F, _, A, S, N, C, AS), I),
-             ctx(state(F, objects(O), A, S, N, C, AS), I)).
+ctx_set_objs(
+    O,
+    ctx(state(F, _, A, S, N, C, AS, R), I),
+    ctx(state(F, objects(O), A, S, N, C, AS, R), I)
+).
 
-ctx_set_attrs(A, ctx(state(F, O, _, S, N, C, AS), I),
-              ctx(state(F, O, attrs(A), S, N, C, AS), I)).
+ctx_set_attrs(
+    A,
+    ctx(state(F, O, _, S, N, C, AS, R), I),
+    ctx(state(F, O, attrs(A), S, N, C, AS, R), I)
+).
 
 ctx_set_state(S, ctx(_, I), ctx(S, I)).
 
 ctx_set_cmds(commands(SC, FC),
-             ctx(state(F, O, A, S, N, _, AS), I),
+             ctx(state(F, O, A, S, N, _, AS, R), I),
              ctx(state(F, O, A, S, N,
-                       commands(SC, FC), AS), I)).
+                       commands(SC, FC), AS, R), I)).
 
 ctx_set_spawnCmds(SC,
                   ctx(state(F, O, A, S, N,
                             commands(spawn_cmds(_),
-                                     fork_cmds(FC)), AS),
+                                     fork_cmds(FC)), AS, R),
                       I),
                   ctx(state(F, O, A, S, N,
                             commands(spawn_cmds(SC),
-                                     fork_cmds(FC)), AS),
+                                     fork_cmds(FC)), AS, R),
                       I)).
 
 ctx_set_forkCmds(FC,
                  ctx(state(F, O, A, S, N,
                            commands(spawn_cmds(SC),
-                                    fork_cmds(_)), AS),
+                                    fork_cmds(_)), AS, R),
                      I),
                  ctx(state(F, O, A, S, N,
                            commands(spawn_cmds(SC),
-                                    fork_cmds(FC)), AS),
+                                    fork_cmds(FC)), AS, R),
                      I)).
 
-ctx_set_status(S, ctx(state(F, O, A, _, N, C, AS), I),
-               ctx(state(F, O, A, status(S), N, C, AS),
+ctx_set_status(S, ctx(state(F, O, A, _, N, C, AS, R), I),
+               ctx(state(F, O, A, status(S), N, C, AS, R),
                    I)).
 
-ctx_set_nextid(N, ctx(state(F, O, A, S, _, C, AS), I),
-               ctx(state(F, O, A, S, next_id(N), C, AS),
+ctx_set_nextid(N, ctx(state(F, O, A, S, _, C, AS, R), I),
+               ctx(state(F, O, A, S, next_id(N), C, AS, R),
                    I)).
 
-ctx_set_actionstore(AS, ctx(state(F, O, A, S, N, C, _),
+ctx_set_actionstore(AS, ctx(state(F, O, A, S, N, C, _, R),
                             I),
                     ctx(state(F, O, A, S, N, C,
-                              actionstore(AS)), I)).
+                              actionstore(AS), R), I)).
+
+ctx_set_rng_index(
+    R,
+    ctx(state(F, O, A, S, N, C, AS, _), I),
+    ctx(state(F, O, A, S, N, C, AS, rng_index(R)), I)
+).
 
 ctx_set_input(I, ctx(S, _), ctx(S, I)).
 
@@ -294,6 +313,7 @@ obj_id(object(id(ID)), ID).
 % - next_id(1)
 % - commands(spawn_cmds([]), fork_cmds([]))
 % - actionstore(empty assoc)
+% - rng_index(0)
 % - input(events([]), held([]))
 empty_ctx(ctx(state(
     frame(0),
@@ -302,7 +322,8 @@ empty_ctx(ctx(state(
     status(playing),
     next_id(1),
     commands(spawn_cmds([]), fork_cmds([])),
-    actionstore(EmptyActionStore)
+    actionstore(EmptyActionStore),
+    rng_index(0)
 ), input(events([]), held([])))) :-
     empty_assoc(EmptyAttrs),
     empty_assoc(EmptyActionStore).
@@ -499,7 +520,8 @@ state_validation_helper(Term) :-
               next_id(NextID),
               commands(spawn_cmds(SpawnCmds),
                        fork_cmds(ForkCmds)),
-              actionstore(ActionStore)
+              actionstore(ActionStore),
+              rng_index(RngIdx)
           ) ->
             % Structure matches, validate content
             integer(Frame),
@@ -517,6 +539,10 @@ state_validation_helper(Term) :-
             % ground
             % TODO: Better validation of ActionStore
             ground(ActionStore),
+            % Validate RNG index
+            integer(RngIdx),
+            RngIdx >= 0,
+            RngIdx < 256,
             % Validate that number of objects matches
             % number of actionstore entries
             length(Objects, NumObjects),
@@ -725,13 +751,16 @@ is_valid_value_spec(Term) :-
     ;   Term = .(_)
     ;   Term = -(_)
     ;   Term = default(_, _)
+    ;   (compound(Term), functor(Term, ':', 1))
+    ;   (compound(Term), functor(Term, ':', 2))
+    ;   Term = rnd(_, _)
     ).
 
 % Helper: Check if term is a valid path
 is_valid_path(Term) :-
     ( atom(Term)
-    ; (compound(Term), functor(Term, '.', 1))
-    ; (compound(Term), functor(Term, '.', 2))
+    ; (compound(Term), functor(Term, ':', 1))
+    ; (compound(Term), functor(Term, ':', 2))
     ).
 
 % Helper: Check if term is an integer or evaluates to an
@@ -1343,6 +1372,296 @@ pretty_print_args([Arg|Args], Indent) :-
 % #include "../prolog/macros.pl" % no dont import
 % #include "../prolog/test_macros.pl" % no dont import
 
+% 3.5. RNG System
+% 256 pre-generated floats [0, 1)
+% Seed: 12345
+% Wraps at 256
+
+rng_val(0, 0.41661987254534116).
+rng_val(1, 0.010169169457068361).
+rng_val(2, 0.8252065092537432).
+rng_val(3, 0.2986398551995928).
+rng_val(4, 0.3684116894884757).
+rng_val(5, 0.19366134904507426).
+rng_val(6, 0.5660081687288613).
+rng_val(7, 0.1616878239293682).
+rng_val(8, 0.12426688428353017).
+rng_val(9, 0.4329362680099159).
+rng_val(10, 0.5620784880758429).
+rng_val(11, 0.1743435607237318).
+rng_val(12, 0.5532210855693298).
+rng_val(13, 0.35490138633659873).
+rng_val(14, 0.9580647850995486).
+rng_val(15, 0.09129409887673512).
+rng_val(16, 0.97863999557041).
+rng_val(17, 0.412119392939301).
+rng_val(18, 0.5039353681100375).
+rng_val(19, 0.14814616893018917).
+rng_val(20, 0.718967140300885).
+rng_val(21, 0.18997137872182035).
+rng_val(22, 0.34156042577355217).
+rng_val(23, 0.02352121814220054).
+rng_val(24, 0.3395177723979207).
+rng_val(25, 0.9674824588798714).
+rng_val(26, 0.9787984541856568).
+rng_val(27, 0.7445300401410346).
+rng_val(28, 0.0034546107550955663).
+rng_val(29, 0.9402385030977428).
+rng_val(30, 0.8707669687554763).
+rng_val(31, 0.7708343385168108).
+rng_val(32, 0.17887376462351512).
+rng_val(33, 0.09949963280961138).
+rng_val(34, 0.41453246851185777).
+rng_val(35, 0.8855364671454795).
+rng_val(36, 0.5780860273663232).
+rng_val(37, 0.7365822149440823).
+rng_val(38, 0.23262110322840768).
+rng_val(39, 0.5235975801646584).
+rng_val(40, 0.7093864374841317).
+rng_val(41, 0.8248339468977807).
+rng_val(42, 0.8071245330590829).
+rng_val(43, 0.23230811297746212).
+rng_val(44, 0.8731899671198792).
+rng_val(45, 0.21638043029004472).
+rng_val(46, 0.8018992376033143).
+rng_val(47, 0.5550852989383774).
+rng_val(48, 0.18582835985521595).
+rng_val(49, 0.588608618331516).
+rng_val(50, 0.5182393857540837).
+rng_val(51, 0.9586625034352321).
+rng_val(52, 0.04153922185136183).
+rng_val(53, 0.16413828210031).
+rng_val(54, 0.9832926531475112).
+rng_val(55, 0.832204885850523).
+rng_val(56, 0.15027246598161914).
+rng_val(57, 0.22911297045444934).
+rng_val(58, 0.5391382749525224).
+rng_val(59, 0.15698083032677357).
+rng_val(60, 0.32376072565348557).
+rng_val(61, 0.049319223023131076).
+rng_val(62, 0.7116772938155663).
+rng_val(63, 0.0785627468533846).
+rng_val(64, 0.9946042507818162).
+rng_val(65, 0.9205698384306195).
+rng_val(66, 0.7888288722314624).
+rng_val(67, 0.772405890467276).
+rng_val(68, 0.3677523003172184).
+rng_val(69, 0.6787061729470147).
+rng_val(70, 0.7612587669603891).
+rng_val(71, 0.4807762549955329).
+rng_val(72, 0.06152504692835914).
+rng_val(73, 0.6261039487405924).
+rng_val(74, 0.32576083222022556).
+rng_val(75, 0.6100890708421333).
+rng_val(76, 0.42082846107038974).
+rng_val(77, 0.9525307830408943).
+rng_val(78, 0.2015946162066391).
+rng_val(79, 0.7688563664469605).
+rng_val(80, 0.6985618555499734).
+rng_val(81, 0.5565629985158106).
+rng_val(82, 0.08004627745518866).
+rng_val(83, 0.16495171109218099).
+rng_val(84, 0.9672819773521698).
+rng_val(85, 0.23064252885618974).
+rng_val(86, 0.16354303183224395).
+rng_val(87, 0.28829567246246735).
+rng_val(88, 0.5371205291941444).
+rng_val(89, 0.5196133382299564).
+rng_val(90, 0.0033318113277969186).
+rng_val(91, 0.0031849641925417727).
+rng_val(92, 0.49606648747577575).
+rng_val(93, 0.1848544913177429).
+rng_val(94, 0.6075008357600052).
+rng_val(95, 0.7984630305365574).
+rng_val(96, 0.09587326842754096).
+rng_val(97, 0.5051671769471715).
+rng_val(98, 0.40613812257436266).
+rng_val(99, 0.7904532831270685).
+rng_val(100, 0.9547928606038187).
+rng_val(101, 0.4167182086552499).
+rng_val(102, 0.2432677814285058).
+rng_val(103, 0.8784733651900372).
+rng_val(104, 0.027275714076411717).
+rng_val(105, 0.33046584707469195).
+rng_val(106, 0.3947751386303626).
+rng_val(107, 0.1779838694009449).
+rng_val(108, 0.6799348803123579).
+rng_val(109, 0.5182662672797586).
+rng_val(110, 0.2489405792965016).
+rng_val(111, 0.41325071091358045).
+rng_val(112, 0.6918833063358997).
+rng_val(113, 0.32496403247226413).
+rng_val(114, 0.06770597877904316).
+rng_val(115, 0.4605030472842221).
+rng_val(116, 0.19506448230254514).
+rng_val(117, 0.6213125331046796).
+rng_val(118, 0.201889401295405).
+rng_val(119, 0.1350257510763575).
+rng_val(120, 0.8939611258599183).
+rng_val(121, 0.33028805678981543).
+rng_val(122, 0.29230523947895226).
+rng_val(123, 0.5382589512342858).
+rng_val(124, 0.6933819932593647).
+rng_val(125, 0.6709971196314991).
+rng_val(126, 0.7983939428568075).
+rng_val(127, 0.2599361596793658).
+rng_val(128, 0.42687597903639085).
+rng_val(129, 0.36396028696916716).
+rng_val(130, 0.5166870395533879).
+rng_val(131, 0.574046254959452).
+rng_val(132, 0.6292882543714889).
+rng_val(133, 0.0679539900733036).
+rng_val(134, 0.3712173467900003).
+rng_val(135, 0.7085639136642764).
+rng_val(136, 0.03532728757657122).
+rng_val(137, 0.7462381530112661).
+rng_val(138, 0.6859014136246242).
+rng_val(139, 0.40179135134260624).
+rng_val(140, 0.44917126454691336).
+rng_val(141, 0.2643407159436396).
+rng_val(142, 0.7372210658528493).
+rng_val(143, 0.48040542789075014).
+rng_val(144, 0.2651294875559076).
+rng_val(145, 0.029352674034500037).
+rng_val(146, 0.3450714657907936).
+rng_val(147, 0.9209920242580402).
+rng_val(148, 0.6761449126123859).
+rng_val(149, 0.6256024673922519).
+rng_val(150, 0.9338808959956718).
+rng_val(151, 0.03060498916403087).
+rng_val(152, 0.6024564197074109).
+rng_val(153, 0.18795076655557452).
+rng_val(154, 0.3969442731926439).
+rng_val(155, 0.1818353852080048).
+rng_val(156, 0.34912978268081996).
+rng_val(157, 0.9013784177612411).
+rng_val(158, 0.7253922769077522).
+rng_val(159, 0.8462916716059914).
+rng_val(160, 0.07548371416964916).
+rng_val(161, 0.3008433756858523).
+rng_val(162, 0.7841606353594202).
+rng_val(163, 0.040451261544658945).
+rng_val(164, 0.189722487036334).
+rng_val(165, 0.08185679571959825).
+rng_val(166, 0.8175562344976682).
+rng_val(167, 0.23224614808583555).
+rng_val(168, 0.42429178357798814).
+rng_val(169, 0.013856114073858672).
+rng_val(170, 0.11366657876749875).
+rng_val(171, 0.513996258612917).
+rng_val(172, 0.7913105487611877).
+rng_val(173, 0.3410267859111531).
+rng_val(174, 0.31934849073353067).
+rng_val(175, 0.04081214399157329).
+rng_val(176, 0.09961604688046455).
+rng_val(177, 0.14851488603942398).
+rng_val(178, 0.20625780715908415).
+rng_val(179, 0.5698488170829192).
+rng_val(180, 0.3588934329031853).
+rng_val(181, 0.9777270908746282).
+rng_val(182, 0.2841099577994114).
+rng_val(183, 0.8562795212227933).
+rng_val(184, 0.09177424083639474).
+rng_val(185, 0.5276047379324421).
+rng_val(186, 0.5494743250623383).
+rng_val(187, 0.6572960314253533).
+rng_val(188, 0.4101362599485985).
+rng_val(189, 0.5239891634524901).
+rng_val(190, 0.7778124848007456).
+rng_val(191, 0.15160186282128418).
+rng_val(192, 0.5316194320124256).
+rng_val(193, 0.5880814027973866).
+rng_val(194, 0.781697086244818).
+rng_val(195, 0.16371119363214492).
+rng_val(196, 0.41458634614656953).
+rng_val(197, 0.02456929066591973).
+rng_val(198, 0.662556015158836).
+rng_val(199, 0.8680295079084782).
+rng_val(200, 0.35352755095178545).
+rng_val(201, 0.8162658180364141).
+rng_val(202, 0.6580285250714322).
+rng_val(203, 0.017038548881094906).
+rng_val(204, 0.4702399852696306).
+rng_val(205, 0.045739019803796466).
+rng_val(206, 0.31322206101922623).
+rng_val(207, 0.800639080244815).
+rng_val(208, 0.12546015068678373).
+rng_val(209, 0.5653695286998881).
+rng_val(210, 0.056718823092125725).
+rng_val(211, 0.10982554023097113).
+rng_val(212, 0.9521642932198732).
+rng_val(213, 0.09640738081026512).
+rng_val(214, 0.17411409343227868).
+rng_val(215, 0.9400751371027144).
+rng_val(216, 0.3088508981093824).
+rng_val(217, 0.21649052593912455).
+rng_val(218, 0.09645565942262191).
+rng_val(219, 0.49926037690860803).
+rng_val(220, 0.05889118778225766).
+rng_val(221, 0.22005339639652233).
+rng_val(222, 0.22211843974532308).
+rng_val(223, 0.7451460866970875).
+rng_val(224, 0.16213034378886726).
+rng_val(225, 0.5881377201026384).
+rng_val(226, 0.2416913360302012).
+rng_val(227, 0.9938211417647693).
+rng_val(228, 0.9906382223335624).
+rng_val(229, 0.9238536892862573).
+rng_val(230, 0.9000835434233305).
+rng_val(231, 0.5536939917085721).
+rng_val(232, 0.9308556210335841).
+rng_val(233, 0.6398599759778303).
+rng_val(234, 0.1593908047136825).
+rng_val(235, 0.7323486019332045).
+rng_val(236, 0.8492864948438936).
+rng_val(237, 0.014451516051650404).
+rng_val(238, 0.19491910988995909).
+rng_val(239, 0.7843001775421666).
+rng_val(240, 0.7680497770737779).
+rng_val(241, 0.5605806619513022).
+rng_val(242, 0.12230996857928911).
+rng_val(243, 0.26525322025156217).
+rng_val(244, 0.23571530888669578).
+rng_val(245, 0.9805838560880975).
+rng_val(246, 0.225324738753366).
+rng_val(247, 0.37012214760624496).
+rng_val(248, 0.6890328634286919).
+rng_val(249, 0.6631663024689728).
+rng_val(250, 0.5621924716914689).
+rng_val(251, 0.6506766486957789).
+rng_val(252, 0.865006274261279).
+rng_val(253, 0.9139555059703769).
+rng_val(254, 0.10844692228832775).
+rng_val(255, 0.030128296560623657).
+
+% RNG predicates with cyclic index
+% 256-value table from rng_table.pl
+
+% ==============================================
+% rng_next(IndexIn, FloatOut, IndexOut)
+% ==============================================
+% Get next float [0, 1) and advance index
+% Wraps at 256
+
+rng_next(I, F, I1) :-
+    rng_val(I, F),
+    I1 #= (I + 1) mod 256.
+
+% ==============================================
+% rng_int_range(Min, Max, IndexIn, 
+%               ValueOut, IndexOut)
+% ==============================================
+% Get random integer in [Min, Max] inclusive
+% Respects 60-char line limit
+
+rng_int_range(Min, Max, I, Val, I1) :-
+    rng_next(I, F, I1),
+    Range is Max - Min + 1,
+    Scaled is F * Range,
+    FloorScaled is floor(Scaled),
+    Val is Min + FloorScaled.
+
+
 % 4. Action Resolution and Builtins
 % Value Resolution Module
 % Resolves attr() references in actions before execution
@@ -1389,6 +1708,15 @@ resolve_arg(Obj, :Path, V) -->
 resolve_arg(Obj, default(ValueExpr, Fallback), V) -->
     !,
     resolve_default(Obj, ValueExpr, Fallback, V).
+
+% Handle rnd(Min, Max) value spec
+resolve_arg(_Obj, rnd(Min, Max), V) -->
+    !,
+    ctx_rng_index(RngIdx),
+    {
+        rng_int_range(Min, Max, RngIdx, V, NewIdx)
+    },
+    ctx_set_rng_index(NewIdx).
 
 % Lists need recursive resolution
 % TODO: Do I even need this? I don't think I ever need this

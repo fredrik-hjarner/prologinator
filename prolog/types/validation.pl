@@ -137,7 +137,8 @@ state_validation_helper(Term) :-
               next_id(NextID),
               commands(spawn_cmds(SpawnCmds),
                        fork_cmds(ForkCmds)),
-              actionstore(ActionStore)
+              actionstore(ActionStore),
+              rng_index(RngIdx)
           ) ->
             % Structure matches, validate content
             integer(Frame),
@@ -155,6 +156,10 @@ state_validation_helper(Term) :-
             % ground
             % TODO: Better validation of ActionStore
             ground(ActionStore),
+            % Validate RNG index
+            integer(RngIdx),
+            RngIdx >= 0,
+            RngIdx < 256,
             % Validate that number of objects matches
             % number of actionstore entries
             length(Objects, NumObjects),
@@ -363,13 +368,16 @@ is_valid_value_spec(Term) :-
     ;   Term = .(_)
     ;   Term = -(_)
     ;   Term = default(_, _)
+    ;   (compound(Term), functor(Term, ':', 1))
+    ;   (compound(Term), functor(Term, ':', 2))
+    ;   Term = rnd(_, _)
     ).
 
 % Helper: Check if term is a valid path
 is_valid_path(Term) :-
     ( atom(Term)
-    ; (compound(Term), functor(Term, '.', 1))
-    ; (compound(Term), functor(Term, '.', 2))
+    ; (compound(Term), functor(Term, ':', 1))
+    ; (compound(Term), functor(Term, ':', 2))
     ).
 
 % Helper: Check if term is an integer or evaluates to an

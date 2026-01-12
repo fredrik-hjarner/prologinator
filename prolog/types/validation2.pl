@@ -210,7 +210,13 @@ actionstore_schema(struct(actionstore, [
                 % operations
 ])).
 
-% State schema: validates state/7 with wrapped arguments
+% For rng_index(RngIdx), validate rng_index/1 and
+%   RngIdx is integer in [0, 256)
+rng_index_schema(struct(rng_index, [
+    value(integer(0, 255))
+])).
+
+% State schema: validates state/8 with wrapped arguments
 state_schema(struct(state, [
     frame(schema(frame_schema)),
     objects(schema(objects_schema)),
@@ -218,7 +224,8 @@ state_schema(struct(state, [
     status(schema(status_schema)),
     next_id(schema(next_id_schema)),
     commands(schema(commands_schema)),
-    actionstore(schema(actionstore_schema))
+    actionstore(schema(actionstore_schema)),
+    rng_index(schema(rng_index_schema))
 ])).
 
 % Context schema: ctx(State) where State is a state
@@ -248,7 +255,8 @@ test("game_state_validation: valid state passes", (
         status(playing),
         next_id(1),
         commands([]),
-        actionstore(EmptyActionStore)
+        actionstore(EmptyActionStore),
+        rng_index(0)
     ),
     validate(State, state_schema)
 )).
@@ -286,7 +294,8 @@ multiple objects and commands", (
             spawn_request(enemy, pos(0, 0), []),
             spawn_request(enemy, pos(0, 0), [])
         ]),
-        actionstore(EmptyActionStore)
+        actionstore(EmptyActionStore),
+        rng_index(0)
     ),
     validate(State, state_schema)
 )).
@@ -389,7 +398,8 @@ test("game_state_validation: invalid status fails", (
         status(invalid_status),
         next_id(1),
         commands([]),
-        actionstore(EmptyActionStore)
+        actionstore(EmptyActionStore),
+        rng_index(0)
     ),
     expect_exception(
         validate(State, state_schema)
@@ -405,7 +415,8 @@ test("game_state_validation: non-integer frame fails", (
         status(playing),
         next_id(1),
         commands([]),
-        actionstore(EmptyActionStore)
+        actionstore(EmptyActionStore),
+        rng_index(0)
     ),
     expect_exception(
         validate(State, state_schema)
@@ -514,7 +525,10 @@ test("game_state_validation: wrong arity throws", (
         objects([]),
         attrs(t),
         status(playing),
-        next_id(1)
+        next_id(1),
+        commands([]),
+        actionstore(_),
+        rng_index(0)
     ),
     expect_exception(
         validate(State, state_schema)
@@ -530,7 +544,8 @@ test("game_state_validation: wrong functor throws", (
         status(playing),
         next_id(1),
         commands([]),
-        actionstore(EmptyActionStore)
+        actionstore(EmptyActionStore),
+        rng_index(0)
     ),
     expect_exception(
         validate(State, state_schema)

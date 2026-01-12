@@ -44,6 +44,15 @@ resolve_arg(Obj, default(ValueExpr, Fallback), V) -->
     !,
     resolve_default(Obj, ValueExpr, Fallback, V).
 
+% Handle rnd(Min, Max) value spec
+resolve_arg(_Obj, rnd(Min, Max), V) -->
+    !,
+    ctx_rng_index(RngIdx),
+    {
+        rng_int_range(Min, Max, RngIdx, V, NewIdx)
+    },
+    ctx_set_rng_index(NewIdx).
+
 % Lists need recursive resolution
 % TODO: Do I even need this? I don't think I ever need this
 %       in current design.

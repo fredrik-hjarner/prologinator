@@ -14,6 +14,7 @@
 % - next_id(1)
 % - commands(spawn_cmds([]), fork_cmds([]))
 % - actionstore(empty assoc)
+% - rng_index(0)
 % - input(events([]), held([]))
 empty_ctx(ctx(state(
     frame(0),
@@ -22,7 +23,8 @@ empty_ctx(ctx(state(
     status(playing),
     next_id(1),
     commands(spawn_cmds([]), fork_cmds([])),
-    actionstore(EmptyActionStore)
+    actionstore(EmptyActionStore),
+    rng_index(0)
 ), input(events([]), held([])))) :-
     empty_assoc(EmptyAttrs),
     empty_assoc(EmptyActionStore).

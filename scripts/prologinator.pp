@@ -31,6 +31,10 @@
 % #include "../prolog/macros.pl" % no dont import
 % #include "../prolog/test_macros.pl" % no dont import
 
+% 3.5. RNG System
+#include "../prolog/rng/rng_table.pl"
+#include "../prolog/rng/rng.pl"
+
 % 4. Action Resolution and Builtins
 #include "../prolog/resolve_action.pl"
 
