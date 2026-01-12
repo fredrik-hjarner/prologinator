@@ -24,8 +24,7 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
-    resolve_arg(ID, Times, ResolvedTimes),
+    resolve_arg(Obj, Times, ResolvedTimes),
     % Constraint from original: Times > 0
     {ResolvedTimes #> 0},
     execute_repeat_managed(

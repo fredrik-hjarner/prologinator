@@ -5,12 +5,12 @@ execute_action_impl(
     obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
-    {obj_id(Obj, MyID)},
-    execute_spawn(MyID, Actions).
+    execute_spawn(Obj, Actions).
 
 % NOTE: Important to notice that spawn_cmd:s are added in
 %       reverse for performance reasons.
-execute_spawn(ParentID, Actions) -->
+execute_spawn(ParentObj, Actions) -->
+    {obj_id(ParentObj, ParentID)},
     % Build actions list with parent_id automatically added
     {SpawnActions = [
         set_attr(parent_id, ParentID)

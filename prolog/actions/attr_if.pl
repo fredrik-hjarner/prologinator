@@ -9,8 +9,7 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
-    (check_condition(ID, Condition)
+    (check_condition(Obj, Condition)
     ->
         % Condition succeeded: execute ThenActions
         tick_object(
@@ -75,8 +74,7 @@ execute_attr_if(
     Rest,
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ObjID)},
-    (check_condition(ObjID, Condition)
+    (check_condition(Obj, Condition)
     ->
         % Condition succeeded: execute ThenActions
         tick_object(

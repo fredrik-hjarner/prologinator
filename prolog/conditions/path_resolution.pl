@@ -16,12 +16,17 @@
 % stripped automatically to resolve the underlying path.
 
 % ==========================================================
-% Main: resolve_path(+Ctx, +ObjID, +Path, -Value)
+% Main: resolve_path(+Ctx, +Obj, +Path, -Value)
 % ==========================================================
 % Resolves a path (attribute reference or literal) to its
 % value.
 
-resolve_path(ObjID, Path, Value) -->
+resolve_path(Obj, Path, Value) -->
+    {obj_id(Obj, ObjID)},
+    resolve_path_id(ObjID, Path, Value).
+
+% Internal: resolve_path_id works with IDs
+resolve_path_id(ObjID, Path, Value) -->
     % Strip : prefix if present (syntactic sugar)
     ( {Path = :(InnerPath)} ->
         {TruePath = InnerPath}
@@ -32,10 +37,10 @@ resolve_path(ObjID, Path, Value) -->
     (   % Case 1: Compound path using dot functor
         {TruePath = Head:Rest}
     ->
-        resolve_path(ObjID, Head, NextID),
+        resolve_path_id(ObjID, Head, NextID),
         % Then resolve Rest starting from that object.
         % Rest must resolve to the final attribute Key/Value
-        resolve_path(NextID, Rest, Value)
+        resolve_path_id(NextID, Rest, Value)
 
     ;   % Case 2: Simple atom (Basecase: final attribute
         % Key)
@@ -58,23 +63,28 @@ resolve_path(ObjID, Path, Value) -->
 % Unlike resolve_path, this fails if any attribute in the
 % path doesn't exist. No fallback to literals.
 
+strict_resolve_path(Obj, Path, Value) -->
+    {obj_id(Obj, ObjID)},
+    strict_resolve_path_id(ObjID, Path, Value).
+
+% Internal: strict_resolve_path_id works with IDs
 % 1. Handle : prefix (strip it and recurse)
-strict_resolve_path(ObjID, :(Path), Value) -->
+strict_resolve_path_id(ObjID, :(Path), Value) -->
     !,
-    strict_resolve_path(ObjID, Path, Value).
+    strict_resolve_path_id(ObjID, Path, Value).
 
 % 2. Compound path using dot functor (recursive step)
-strict_resolve_path(
+strict_resolve_path_id(
     ObjID, FirstAttr:RestPath, Value
 ) -->
     !,
     % First resolve Head to get the next object ID
-    strict_resolve_path(ObjID, FirstAttr, NextID),
+    strict_resolve_path_id(ObjID, FirstAttr, NextID),
     % Then resolve Rest starting from that object
-    strict_resolve_path(NextID, RestPath, Value).
+    strict_resolve_path_id(NextID, RestPath, Value).
 
 % 3. Simple atom (base case for navigation, MUST exist)
-strict_resolve_path(ObjID, Path, Value) -->
+strict_resolve_path_id(ObjID, Path, Value) -->
     {atom(Path)},
     !,
     % Fails if attribute missing
@@ -84,7 +94,7 @@ strict_resolve_path(ObjID, Path, Value) -->
 % This must be the last clause. It handles literals that
 % were passed in (e.g., numbers, unbound variables, or
 % complex terms that aren't paths).
-strict_resolve_path(_ObjID, Path, Path) --> [].
+strict_resolve_path_id(_ObjID, Path, Path) --> [].
 
 
 % ==========================================================
@@ -92,28 +102,33 @@ strict_resolve_path(_ObjID, Path, Path) --> [].
 % resolve_action)
 % ==========================================================
 
-% resolve_path_strict(+ObjID, +Path, -Value) -->
+% resolve_path_strict(+Obj, +Path, -Value) -->
 % Uses strict_resolve_path/4 internally
-resolve_path_strict(ObjID, Path, Value) -->
-    strict_resolve_path(ObjID, Path, Value).
+resolve_path_strict(Obj, Path, Value) -->
+    strict_resolve_path(Obj, Path, Value).
 
-% resolve_path_to_attr(+ObjID, +Path, -Pair) -->
+% resolve_path_to_attr(+Obj, +Path, -Pair) -->
 % Resolves the path down to the final object ID and
 % attribute Key.
 % Path can be a location path or wrapped in ..
-resolve_path_to_attr(MyID, :(Path), Pair) -->
-    !,
-    resolve_path_to_attr(MyID, Path, Pair).
+resolve_path_to_attr(Obj, Path, Pair) -->
+    {obj_id(Obj, ObjID)},
+    resolve_path_to_attr_id(ObjID, Path, Pair).
 
-resolve_path_to_attr(MyID, AttrName, MyID/AttrName) -->
+% Internal: resolve_path_to_attr_id works with IDs
+resolve_path_to_attr_id(ObjID, :(Path), Pair) -->
+    !,
+    resolve_path_to_attr_id(ObjID, Path, Pair).
+
+resolve_path_to_attr_id(ObjID, AttrName, ObjID/AttrName) -->
     {atom(AttrName)},  % Base case: simple attribute name
     !.
 
-resolve_path_to_attr(MyID,
-                     FirstAttr:RestPath,
-                     FinalID/Key) -->
+resolve_path_to_attr_id(ObjID,
+                        FirstAttr:RestPath,
+                        FinalID/Key) -->
     !,
     % Navigate through FirstAttr to get NextID
-    resolve_path_strict(MyID, FirstAttr, NextID),
+    strict_resolve_path_id(ObjID, FirstAttr, NextID),
     % Continue resolving RestPath
-    resolve_path_to_attr(NextID, RestPath, FinalID/Key).
+    resolve_path_to_attr_id(NextID, RestPath, FinalID/Key).

@@ -10,8 +10,8 @@ execute_action_impl(
     result(Status, actions_new(NewActions))
 ) -->
     {obj_id(Obj, ID)},
-    resolve_arg(ID, DX, ResolvedDX),
-    resolve_arg(ID, DY, ResolvedDY),
+    resolve_arg(Obj, DX, ResolvedDX),
+    resolve_arg(Obj, DY, ResolvedDY),
     execute_move_delta(
         0,
         ResolvedDX,
@@ -34,9 +34,9 @@ execute_action_impl(
     result(Status, actions_new(NewActions))
 ) -->
     {obj_id(Obj, ID)},
-    resolve_arg(ID, Frames, ResolvedFrames),
-    resolve_arg(ID, DX, ResolvedDX),
-    resolve_arg(ID, DY, ResolvedDY),
+    resolve_arg(Obj, Frames, ResolvedFrames),
+    resolve_arg(Obj, DX, ResolvedDX),
+    resolve_arg(Obj, DY, ResolvedDY),
     execute_move_delta(
         ResolvedFrames,
         ResolvedDX,

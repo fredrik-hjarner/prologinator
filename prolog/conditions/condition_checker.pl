@@ -1,7 +1,7 @@
 % =========================================================
-% Main Entry: check_condition(+Ctx, +ObjID, +Condition)
+% Main Entry: check_condition(+Ctx, +Obj, +Condition)
 % ==========================================================
-% Evaluates a condition in the context of a game object ID.
+% Evaluates a condition in the context of a game object.
 %
 % Returns: true if condition holds, false otherwise
 %
@@ -12,45 +12,43 @@
 %   Item in Path      - Item (value/path) in list attribute
 %   Comparison        - Operators: <, >, =<, >=, =, \=, etc.
 
-check_condition(ObjID, Condition) -->
-    % Original definition used Object but actions pass ObjID
-    % We use ObjID directly here.
-    check_condition_impl(ObjID, Condition).
+check_condition(Obj, Condition) -->
+    check_condition_impl(Obj, Condition).
 
 % Implementation dispatcher
-check_condition_impl(ObjID, and(Conditions)) -->
-    check_and_conditions(Conditions, ObjID).
+check_condition_impl(Obj, and(Conditions)) -->
+    check_and_conditions(Conditions, Obj).
     
 check_and_conditions([], _) --> [].
-check_and_conditions([C|Cs], ObjID) -->
-    check_condition_impl(ObjID, C),
-    check_and_conditions(Cs, ObjID).
+check_and_conditions([C|Cs], Obj) -->
+    check_condition_impl(Obj, C),
+    check_and_conditions(Cs, Obj).
 
-check_condition_impl(ObjID, or(Conditions)) -->
+check_condition_impl(Obj, or(Conditions)) -->
     !,
     % ANY condition must succeed
     {member(Condition, Conditions)},
-    check_condition_impl(ObjID, Condition).
+    check_condition_impl(Obj, Condition).
 
-check_condition_impl(ObjID, not(Condition), Ctx, Ctx) :-
+check_condition_impl(Obj, not(Condition), Ctx, Ctx) :-
     !,
     % Negation: condition must fail
-    \+ check_condition_impl(ObjID, Condition, Ctx, Ctx).
+    \+ check_condition_impl(Obj, Condition, Ctx, Ctx).
 
-check_condition_impl(ObjID, Item in AttributePath) -->
+check_condition_impl(Obj, Item in AttributePath) -->
     !,
     % List membership: check if Item is in the list at
     % AttributePath
-    check_membership(ObjID, Item, AttributePath).
+    check_membership(Obj, Item, AttributePath).
 
-check_condition_impl(ObjID, Comparison) -->
+check_condition_impl(Obj, Comparison) -->
     % Handle comparison operators (<, >, =, etc.)
     {is_comparison(Comparison)},
     !,
-    check_comparison(ObjID, Comparison).
+    check_comparison(Obj, Comparison).
 
 % NEW: Explicit existence check (strict - no fallback)
-check_condition_impl(ObjID, exists(PathSpec)) -->
+check_condition_impl(Obj, exists(PathSpec)) -->
     !,
     % Rule: PathSpec MUST be an attribute reference (start
     % with :)
@@ -65,7 +63,7 @@ check_condition_impl(ObjID, exists(PathSpec)) -->
         )}
     ),
     % Use strict resolution: fails if attr doesn't exist
-    strict_resolve_path(ObjID, PathToResolve, _Value).
+    strict_resolve_path(Obj, PathToResolve, _Value).
 
 check_condition_impl(_ObjID, Condition) -->
     % Unknown condition type
@@ -96,14 +94,15 @@ is_comparison(Term) :-
 % Evaluates a comparison after path resolution and
 % operator normalization.
 
-check_comparison(ObjID, Comparison) -->
+check_comparison(Obj, Comparison) -->
+    {obj_id(Obj, ObjID)},
     % Decompose comparison into operator and operands
     {Comparison =.. [_Op, LeftSpec, RightSpec]},
     
     % Resolve both sides (using strict path resolution,
     % allowing default/2 for explicit fallback)
-    resolve_condition_value(ObjID, LeftSpec, LeftValue),
-    resolve_condition_value(ObjID, RightSpec, RightValue),
+    resolve_condition_value(Obj, LeftSpec, LeftValue),
+    resolve_condition_value(Obj, RightSpec, RightValue),
     
     % Build the resolved comparison
     {ResolvedComparison =.. [_Op, LeftValue, RightValue]},
@@ -129,7 +128,7 @@ strip_prefix_at(Path, Path).
 
 % Case 1: Explicit default/2 handling
 resolve_condition_value(
-    ObjID, default(ValueExpr, Fallback), Value
+    Obj, default(ValueExpr, Fallback), Value
 ) -->
     !,
     % Check if ValueExpr is bare atom (e.g., default(hp, 0))
@@ -147,7 +146,7 @@ resolve_condition_value(
     {strip_prefix_at(ValueExpr, PathSpec)},
     
     % Try path resolution. If it fails, use fallback.
-    ( resolve_path(ObjID, PathSpec, Value) ->
+    ( resolve_path(Obj, PathSpec, Value) ->
         []
     ;
         % Path resolution failed (due to missing attribute)
@@ -155,11 +154,11 @@ resolve_condition_value(
     ).
 
 % Case 2: Standard path resolution
-resolve_condition_value(ObjID, PathSpec, Value) -->
+resolve_condition_value(Obj, PathSpec, Value) -->
     % --- FIX: Enforce : prefix for attribute lookups ---
     ( {PathSpec = :(Path)} ->
         % Explicit attribute reference: resolve path
-        resolve_path(ObjID, Path, Value)
+        resolve_path(Obj, Path, Value)
     ; {atom(PathSpec)} ->
         % Bare atom used where attribute reference is
         % expected (e.g., hp)
@@ -174,7 +173,7 @@ resolve_condition_value(ObjID, PathSpec, Value) -->
         % literal like 1+2)
         % resolve_path will return PathSpec as Value (via
         % its literal passthrough clause)
-        resolve_path(ObjID, PathSpec, Value)
+        resolve_path(Obj, PathSpec, Value)
     ).
 
 
@@ -209,13 +208,13 @@ resolve_condition_value(ObjID, PathSpec, Value) -->
 %   → resolve Path to list
 %   → check membership
 
-check_membership(ObjID, Item, AttributePath) -->
+check_membership(Obj, Item, AttributePath) -->
     % Resolve the item (could be path or literal)
-    resolve_condition_value(ObjID, Item, ItemValue),
+    resolve_condition_value(Obj, Item, ItemValue),
     
     % Resolve the attribute path to get the list
     resolve_condition_value(
-        ObjID, AttributePath, ListValue
+        Obj, AttributePath, ListValue
     ),
     
     % ListValue must be a list

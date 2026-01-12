@@ -6,9 +6,9 @@ execute_action_impl(
     result(Status, actions_new(NewActions))
 ) -->
     {obj_id(Obj, ID)},
-    resolve_arg(ID, TargetX, ResolvedTargetX),
-    resolve_arg(ID, TargetY, ResolvedTargetY),
-    resolve_arg(ID, Frames, ResolvedFrames),
+    resolve_arg(Obj, TargetX, ResolvedTargetX),
+    resolve_arg(Obj, TargetY, ResolvedTargetY),
+    resolve_arg(Obj, Frames, ResolvedFrames),
     execute_move_to(
         ResolvedTargetX,
         ResolvedTargetY,

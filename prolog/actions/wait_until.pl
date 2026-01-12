@@ -18,16 +18,15 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
     execute_wait_until(
-        ID, Condition, Rest, Status, ActionsOut
+        Obj, Condition, Rest, Status, ActionsOut
     ).
 
 execute_wait_until(
-    ID, Condition, Rest, Status, ActionsOut
+    Obj, Condition, Rest, Status, ActionsOut
 ) -->
     % Try to check condition
-    ( check_condition(ID, Condition) ->
+    ( check_condition(Obj, Condition) ->
         % Condition satisfied - proceed
         {ActionsOut = Rest, Status = completed}
     ;

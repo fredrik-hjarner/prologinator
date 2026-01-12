@@ -12,9 +12,8 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
     % N should always "resolve" to a value.
-    resolve_arg(ID, N, ResolvedN),
+    resolve_arg(Obj, N, ResolvedN),
     execute_wait(ResolvedN, Rest, Status, ActionsOut).
 
 execute_wait(N, Rest, Status, ActionsOut) -->

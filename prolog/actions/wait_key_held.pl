@@ -11,8 +11,7 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
-    resolve_arg(ID, KeyCode, ResolvedKeyCode),
+    resolve_arg(Obj, KeyCode, ResolvedKeyCode),
     execute_wait_key_held(
         ResolvedKeyCode,
         Rest,

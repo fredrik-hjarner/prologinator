@@ -5,15 +5,14 @@ execute_action_impl(
     obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
-    {obj_id(Obj, MyID)},
     % Both SourcePath and DestPath are paths so dont need
     % any resolution.
-    execute_copy_attr(MyID, SourcePath, DestPath).
+    execute_copy_attr(Obj, SourcePath, DestPath).
 
-execute_copy_attr(MyID, SourcePath, DestPath) -->
-    resolve_path_to_attr(MyID, SourcePath,
+execute_copy_attr(Obj, SourcePath, DestPath) -->
+    resolve_path_to_attr(Obj, SourcePath,
                          SourceID/SourceKey),
-    resolve_path_to_attr(MyID, DestPath,
+    resolve_path_to_attr(Obj, DestPath,
                          DestID/DestKey),
     ctx_attr_val(SourceID/SourceKey, Value),
     ctx_set_attr_val(DestID/DestKey, Value).

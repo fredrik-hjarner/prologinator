@@ -7,8 +7,7 @@ execute_action_impl(
     obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
-    {obj_id(Obj, MyID)},
-    execute_decr(MyID, Path, 1).
+    execute_decr(Obj, Path, 1).
 
 % decrement by amount.
 execute_action_impl(
@@ -16,14 +15,13 @@ execute_action_impl(
     obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
-    {obj_id(Obj, MyID)},
     % Path is always a path.
     % Amount should always "resolve" to a value.
-    resolve_arg(MyID, Amount, ResolvedAmount),
-    execute_decr(MyID, Path, ResolvedAmount).
+    resolve_arg(Obj, Amount, ResolvedAmount),
+    execute_decr(Obj, Path, ResolvedAmount).
 
-execute_decr(MyID, Path, Amount) -->
-    resolve_path_to_attr(MyID, Path, TargetID/Key),
+execute_decr(Obj, Path, Amount) -->
+    resolve_path_to_attr(Obj, Path, TargetID/Key),
     ( ctx_attr_val(TargetID/Key, CurrentValue) ->
         {NewValue #= CurrentValue - Amount}
     ;

@@ -30,38 +30,38 @@
 % If the argument is prefixed with ., it is treated as a
 % path reference that must resolve to a value (read
 % context).
-resolve_arg(MyID, :Path, V) -->
+resolve_arg(Obj, :Path, V) -->
     !,
     (   {ground(Path)} % Only resolve if path is ground
     % Use strict path resolution to get the value
-    ->  resolve_path_strict(MyID, Path, V)
+    ->  resolve_path_strict(Obj, Path, V)
     ;   {V = :Path}
     ).
 
 
 % NEW: Handle default/2 expressions
-resolve_arg(MyID, default(ValueExpr, Fallback), V) -->
+resolve_arg(Obj, default(ValueExpr, Fallback), V) -->
     !,
-    resolve_default(MyID, ValueExpr, Fallback, V).
+    resolve_default(Obj, ValueExpr, Fallback, V).
 
 % Lists need recursive resolution
 % TODO: Do I even need this? I don't think I ever need this
 %       in current design.
-% resolve_arg(MyID, List, ResolvedList) -->
+% resolve_arg(Obj, List, ResolvedList) -->
 %     {List = [_|_]},
 %     !,
-%     resolve_args(MyID, List, ResolvedList).
-% resolve_arg(_MyID, [], []) --> [].
+%     resolve_args(Obj, List, ResolvedList).
+% resolve_arg(_Obj, [], []) --> [].
 
 % Catch-all?
 % Pass through primitives and other terms
-resolve_arg(_MyID, Other, Other) --> !, [].
+resolve_arg(_Obj, Other, Other) --> !, [].
 
 % Helper for default/2 resolution in actions
-resolve_default(MyID, :Path, Fallback, V) -->
+resolve_default(Obj, :Path, Fallback, V) -->
     {ground(Path)},
     !,
-    ( resolve_path_strict(MyID, Path, ResolvedValue) ->
+    ( resolve_path_strict(Obj, Path, ResolvedValue) ->
         {V = ResolvedValue}
     ;
         % If strict path resolution fails (due to missing
@@ -73,9 +73,9 @@ resolve_default(MyID, :Path, Fallback, V) -->
 % Catch-all?
 % If ValueExpr is not an :Path, resolve it normally.
 % Note: This handles cases like default(10, 0) -> 10
-resolve_default(MyID, ValueExpr, _Fallback, V) -->
+resolve_default(Obj, ValueExpr, _Fallback, V) -->
     !,
-    resolve_arg(MyID, ValueExpr, V).
+    resolve_arg(Obj, ValueExpr, V).
 
 % ==========================================================
 % Path Resolution (DCG version: handles x:y:z chains)

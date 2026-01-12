@@ -1376,38 +1376,38 @@ pretty_print_args([Arg|Args], Indent) :-
 % If the argument is prefixed with ., it is treated as a
 % path reference that must resolve to a value (read
 % context).
-resolve_arg(MyID, :Path, V) -->
+resolve_arg(Obj, :Path, V) -->
     !,
     (   {ground(Path)} % Only resolve if path is ground
     % Use strict path resolution to get the value
-    ->  resolve_path_strict(MyID, Path, V)
+    ->  resolve_path_strict(Obj, Path, V)
     ;   {V = :Path}
     ).
 
 
 % NEW: Handle default/2 expressions
-resolve_arg(MyID, default(ValueExpr, Fallback), V) -->
+resolve_arg(Obj, default(ValueExpr, Fallback), V) -->
     !,
-    resolve_default(MyID, ValueExpr, Fallback, V).
+    resolve_default(Obj, ValueExpr, Fallback, V).
 
 % Lists need recursive resolution
 % TODO: Do I even need this? I don't think I ever need this
 %       in current design.
-% resolve_arg(MyID, List, ResolvedList) -->
+% resolve_arg(Obj, List, ResolvedList) -->
 %     {List = [_|_]},
 %     !,
-%     resolve_args(MyID, List, ResolvedList).
-% resolve_arg(_MyID, [], []) --> [].
+%     resolve_args(Obj, List, ResolvedList).
+% resolve_arg(_Obj, [], []) --> [].
 
 % Catch-all?
 % Pass through primitives and other terms
-resolve_arg(_MyID, Other, Other) --> !, [].
+resolve_arg(_Obj, Other, Other) --> !, [].
 
 % Helper for default/2 resolution in actions
-resolve_default(MyID, :Path, Fallback, V) -->
+resolve_default(Obj, :Path, Fallback, V) -->
     {ground(Path)},
     !,
-    ( resolve_path_strict(MyID, Path, ResolvedValue) ->
+    ( resolve_path_strict(Obj, Path, ResolvedValue) ->
         {V = ResolvedValue}
     ;
         % If strict path resolution fails (due to missing
@@ -1419,9 +1419,9 @@ resolve_default(MyID, :Path, Fallback, V) -->
 % Catch-all?
 % If ValueExpr is not an :Path, resolve it normally.
 % Note: This handles cases like default(10, 0) -> 10
-resolve_default(MyID, ValueExpr, _Fallback, V) -->
+resolve_default(Obj, ValueExpr, _Fallback, V) -->
     !,
-    resolve_arg(MyID, ValueExpr, V).
+    resolve_arg(Obj, ValueExpr, V).
 
 % ==========================================================
 % Path Resolution (DCG version: handles x:y:z chains)
@@ -1534,8 +1534,7 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
-    (check_condition(ID, Condition)
+    (check_condition(Obj, Condition)
     ->
         % Condition succeeded: execute ThenActions
         tick_object(
@@ -1600,8 +1599,7 @@ execute_attr_if(
     Rest,
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ObjID)},
-    (check_condition(ObjID, Condition)
+    (check_condition(Obj, Condition)
     ->
         % Condition succeeded: execute ThenActions
         tick_object(
@@ -1634,9 +1632,8 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
     % N should always "resolve" to a value.
-    resolve_arg(ID, N, ResolvedN),
+    resolve_arg(Obj, N, ResolvedN),
     execute_wait(ResolvedN, Rest, Status, ActionsOut).
 
 execute_wait(N, Rest, Status, ActionsOut) -->
@@ -1665,9 +1662,9 @@ execute_action_impl(
     result(Status, actions_new(NewActions))
 ) -->
     {obj_id(Obj, ID)},
-    resolve_arg(ID, TargetX, ResolvedTargetX),
-    resolve_arg(ID, TargetY, ResolvedTargetY),
-    resolve_arg(ID, Frames, ResolvedFrames),
+    resolve_arg(Obj, TargetX, ResolvedTargetX),
+    resolve_arg(Obj, TargetY, ResolvedTargetY),
+    resolve_arg(Obj, Frames, ResolvedFrames),
     execute_move_to(
         ResolvedTargetX,
         ResolvedTargetY,
@@ -1746,8 +1743,8 @@ execute_action_impl(
     result(Status, actions_new(NewActions))
 ) -->
     {obj_id(Obj, ID)},
-    resolve_arg(ID, DX, ResolvedDX),
-    resolve_arg(ID, DY, ResolvedDY),
+    resolve_arg(Obj, DX, ResolvedDX),
+    resolve_arg(Obj, DY, ResolvedDY),
     execute_move_delta(
         0,
         ResolvedDX,
@@ -1770,9 +1767,9 @@ execute_action_impl(
     result(Status, actions_new(NewActions))
 ) -->
     {obj_id(Obj, ID)},
-    resolve_arg(ID, Frames, ResolvedFrames),
-    resolve_arg(ID, DX, ResolvedDX),
-    resolve_arg(ID, DY, ResolvedDY),
+    resolve_arg(Obj, Frames, ResolvedFrames),
+    resolve_arg(Obj, DX, ResolvedDX),
+    resolve_arg(Obj, DY, ResolvedDY),
     execute_move_delta(
         ResolvedFrames,
         ResolvedDX,
@@ -1908,14 +1905,13 @@ execute_action_impl(
     obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
-    {obj_id(Obj, MyID)},
     % Path is always a path.
     % Value should always "resolve" to a value.
-    resolve_arg(MyID, Value, ResolvedValue),
-    execute_set_attr(MyID, Path, ResolvedValue).
+    resolve_arg(Obj, Value, ResolvedValue),
+    execute_set_attr(Obj, Path, ResolvedValue).
 
-execute_set_attr(MyID, Path, Value) -->
-    resolve_path_to_attr(MyID, Path, TargetID/Key),
+execute_set_attr(Obj, Path, Value) -->
+    resolve_path_to_attr(Obj, Path, TargetID/Key),
     ctx_set_attr_val(TargetID/Key, Value).
 
 
@@ -1927,15 +1923,14 @@ execute_action_impl(
     obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
-    {obj_id(Obj, MyID)},
     % Both SourcePath and DestPath are paths so dont need
     % any resolution.
-    execute_copy_attr(MyID, SourcePath, DestPath).
+    execute_copy_attr(Obj, SourcePath, DestPath).
 
-execute_copy_attr(MyID, SourcePath, DestPath) -->
-    resolve_path_to_attr(MyID, SourcePath,
+execute_copy_attr(Obj, SourcePath, DestPath) -->
+    resolve_path_to_attr(Obj, SourcePath,
                          SourceID/SourceKey),
-    resolve_path_to_attr(MyID, DestPath,
+    resolve_path_to_attr(Obj, DestPath,
                          DestID/DestKey),
     ctx_attr_val(SourceID/SourceKey, Value),
     ctx_set_attr_val(DestID/DestKey, Value).
@@ -1949,8 +1944,7 @@ execute_action_impl(
     obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
-    {obj_id(Obj, MyID)},
-    execute_incr(MyID, Path, 1).
+    execute_incr(Obj, Path, 1).
 
 % increment by amount.
 execute_action_impl(
@@ -1958,14 +1952,13 @@ execute_action_impl(
     obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
-    {obj_id(Obj, MyID)},
     % Path is always a path.
     % Amount should always "resolve" to a value.
-    resolve_arg(MyID, Amount, ResolvedAmount),
-    execute_incr(MyID, Path, ResolvedAmount).
+    resolve_arg(Obj, Amount, ResolvedAmount),
+    execute_incr(Obj, Path, ResolvedAmount).
 
-execute_incr(MyID, Path, Amount) -->
-    resolve_path_to_attr(MyID, Path, TargetID/Key),
+execute_incr(Obj, Path, Amount) -->
+    resolve_path_to_attr(Obj, Path, TargetID/Key),
     ( ctx_attr_val(TargetID/Key, CurrentValue) ->
         {NewValue #= CurrentValue + Amount}
     ;
@@ -1982,8 +1975,7 @@ execute_action_impl(
     obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
-    {obj_id(Obj, MyID)},
-    execute_decr(MyID, Path, 1).
+    execute_decr(Obj, Path, 1).
 
 % decrement by amount.
 execute_action_impl(
@@ -1991,14 +1983,13 @@ execute_action_impl(
     obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
-    {obj_id(Obj, MyID)},
     % Path is always a path.
     % Amount should always "resolve" to a value.
-    resolve_arg(MyID, Amount, ResolvedAmount),
-    execute_decr(MyID, Path, ResolvedAmount).
+    resolve_arg(Obj, Amount, ResolvedAmount),
+    execute_decr(Obj, Path, ResolvedAmount).
 
-execute_decr(MyID, Path, Amount) -->
-    resolve_path_to_attr(MyID, Path, TargetID/Key),
+execute_decr(Obj, Path, Amount) -->
+    resolve_path_to_attr(Obj, Path, TargetID/Key),
     ( ctx_attr_val(TargetID/Key, CurrentValue) ->
         {NewValue #= CurrentValue - Amount}
     ;
@@ -2027,12 +2018,12 @@ execute_action_impl(
     obj(Obj),
     result(completed, actions_new(Rest))
 ) -->
-    {obj_id(Obj, MyID)},
-    execute_spawn(MyID, Actions).
+    execute_spawn(Obj, Actions).
 
 % NOTE: Important to notice that spawn_cmd:s are added in
 %       reverse for performance reasons.
-execute_spawn(ParentID, Actions) -->
+execute_spawn(ParentObj, Actions) -->
+    {obj_id(ParentObj, ParentID)},
     % Build actions list with parent_id automatically added
     {SpawnActions = [
         set_attr(parent_id, ParentID)
@@ -2221,8 +2212,7 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
-    resolve_arg(ID, Times, ResolvedTimes),
+    resolve_arg(Obj, Times, ResolvedTimes),
     % Constraint from original: Times > 0
     {ResolvedTimes #> 0},
     execute_repeat_managed(
@@ -2385,8 +2375,7 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
-    resolve_arg(ID, KeyCode, ResolvedKeyCode),
+    resolve_arg(Obj, KeyCode, ResolvedKeyCode),
     execute_wait_key_down(
         ResolvedKeyCode,
         Rest,
@@ -2420,8 +2409,7 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
-    resolve_arg(ID, KeyCode, ResolvedKeyCode),
+    resolve_arg(Obj, KeyCode, ResolvedKeyCode),
     execute_wait_key_up(
         ResolvedKeyCode, Rest, Status, ActionsOut
     ).
@@ -2452,8 +2440,7 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
-    resolve_arg(ID, KeyCode, ResolvedKeyCode),
+    resolve_arg(Obj, KeyCode, ResolvedKeyCode),
     execute_wait_key_held(
         ResolvedKeyCode,
         Rest,
@@ -2495,16 +2482,15 @@ execute_action_impl(
     obj(Obj),
     result(Status, actions_new(ActionsOut))
 ) -->
-    {obj_id(Obj, ID)},
     execute_wait_until(
-        ID, Condition, Rest, Status, ActionsOut
+        Obj, Condition, Rest, Status, ActionsOut
     ).
 
 execute_wait_until(
-    ID, Condition, Rest, Status, ActionsOut
+    Obj, Condition, Rest, Status, ActionsOut
 ) -->
     % Try to check condition
-    ( check_condition(ID, Condition) ->
+    ( check_condition(Obj, Condition) ->
         % Condition satisfied - proceed
         {ActionsOut = Rest, Status = completed}
     ;
@@ -3095,12 +3081,17 @@ key_held(KeyCode) -->
 % stripped automatically to resolve the underlying path.
 
 % ==========================================================
-% Main: resolve_path(+Ctx, +ObjID, +Path, -Value)
+% Main: resolve_path(+Ctx, +Obj, +Path, -Value)
 % ==========================================================
 % Resolves a path (attribute reference or literal) to its
 % value.
 
-resolve_path(ObjID, Path, Value) -->
+resolve_path(Obj, Path, Value) -->
+    {obj_id(Obj, ObjID)},
+    resolve_path_id(ObjID, Path, Value).
+
+% Internal: resolve_path_id works with IDs
+resolve_path_id(ObjID, Path, Value) -->
     % Strip : prefix if present (syntactic sugar)
     ( {Path = :(InnerPath)} ->
         {TruePath = InnerPath}
@@ -3111,10 +3102,10 @@ resolve_path(ObjID, Path, Value) -->
     (   % Case 1: Compound path using dot functor
         {TruePath = Head:Rest}
     ->
-        resolve_path(ObjID, Head, NextID),
+        resolve_path_id(ObjID, Head, NextID),
         % Then resolve Rest starting from that object.
         % Rest must resolve to the final attribute Key/Value
-        resolve_path(NextID, Rest, Value)
+        resolve_path_id(NextID, Rest, Value)
 
     ;   % Case 2: Simple atom (Basecase: final attribute
         % Key)
@@ -3137,23 +3128,28 @@ resolve_path(ObjID, Path, Value) -->
 % Unlike resolve_path, this fails if any attribute in the
 % path doesn't exist. No fallback to literals.
 
+strict_resolve_path(Obj, Path, Value) -->
+    {obj_id(Obj, ObjID)},
+    strict_resolve_path_id(ObjID, Path, Value).
+
+% Internal: strict_resolve_path_id works with IDs
 % 1. Handle : prefix (strip it and recurse)
-strict_resolve_path(ObjID, :(Path), Value) -->
+strict_resolve_path_id(ObjID, :(Path), Value) -->
     !,
-    strict_resolve_path(ObjID, Path, Value).
+    strict_resolve_path_id(ObjID, Path, Value).
 
 % 2. Compound path using dot functor (recursive step)
-strict_resolve_path(
+strict_resolve_path_id(
     ObjID, FirstAttr:RestPath, Value
 ) -->
     !,
     % First resolve Head to get the next object ID
-    strict_resolve_path(ObjID, FirstAttr, NextID),
+    strict_resolve_path_id(ObjID, FirstAttr, NextID),
     % Then resolve Rest starting from that object
-    strict_resolve_path(NextID, RestPath, Value).
+    strict_resolve_path_id(NextID, RestPath, Value).
 
 % 3. Simple atom (base case for navigation, MUST exist)
-strict_resolve_path(ObjID, Path, Value) -->
+strict_resolve_path_id(ObjID, Path, Value) -->
     {atom(Path)},
     !,
     % Fails if attribute missing
@@ -3163,7 +3159,7 @@ strict_resolve_path(ObjID, Path, Value) -->
 % This must be the last clause. It handles literals that
 % were passed in (e.g., numbers, unbound variables, or
 % complex terms that aren't paths).
-strict_resolve_path(_ObjID, Path, Path) --> [].
+strict_resolve_path_id(_ObjID, Path, Path) --> [].
 
 
 % ==========================================================
@@ -3171,31 +3167,36 @@ strict_resolve_path(_ObjID, Path, Path) --> [].
 % resolve_action)
 % ==========================================================
 
-% resolve_path_strict(+ObjID, +Path, -Value) -->
+% resolve_path_strict(+Obj, +Path, -Value) -->
 % Uses strict_resolve_path/4 internally
-resolve_path_strict(ObjID, Path, Value) -->
-    strict_resolve_path(ObjID, Path, Value).
+resolve_path_strict(Obj, Path, Value) -->
+    strict_resolve_path(Obj, Path, Value).
 
-% resolve_path_to_attr(+ObjID, +Path, -Pair) -->
+% resolve_path_to_attr(+Obj, +Path, -Pair) -->
 % Resolves the path down to the final object ID and
 % attribute Key.
 % Path can be a location path or wrapped in ..
-resolve_path_to_attr(MyID, :(Path), Pair) -->
-    !,
-    resolve_path_to_attr(MyID, Path, Pair).
+resolve_path_to_attr(Obj, Path, Pair) -->
+    {obj_id(Obj, ObjID)},
+    resolve_path_to_attr_id(ObjID, Path, Pair).
 
-resolve_path_to_attr(MyID, AttrName, MyID/AttrName) -->
+% Internal: resolve_path_to_attr_id works with IDs
+resolve_path_to_attr_id(ObjID, :(Path), Pair) -->
+    !,
+    resolve_path_to_attr_id(ObjID, Path, Pair).
+
+resolve_path_to_attr_id(ObjID, AttrName, ObjID/AttrName) -->
     {atom(AttrName)},  % Base case: simple attribute name
     !.
 
-resolve_path_to_attr(MyID,
-                     FirstAttr:RestPath,
-                     FinalID/Key) -->
+resolve_path_to_attr_id(ObjID,
+                        FirstAttr:RestPath,
+                        FinalID/Key) -->
     !,
     % Navigate through FirstAttr to get NextID
-    resolve_path_strict(MyID, FirstAttr, NextID),
+    strict_resolve_path_id(ObjID, FirstAttr, NextID),
     % Continue resolving RestPath
-    resolve_path_to_attr(NextID, RestPath, FinalID/Key).
+    resolve_path_to_attr_id(NextID, RestPath, FinalID/Key).
 % =========================================================
 % Operator Normalization Module
 % =========================================================
@@ -3261,9 +3262,9 @@ op_map( #=,  #= ).
 op_map( #\=, #\= ).
 
 % =========================================================
-% Main Entry: check_condition(+Ctx, +ObjID, +Condition)
+% Main Entry: check_condition(+Ctx, +Obj, +Condition)
 % ==========================================================
-% Evaluates a condition in the context of a game object ID.
+% Evaluates a condition in the context of a game object.
 %
 % Returns: true if condition holds, false otherwise
 %
@@ -3274,45 +3275,43 @@ op_map( #\=, #\= ).
 %   Item in Path      - Item (value/path) in list attribute
 %   Comparison        - Operators: <, >, =<, >=, =, \=, etc.
 
-check_condition(ObjID, Condition) -->
-    % Original definition used Object but actions pass ObjID
-    % We use ObjID directly here.
-    check_condition_impl(ObjID, Condition).
+check_condition(Obj, Condition) -->
+    check_condition_impl(Obj, Condition).
 
 % Implementation dispatcher
-check_condition_impl(ObjID, and(Conditions)) -->
-    check_and_conditions(Conditions, ObjID).
+check_condition_impl(Obj, and(Conditions)) -->
+    check_and_conditions(Conditions, Obj).
     
 check_and_conditions([], _) --> [].
-check_and_conditions([C|Cs], ObjID) -->
-    check_condition_impl(ObjID, C),
-    check_and_conditions(Cs, ObjID).
+check_and_conditions([C|Cs], Obj) -->
+    check_condition_impl(Obj, C),
+    check_and_conditions(Cs, Obj).
 
-check_condition_impl(ObjID, or(Conditions)) -->
+check_condition_impl(Obj, or(Conditions)) -->
     !,
     % ANY condition must succeed
     {member(Condition, Conditions)},
-    check_condition_impl(ObjID, Condition).
+    check_condition_impl(Obj, Condition).
 
-check_condition_impl(ObjID, not(Condition), Ctx, Ctx) :-
+check_condition_impl(Obj, not(Condition), Ctx, Ctx) :-
     !,
     % Negation: condition must fail
-    \+ check_condition_impl(ObjID, Condition, Ctx, Ctx).
+    \+ check_condition_impl(Obj, Condition, Ctx, Ctx).
 
-check_condition_impl(ObjID, Item in AttributePath) -->
+check_condition_impl(Obj, Item in AttributePath) -->
     !,
     % List membership: check if Item is in the list at
     % AttributePath
-    check_membership(ObjID, Item, AttributePath).
+    check_membership(Obj, Item, AttributePath).
 
-check_condition_impl(ObjID, Comparison) -->
+check_condition_impl(Obj, Comparison) -->
     % Handle comparison operators (<, >, =, etc.)
     {is_comparison(Comparison)},
     !,
-    check_comparison(ObjID, Comparison).
+    check_comparison(Obj, Comparison).
 
 % NEW: Explicit existence check (strict - no fallback)
-check_condition_impl(ObjID, exists(PathSpec)) -->
+check_condition_impl(Obj, exists(PathSpec)) -->
     !,
     % Rule: PathSpec MUST be an attribute reference (start
     % with :)
@@ -3327,7 +3326,7 @@ check_condition_impl(ObjID, exists(PathSpec)) -->
         )}
     ),
     % Use strict resolution: fails if attr doesn't exist
-    strict_resolve_path(ObjID, PathToResolve, _Value).
+    strict_resolve_path(Obj, PathToResolve, _Value).
 
 check_condition_impl(_ObjID, Condition) -->
     % Unknown condition type
@@ -3358,14 +3357,15 @@ is_comparison(Term) :-
 % Evaluates a comparison after path resolution and
 % operator normalization.
 
-check_comparison(ObjID, Comparison) -->
+check_comparison(Obj, Comparison) -->
+    {obj_id(Obj, ObjID)},
     % Decompose comparison into operator and operands
     {Comparison =.. [_Op, LeftSpec, RightSpec]},
     
     % Resolve both sides (using strict path resolution,
     % allowing default/2 for explicit fallback)
-    resolve_condition_value(ObjID, LeftSpec, LeftValue),
-    resolve_condition_value(ObjID, RightSpec, RightValue),
+    resolve_condition_value(Obj, LeftSpec, LeftValue),
+    resolve_condition_value(Obj, RightSpec, RightValue),
     
     % Build the resolved comparison
     {ResolvedComparison =.. [_Op, LeftValue, RightValue]},
@@ -3391,7 +3391,7 @@ strip_prefix_at(Path, Path).
 
 % Case 1: Explicit default/2 handling
 resolve_condition_value(
-    ObjID, default(ValueExpr, Fallback), Value
+    Obj, default(ValueExpr, Fallback), Value
 ) -->
     !,
     % Check if ValueExpr is bare atom (e.g., default(hp, 0))
@@ -3409,7 +3409,7 @@ resolve_condition_value(
     {strip_prefix_at(ValueExpr, PathSpec)},
     
     % Try path resolution. If it fails, use fallback.
-    ( resolve_path(ObjID, PathSpec, Value) ->
+    ( resolve_path(Obj, PathSpec, Value) ->
         []
     ;
         % Path resolution failed (due to missing attribute)
@@ -3417,11 +3417,11 @@ resolve_condition_value(
     ).
 
 % Case 2: Standard path resolution
-resolve_condition_value(ObjID, PathSpec, Value) -->
+resolve_condition_value(Obj, PathSpec, Value) -->
     % --- FIX: Enforce : prefix for attribute lookups ---
     ( {PathSpec = :(Path)} ->
         % Explicit attribute reference: resolve path
-        resolve_path(ObjID, Path, Value)
+        resolve_path(Obj, Path, Value)
     ; {atom(PathSpec)} ->
         % Bare atom used where attribute reference is
         % expected (e.g., hp)
@@ -3436,7 +3436,7 @@ resolve_condition_value(ObjID, PathSpec, Value) -->
         % literal like 1+2)
         % resolve_path will return PathSpec as Value (via
         % its literal passthrough clause)
-        resolve_path(ObjID, PathSpec, Value)
+        resolve_path(Obj, PathSpec, Value)
     ).
 
 
@@ -3471,13 +3471,13 @@ resolve_condition_value(ObjID, PathSpec, Value) -->
 %   → resolve Path to list
 %   → check membership
 
-check_membership(ObjID, Item, AttributePath) -->
+check_membership(Obj, Item, AttributePath) -->
     % Resolve the item (could be path or literal)
-    resolve_condition_value(ObjID, Item, ItemValue),
+    resolve_condition_value(Obj, Item, ItemValue),
     
     % Resolve the attribute path to get the list
     resolve_condition_value(
-        ObjID, AttributePath, ListValue
+        Obj, AttributePath, ListValue
     ),
     
     % ListValue must be a list
