@@ -1,0 +1,11 @@
+2026-01-12 10:29:
+    135 956
+    this btw is too high. I kinda guess I should cut it in
+    half at least.
+
+2026-01-12 10:46:
+    74 366
+    after adding
+    *_test.pl
+    prologinator-js
+    to .cursorignore

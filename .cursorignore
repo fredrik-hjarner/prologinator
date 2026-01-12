@@ -13,7 +13,25 @@ aider
 
 submodules/scryer-prolog
 submodules/schmupinator
+submodules/prologinator-js
 
 .vscode
 .husky
 internal_docs/design_docs
+
+tsconfig.json
+tokens.txt
+.aider.conf.yml
+.aiderignore
+
+games/game0/game.pl
+games/game0/input.pl
+
+tokens2.txt
+
+internal_docs/collision_system.md
+internal_docs/contradictions.md
+internal_docs/helpful_stuff_to_understand.md
+internal_docs/The fragmented world of Prolog packages.md
+
+*_test.pl

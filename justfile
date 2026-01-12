@@ -158,3 +158,21 @@ build-tpl:
 tokens FILE="./build/prologinator.pl":
     @just build > /dev/null 2>&1
     @bun scripts/count-tokens.ts {{FILE}} | tee tokens.txt
+
+# Count tokens in a list of files you supply it via stdin
+# do Ctrl+D to end the input.
+# I use this with the list files that Cursor indexes to see
+#     how many tokens I put into Cursor.
+tokens2:
+    bun scripts/count-tokens2.ts
+
+# create two files: all_files.txt and not_ignored.txt
+# if you diff then you get the ignored files
+# TODO: This is not optimal.
+[working-directory: 'submodules']
+cursorignored:
+    # Get all files
+    rg --files | sort > ../all_files.txt
+
+    # Get non-ignored files  
+    rg --files --ignore-file .cursorignore | sort > ../not_ignored.txt

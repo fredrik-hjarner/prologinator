@@ -7,7 +7,10 @@
 % 2025-12-21 02:17:    300 frames in 14s
 % 2025-12-26 03:59:    300 frames in 21.5s (switched to
 %                      Trealla which seems a bit slower)
-% 2026-01-09 08:14:    6500 frames in ~30s (lotsa changes)
+% 2026-01-09 08:14 46 degrees:
+%     6500 frames in ~30s (lotsa changes)
+% and for 48 degrees:
+%     6500 frames in ~32s
 
 :- use_module('../build/prologinator.pl').
 :- use_module(library(assoc)).

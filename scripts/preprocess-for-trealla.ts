@@ -1,3 +1,6 @@
+// TODO: I don't think this file is not even needed/used
+//       anymore but it might be good to keep around since
+//       who knows when I will need it again.
 import { file, write } from "bun";
 
 // Get the file path from command line arguments

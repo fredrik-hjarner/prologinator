@@ -139,13 +139,15 @@ scryer-js/.nvmrc
 scryer-js/package.json
 scryer-js/package-lock.json
 scryer-js/.prettierignore
-# scryer-js/README.md
+scryer-js/README.md
 scryer-js/scryer
 scryer-js/src/pkg
-# scryer-js/src/prolog.ts
-# scryer-js/src/scryer.ts
-# scryer-js/src/term.ts
-# scryer-js/test.js
+scryer-js/src/prolog.ts
+scryer-js/src/scryer.ts
+scryer-js/src/term.ts
+scryer-js/test.js
 scryer-js/tsconfig.json
 
 trealla
+
+.aiderignore
